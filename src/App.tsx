@@ -1,34 +1,59 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { GameScene } from './game/scenes/GameScene'
+import { ExampleScene } from './game/scenes/ExampleScene'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [currentScene, setCurrentScene] = useState<'game' | 'example'>('game')
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
+      {/* 場景選擇器 */}
+      <div style={{
+        position: 'absolute',
+        top: 20,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 1000,
+        display: 'flex',
+        gap: '10px',
+        background: 'rgba(0, 0, 0, 0.7)',
+        padding: '10px',
+        borderRadius: '5px'
+      }}>
+        <button
+          onClick={() => setCurrentScene('game')}
+          style={{
+            padding: '10px 20px',
+            background: currentScene === 'game' ? '#4CAF50' : '#333',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            fontFamily: 'monospace'
+          }}
+        >
+          遊戲場景
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+        <button
+          onClick={() => setCurrentScene('example')}
+          style={{
+            padding: '10px 20px',
+            background: currentScene === 'example' ? '#4CAF50' : '#333',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            fontFamily: 'monospace'
+          }}
+        >
+          範例場景
+        </button>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+
+      {/* 渲染當前場景 */}
+      {currentScene === 'game' ? <GameScene /> : <ExampleScene />}
+    </div>
   )
 }
 
