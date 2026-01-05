@@ -23,14 +23,17 @@ export function PlayerController({
   onPositionChange,
   children,
   isCruising = false,
-  cruisePoints = []
+  cruisePoints = [],
+  isBraking = false
 }: PlayerControllerProps & {
   isCruising?: boolean
   cruisePoints?: [number, number, number][]
+  isBraking?: boolean
 }) {
   const groupRef = useRef<THREE.Group>(null)
   const { camera } = useThree()
   const currentPointIndex = useRef(0)
+  const speedFactor = useRef(1)
 
   // 鍵盤狀態
   const [keys, setKeys] = useState({
@@ -111,7 +114,19 @@ export function PlayerController({
   useFrame((state, delta) => {
     if (!groupRef.current) return
 
-    const moveSpeed = speed * delta
+    // 更新速度因子
+    if (isCruising) {
+      if (isBraking) {
+        speedFactor.current = Math.max(0, speedFactor.current - delta * 2)
+      } else {
+        speedFactor.current = Math.min(1, speedFactor.current + delta * 2)
+      }
+    } else {
+      speedFactor.current = 1
+    }
+
+    const currentSpeed = speed * speedFactor.current
+    const moveSpeed = currentSpeed * delta
     const turnSpeed = rotationSpeed * delta
 
     if (isCruising && cruisePoints.length > 0) {

@@ -21,6 +21,7 @@ export function GameScene() {
   const [currentClick, setCurrentClick] = useState<THREE.Vector3 | null>(null)
   const [stats, setStats] = useState<PerformanceStats | null>(null)
   const [isCruising, setIsCruising] = useState(false)
+  const [isBraking, setIsBraking] = useState(false)
 
   const handleStatsUpdate = useCallback((newStats: PerformanceStats) => {
     setStats(newStats)
@@ -61,6 +62,7 @@ export function GameScene() {
           onPositionChange={handlePlayerMove}
           enableCameraFollow={true}
           isCruising={isCruising}
+          isBraking={isBraking}
           cruisePoints={cruisePoints}
         >
           {/* 玩家模型 */}
@@ -94,6 +96,8 @@ export function GameScene() {
         currentClick={currentClick}
         isCruising={isCruising}
         onToggleCruise={toggleCruise}
+        onBrakeStart={() => setIsBraking(true)}
+        onBrakeEnd={() => setIsBraking(false)}
       />
     </div>
   )
@@ -155,12 +159,16 @@ function UIOverlay({
   playerPosition,
   currentClick,
   isCruising,
-  onToggleCruise
+  onToggleCruise,
+  onBrakeStart,
+  onBrakeEnd
 }: {
   playerPosition: THREE.Vector3;
   currentClick: THREE.Vector3 | null;
   isCruising: boolean;
   onToggleCruise: () => void;
+  onBrakeStart?: () => void;
+  onBrakeEnd?: () => void;
 }) {
   return (
     <div style={{
@@ -201,6 +209,28 @@ function UIOverlay({
         >
           {isCruising ? '停止巡航' : '開始巡航'}
         </button>
+
+        {isCruising && (
+          <button
+            onMouseDown={onBrakeStart}
+            onMouseUp={onBrakeEnd}
+            onMouseLeave={onBrakeEnd}
+            onTouchStart={onBrakeStart}
+            onTouchEnd={onBrakeEnd}
+            style={{
+              background: '#ffa500',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              width: '100%',
+              userSelect: 'none'
+            }}
+          >
+            減速 (按住)
+          </button>
+        )}
       </div>
 
       <div style={{ marginTop: '5px', paddingTop: '10px', borderTop: '1px solid #666' }}>
