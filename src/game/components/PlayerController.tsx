@@ -21,10 +21,16 @@ export function PlayerController({
   rotationSpeed = 2,
   enableCameraFollow = true,
   onPositionChange,
-  children
-}: PlayerControllerProps) {
+  children,
+  isCruising = false,
+  cruisePoints = []
+}: PlayerControllerProps & {
+  isCruising?: boolean
+  cruisePoints?: [number, number, number][]
+}) {
   const groupRef = useRef<THREE.Group>(null)
   const { camera } = useThree()
+  const currentPointIndex = useRef(0)
 
   // 鍵盤狀態
   const [keys, setKeys] = useState({
@@ -37,6 +43,8 @@ export function PlayerController({
   // 監聽鍵盤事件
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (isCruising) return // 巡航模式下禁用鍵盤
+
       switch (e.code) {
         case 'KeyW':
         case 'ArrowUp':
@@ -85,7 +93,19 @@ export function PlayerController({
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
     }
-  }, [])
+  }, [isCruising])
+
+  // 重置按鍵狀態當進入巡航模式
+  useEffect(() => {
+    if (isCruising) {
+      setKeys({
+        forward: false,
+        backward: false,
+        left: false,
+        right: false
+      })
+    }
+  }, [isCruising])
 
   // 更新玩家位置和相機
   useFrame((state, delta) => {
@@ -94,25 +114,61 @@ export function PlayerController({
     const moveSpeed = speed * delta
     const turnSpeed = rotationSpeed * delta
 
-    // 移動
-    if (keys.forward) {
-      groupRef.current.translateZ(-moveSpeed)
-    }
-    if (keys.backward) {
-      groupRef.current.translateZ(moveSpeed)
-    }
+    if (isCruising && cruisePoints.length > 0) {
+      // 巡航邏輯
+      const targetPoint = new THREE.Vector3(...cruisePoints[currentPointIndex.current])
+      const currentPos = groupRef.current.position.clone()
 
-    // 旋轉
-    if (keys.left) {
-      groupRef.current.rotateY(turnSpeed)
-    }
-    if (keys.right) {
-      groupRef.current.rotateY(-turnSpeed)
+      const direction = targetPoint.clone().sub(currentPos)
+      const distance = direction.length()
+
+      if (distance < 0.5) {
+        // 到達目標點，切換到下一個點
+        currentPointIndex.current = (currentPointIndex.current + 1) % cruisePoints.length
+      } else {
+        // 移動向目標
+        direction.normalize()
+
+        // 平滑轉向
+        const targetRotation = Math.atan2(direction.x, direction.z)
+        let rotationDiff = targetRotation - groupRef.current.rotation.y
+
+        // 確保旋轉角度在 -PI 到 PI 之間
+        while (rotationDiff > Math.PI) rotationDiff -= Math.PI * 2
+        while (rotationDiff < -Math.PI) rotationDiff += Math.PI * 2
+
+        if (Math.abs(rotationDiff) > 0.05) {
+          groupRef.current.rotation.y += rotationDiff * turnSpeed * 2 // 轉向稍微快一點
+        } else {
+          groupRef.current.rotation.y = targetRotation
+        }
+
+        // 向前移動
+        groupRef.current.translateZ(moveSpeed)
+      }
+
+    } else {
+      // 手動控制邏輯
+      // 移動
+      if (keys.forward) {
+        groupRef.current.translateZ(moveSpeed)
+      }
+      if (keys.backward) {
+        groupRef.current.translateZ(-moveSpeed)
+      }
+
+      // 旋轉
+      if (keys.left) {
+        groupRef.current.rotateY(turnSpeed)
+      }
+      if (keys.right) {
+        groupRef.current.rotateY(-turnSpeed)
+      }
     }
 
     // 更新相機位置（第三人稱視角）
     if (enableCameraFollow) {
-      const offset = new THREE.Vector3(0, 3, 8)
+      const offset = new THREE.Vector3(1, 4, -8)
       offset.applyQuaternion(groupRef.current.quaternion)
       camera.position.copy(groupRef.current.position).add(offset)
       camera.lookAt(groupRef.current.position)

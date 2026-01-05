@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
@@ -19,6 +20,7 @@ export function GameScene() {
   const [clickPoints, setClickPoints] = useState<THREE.Vector3[]>([])
   const [currentClick, setCurrentClick] = useState<THREE.Vector3 | null>(null)
   const [stats, setStats] = useState<PerformanceStats | null>(null)
+  const [isCruising, setIsCruising] = useState(false)
 
   const handleStatsUpdate = useCallback((newStats: PerformanceStats) => {
     setStats(newStats)
@@ -26,6 +28,10 @@ export function GameScene() {
 
   const handlePlayerMove = useCallback((position: THREE.Vector3) => {
     setPlayerPosition(position)
+  }, [])
+
+  const toggleCruise = useCallback(() => {
+    setIsCruising(prev => !prev)
   }, [])
 
   return (
@@ -54,13 +60,15 @@ export function GameScene() {
           rotationSpeed={3}
           onPositionChange={handlePlayerMove}
           enableCameraFollow={true}
+          isCruising={isCruising}
+          cruisePoints={cruisePoints}
         >
           {/* 玩家模型 */}
-          <ModelLoader url="/src/assets/models/ferrari.glb" />
+          <ModelLoader url="/src/assets/models/ferrari.glb" rotation={[0, Math.PI, 0]} />
         </PlayerController>
 
         {/* 一些裝飾物 */}
-        <DemoObjects />
+        {/* <DemoObjects /> */}
 
         {/* 點擊處理器 */}
         <ClickHandler
@@ -81,7 +89,12 @@ export function GameScene() {
       </Canvas>
 
       {/* UI 疊加層 */}
-      <UIOverlay playerPosition={playerPosition} currentClick={currentClick} />
+      <UIOverlay
+        playerPosition={playerPosition}
+        currentClick={currentClick}
+        isCruising={isCruising}
+        onToggleCruise={toggleCruise}
+      />
     </div>
   )
 }
@@ -105,14 +118,14 @@ function DemoObjects() {
           receiveShadow
         >
           <boxGeometry args={[1, 1, 1]} />
-          <meshStandardMaterial color={`hsl(${Math.random() * 360}, 70%, 50%)`} />
+          <meshStandardMaterial color={`hsl(${Math.random() * 360}, 70 %, 50 %)`} />
         </mesh>
       ))}
 
       {/* 一些樹木（用圓柱和球體模擬） */}
       {Array.from({ length: 10 }, (_, i) => (
         <group
-          key={`tree-${i}`}
+          key={`tree - ${i} `}
           position={[
             Math.random() * 60 - 30,
             0,
@@ -138,7 +151,17 @@ function DemoObjects() {
 /**
  * UI 疊加層
  */
-function UIOverlay({ playerPosition, currentClick }: { playerPosition: THREE.Vector3; currentClick: THREE.Vector3 | null }) {
+function UIOverlay({
+  playerPosition,
+  currentClick,
+  isCruising,
+  onToggleCruise
+}: {
+  playerPosition: THREE.Vector3;
+  currentClick: THREE.Vector3 | null;
+  isCruising: boolean;
+  onToggleCruise: () => void;
+}) {
   return (
     <div style={{
       position: 'absolute',
@@ -150,14 +173,37 @@ function UIOverlay({ playerPosition, currentClick }: { playerPosition: THREE.Vec
       background: 'rgba(0, 0, 0, 0.7)',
       padding: '15px',
       borderRadius: '5px',
-      pointerEvents: 'none'
+      pointerEvents: 'none',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '10px'
     }}>
-      <h3 style={{ margin: '0 0 10px 0' }}>遊戲控制</h3>
-      <p style={{ margin: '5px 0' }}>WASD / 方向鍵 - 移動</p>
-      <p style={{ margin: '5px 0' }}>滑鼠拖曳 - 旋轉視角</p>
-      <p style={{ margin: '5px 0' }}>滾輪 - 縮放</p>
-      <p style={{ margin: '5px 0' }}>滑鼠右鍵 - 3D 點擊檢測</p>
-      <div style={{ marginTop: '15px', paddingTop: '10px', borderTop: '1px solid #666' }}>
+      <div>
+        <h3 style={{ margin: '0 0 10px 0' }}>遊戲控制</h3>
+        <p style={{ margin: '5px 0' }}>WASD / 方向鍵 - 移動</p>
+        <p style={{ margin: '5px 0' }}>滑鼠拖曳 - 旋轉視角</p>
+        <p style={{ margin: '5px 0' }}>滾輪 - 縮放</p>
+        <p style={{ margin: '5px 0' }}>滑鼠右鍵 - 3D 點擊檢測</p>
+      </div>
+
+      <div style={{ pointerEvents: 'auto' }}>
+        <button
+          onClick={onToggleCruise}
+          style={{
+            background: isCruising ? '#ff4444' : '#44ff44',
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            width: '100%'
+          }}
+        >
+          {isCruising ? '停止巡航' : '開始巡航'}
+        </button>
+      </div>
+
+      <div style={{ marginTop: '5px', paddingTop: '10px', borderTop: '1px solid #666' }}>
         <p style={{ margin: '5px 0' }}>
           位置: X: {playerPosition.x.toFixed(2)}, Y: {playerPosition.y.toFixed(2)}, Z: {playerPosition.z.toFixed(2)}
         </p>
@@ -191,20 +237,23 @@ function ClickHandler({ onClick }: { onClick: (point: THREE.Vector3) => void }) 
     raycaster.current.setFromCamera(mouse.current, camera)
 
     // 創建一個地面平面來檢測點擊
-    const planeGeometry = new THREE.PlaneGeometry(1000, 1000)
-    const planeMaterial = new THREE.MeshBasicMaterial({ visible: false })
-    const plane = new THREE.Mesh(planeGeometry, planeMaterial)
-    plane.rotation.x = -Math.PI / 2 // 水平放置
-    scene.add(plane)
+    // const planeGeometry = new THREE.PlaneGeometry(1000, 1000)
+    // const planeMaterial = new THREE.MeshBasicMaterial({ visible: false })
+    // const plane = new THREE.Mesh(planeGeometry, planeMaterial)
+    // plane.rotation.x = -Math.PI / 2 // 水平放置
+    // scene.add(plane)
+    const target = scene.children.find(
+      (child) => child.name === 'ground'
+    )
 
-    const intersects = raycaster.current.intersectObject(plane)
+    const intersects = raycaster.current.intersectObject(target)
 
     if (intersects.length > 0) {
       const point = intersects[0].point
       onClick(point)
     }
 
-    scene.remove(plane)
+    // scene.remove(plane)
   }, [camera, gl, scene, onClick])
 
   useEffect(() => {
@@ -240,7 +289,7 @@ function PointVisualization({
 
       {/* 歷史點擊點 - 黃色 */}
       {clickPoints.map((point, index) => (
-        <mesh key={`click-${index}`} position={[point.x, point.y, point.z]}>
+        <mesh key={`click - ${index} `} position={[point.x, point.y, point.z]}>
           <sphereGeometry args={[0.2, 16, 16]} />
           <meshBasicMaterial color="yellow" />
         </mesh>
@@ -248,7 +297,7 @@ function PointVisualization({
 
       {/* 巡航點 - 藍色 */}
       {cruisePoints.map((point, index) => (
-        <mesh key={`cruise-${index}`} position={[point[0], point[1], point[2]]}>
+        <mesh key={`cruise - ${index} `} position={[point[0], point[1], point[2]]}>
           <sphereGeometry args={[0.25, 16, 16]} />
           <meshBasicMaterial color="blue" />
         </mesh>

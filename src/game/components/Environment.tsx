@@ -46,7 +46,7 @@ export function Environment({
       />
 
       {/* 地面 */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
+      <mesh name='ground' rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[500, 500]} />
         <meshStandardMaterial color={groundColor} />
       </mesh>
