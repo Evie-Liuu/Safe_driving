@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { GameScene } from './game/scenes/GameScene'
 import { ExampleScene } from './game/scenes/ExampleScene'
-import './App.css'
 
 function App() {
   const [currentScene, setCurrentScene] = useState<'game' | 'example'>('game')
