@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 
-interface PerformanceStats {
+export interface PerformanceStats {
   fps: number
   frameTime: number
   drawCalls: number

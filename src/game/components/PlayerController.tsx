@@ -7,6 +7,7 @@ interface PlayerControllerProps {
   speed?: number
   rotationSpeed?: number
   onPositionChange?: (position: THREE.Vector3) => void
+  enableCameraFollow?: boolean
   children?: React.ReactNode
 }
 
@@ -18,6 +19,7 @@ export function PlayerController({
   position = [0, 0, 0],
   speed = 5,
   rotationSpeed = 2,
+  enableCameraFollow = true,
   onPositionChange,
   children
 }: PlayerControllerProps) {
@@ -109,10 +111,12 @@ export function PlayerController({
     }
 
     // 更新相機位置（第三人稱視角）
-    const offset = new THREE.Vector3(0, 3, 8)
-    offset.applyQuaternion(groupRef.current.quaternion)
-    camera.position.copy(groupRef.current.position).add(offset)
-    camera.lookAt(groupRef.current.position)
+    if (enableCameraFollow) {
+      const offset = new THREE.Vector3(0, 3, 8)
+      offset.applyQuaternion(groupRef.current.quaternion)
+      camera.position.copy(groupRef.current.position).add(offset)
+      camera.lookAt(groupRef.current.position)
+    }
 
     // 回調位置變化
     if (onPositionChange) {
