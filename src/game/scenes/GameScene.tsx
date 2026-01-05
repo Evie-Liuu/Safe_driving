@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import * as THREE from 'three'
@@ -22,6 +22,7 @@ export function GameScene() {
   const [stats, setStats] = useState<PerformanceStats | null>(null)
   const [isCruising, setIsCruising] = useState(false)
   const [isBraking, setIsBraking] = useState(false)
+  const [currentSpeed, setCurrentSpeed] = useState(0)
 
   const handleStatsUpdate = useCallback((newStats: PerformanceStats) => {
     setStats(newStats)
@@ -29,6 +30,10 @@ export function GameScene() {
 
   const handlePlayerMove = useCallback((position: THREE.Vector3) => {
     setPlayerPosition(position)
+  }, [])
+
+  const handleSpeedChange = useCallback((speed: number) => {
+    setCurrentSpeed(speed)
   }, [])
 
   const toggleCruise = useCallback(() => {
@@ -57,9 +62,10 @@ export function GameScene() {
         {/* 玩家控制器 */}
         <PlayerController
           position={[0, 0, 0]}
-          speed={10}
+          speed={16.67}
           rotationSpeed={3}
           onPositionChange={handlePlayerMove}
+          onSpeedChange={handleSpeedChange}
           enableCameraFollow={true}
           isCruising={isCruising}
           isBraking={isBraking}
@@ -70,7 +76,7 @@ export function GameScene() {
         </PlayerController>
 
         {/* 一些裝飾物 */}
-        {/* <DemoObjects /> */}
+        <DemoObjects />
 
         {/* 點擊處理器 */}
         <ClickHandler
@@ -94,6 +100,7 @@ export function GameScene() {
       <UIOverlay
         playerPosition={playerPosition}
         currentClick={currentClick}
+        currentSpeed={currentSpeed}
         isCruising={isCruising}
         onToggleCruise={toggleCruise}
         onBrakeStart={() => setIsBraking(true)}
@@ -107,34 +114,50 @@ export function GameScene() {
  * 演示物件
  */
 function DemoObjects() {
+  // 使用 useMemo 緩存物件數據，避免每次重新渲染時重新生成
+  const boxes = useMemo(() => {
+    return Array.from({ length: 20 }, (_, i) => ({
+      id: i,
+      position: [
+        Math.random() * 40 - 20,
+        0.5,
+        Math.random() * 40 - 20
+      ] as [number, number, number],
+      color: `hsl(${Math.random() * 360}, 70%, 50%)`
+    }))
+  }, [])
+
+  const trees = useMemo(() => {
+    return Array.from({ length: 10 }, (_, i) => ({
+      id: i,
+      position: [
+        Math.random() * 60 - 30,
+        0,
+        Math.random() * 60 - 30
+      ] as [number, number, number]
+    }))
+  }, [])
+
   return (
     <group>
       {/* 創建一些隨機的立方體作為場景物件 */}
-      {Array.from({ length: 20 }, (_, i) => (
+      {boxes.map((box) => (
         <mesh
-          key={i}
-          position={[
-            Math.random() * 40 - 20,
-            0.5,
-            Math.random() * 40 - 20
-          ]}
+          key={box.id}
+          position={box.position}
           castShadow
           receiveShadow
         >
           <boxGeometry args={[1, 1, 1]} />
-          <meshStandardMaterial color={`hsl(${Math.random() * 360}, 70 %, 50 %)`} />
+          <meshStandardMaterial color={box.color} />
         </mesh>
       ))}
 
       {/* 一些樹木（用圓柱和球體模擬） */}
-      {Array.from({ length: 10 }, (_, i) => (
+      {trees.map((tree) => (
         <group
-          key={`tree - ${i} `}
-          position={[
-            Math.random() * 60 - 30,
-            0,
-            Math.random() * 60 - 30
-          ]}
+          key={`tree-${tree.id}`}
+          position={tree.position}
         >
           {/* 樹幹 */}
           <mesh position={[0, 1, 0]} castShadow>
@@ -158,6 +181,7 @@ function DemoObjects() {
 function UIOverlay({
   playerPosition,
   currentClick,
+  currentSpeed,
   isCruising,
   onToggleCruise,
   onBrakeStart,
@@ -165,11 +189,16 @@ function UIOverlay({
 }: {
   playerPosition: THREE.Vector3;
   currentClick: THREE.Vector3 | null;
+  currentSpeed: number;
   isCruising: boolean;
   onToggleCruise: () => void;
   onBrakeStart?: () => void;
   onBrakeEnd?: () => void;
 }) {
+  if (currentClick) {
+    console.log(`${currentClick.x.toFixed(2)},${currentClick.y.toFixed(2)},${currentClick.z.toFixed(2)}`);
+  }
+
   return (
     <div style={{
       position: 'absolute',
@@ -234,6 +263,9 @@ function UIOverlay({
       </div>
 
       <div style={{ marginTop: '5px', paddingTop: '10px', borderTop: '1px solid #666' }}>
+        <p style={{ margin: '5px 0', fontSize: '16px', fontWeight: 'bold', color: '#44ff44' }}>
+          速度: {(currentSpeed * 3.6).toFixed(1)} km/h
+        </p>
         <p style={{ margin: '5px 0' }}>
           位置: X: {playerPosition.x.toFixed(2)}, Y: {playerPosition.y.toFixed(2)}, Z: {playerPosition.z.toFixed(2)}
         </p>

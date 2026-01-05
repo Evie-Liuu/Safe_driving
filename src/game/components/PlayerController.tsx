@@ -7,6 +7,7 @@ interface PlayerControllerProps {
   speed?: number
   rotationSpeed?: number
   onPositionChange?: (position: THREE.Vector3) => void
+  onSpeedChange?: (speed: number) => void
   enableCameraFollow?: boolean
   children?: React.ReactNode
 }
@@ -21,6 +22,7 @@ export function PlayerController({
   rotationSpeed = 2,
   enableCameraFollow = true,
   onPositionChange,
+  onSpeedChange,
   children,
   isCruising = false,
   cruisePoints = [],
@@ -128,6 +130,11 @@ export function PlayerController({
     const currentSpeed = speed * speedFactor.current
     const moveSpeed = currentSpeed * delta
     const turnSpeed = rotationSpeed * delta
+
+    // 回調速度變化
+    if (onSpeedChange) {
+      onSpeedChange(currentSpeed)
+    }
 
     if (isCruising && cruisePoints.length > 0) {
       // 巡航邏輯
