@@ -149,8 +149,6 @@ export function PlayerController({
       const flatDirection = new THREE.Vector3(direction.x, 0, direction.z)
       const distance = flatDirection.length()
 
-      console.log(distance);
-
       if (distance < 0.5) {
         // 到達目標點，切換到下一個點
         currentPointIndex.current = (currentPointIndex.current + 1) % cruisePoints.length
@@ -175,9 +173,6 @@ export function PlayerController({
           }
         }
 
-        console.log(moveSpeed);
-        console.log('--------');
-
         // 向前移動
         groupRef.current.translateZ(moveSpeed)
       }
@@ -201,8 +196,23 @@ export function PlayerController({
       }
     }
 
-    // 更新相機位置（第三人稱視角）
+    // 更新相機位置（第一人稱視角）
     if (enableCameraFollow) {
+      // // Offset for Driver's eye position (approximate)
+      // const offset = new THREE.Vector3(0, 1.2, 0.5)
+      // offset.applyQuaternion(groupRef.current.quaternion)
+
+      // const cameraPos = groupRef.current.position.clone().add(offset)
+      // camera.position.copy(cameraPos)
+
+      // // Look at a point in front of the car
+      // const lookOffset = new THREE.Vector3(0, 1.2, 10) // 10 units forward
+      // lookOffset.applyQuaternion(groupRef.current.quaternion)
+      // const lookTarget = groupRef.current.position.clone().add(lookOffset)
+
+      // camera.lookAt(lookTarget)
+
+      // 更新相機位置（第三人稱視角）
       const offset = new THREE.Vector3(1, 4, -8)
       offset.applyQuaternion(groupRef.current.quaternion)
       camera.position.copy(groupRef.current.position).add(offset)
