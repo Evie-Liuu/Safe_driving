@@ -8,6 +8,7 @@ interface PlayerControllerProps {
   rotationSpeed?: number
   onPositionChange?: (position: THREE.Vector3) => void
   onSpeedChange?: (speed: number) => void
+  onTriggerOncomingVehicle?: (playerPosition: THREE.Vector3, playerRotation: number) => void
   enableCameraFollow?: boolean
   children?: React.ReactNode
 }
@@ -23,6 +24,7 @@ export function PlayerController({
   enableCameraFollow = true,
   onPositionChange,
   onSpeedChange,
+  onTriggerOncomingVehicle,
   children,
   isCruising = false,
   cruisePoints = [],
@@ -36,6 +38,8 @@ export function PlayerController({
   const { camera } = useThree()
   const currentPointIndex = useRef(0)
   const speedFactor = useRef(1)
+  const lastTriggerTime = useRef(0)
+  const nextTriggerDelay = useRef(Math.random() * 10 + 5) // 5-15秒隨機間隔
 
   // 鍵盤狀態
   const [keys, setKeys] = useState({
@@ -139,6 +143,21 @@ export function PlayerController({
     }
 
     if (isCruising && cruisePoints.length > 0) {
+      // 隨機觸發對向車輛
+      if (onTriggerOncomingVehicle) {
+        const currentTime = state.clock.getElapsedTime()
+        if (currentTime - lastTriggerTime.current >= nextTriggerDelay.current) {
+          // 觸發對向車輛
+          onTriggerOncomingVehicle(
+            groupRef.current.position.clone(),
+            groupRef.current.rotation.y
+          )
+          // 更新時間和下次延遲
+          lastTriggerTime.current = currentTime
+          nextTriggerDelay.current = Math.random() * 10 + 5 // 5-15秒隨機間隔
+        }
+      }
+
       // 巡航邏輯
       const targetPoint = new THREE.Vector3(...cruisePoints[currentPointIndex.current])
       const currentPos = groupRef.current.position.clone()

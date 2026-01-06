@@ -5,9 +5,10 @@ import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import * as THREE from 'three'
 import { Environment } from '../components/Environment'
 import { PlayerController } from '../components/PlayerController'
+import { OncomingVehicle } from '../components/OncomingVehicle'
 import { PerformanceMonitor, PerformanceStats } from '../optimization/PerformanceMonitor'
 import { ModelLoader } from '../models/ModelLoader'
-import { points as cruisePoints } from '@/game/data/cruisePoints'
+import { points as cruisePoints } from '@/game/data/RiskEvents_1'
 
 /**
  * 主遊戲場景
@@ -23,6 +24,12 @@ export function GameScene() {
   const [isCruising, setIsCruising] = useState(false)
   const [isBraking, setIsBraking] = useState(false)
   const [currentSpeed, setCurrentSpeed] = useState(0)
+  const [oncomingVehicles, setOncomingVehicles] = useState<Array<{
+    id: number
+    startPosition: [number, number, number]
+    endPosition: [number, number, number]
+  }>>([])
+  const vehicleIdCounter = useRef(0)
 
   const handleStatsUpdate = useCallback((newStats: PerformanceStats) => {
     setStats(newStats)
@@ -38,6 +45,30 @@ export function GameScene() {
 
   const toggleCruise = useCallback(() => {
     setIsCruising(prev => !prev)
+  }, [])
+
+  const handleTriggerOncomingVehicle = useCallback((playerPosition: THREE.Vector3, playerRotation: number) => {
+    // 計算對向車道位置（左側3.5米）
+    const leftOffset = new THREE.Vector3(3.5, 0, 0)
+    leftOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), playerRotation)
+
+    // 對向車輛從前方50米開始，到後方50米結束
+    const forwardDirection = new THREE.Vector3(0, 0, 50)
+    forwardDirection.applyAxisAngle(new THREE.Vector3(0, 1, 0), playerRotation)
+
+    const backwardDirection = new THREE.Vector3(0, 0, -50)
+    backwardDirection.applyAxisAngle(new THREE.Vector3(0, 1, 0), playerRotation)
+
+    const startPosition = playerPosition.clone().add(leftOffset).add(forwardDirection)
+    const endPosition = playerPosition.clone().add(leftOffset).add(backwardDirection)
+
+    const newVehicle = {
+      id: vehicleIdCounter.current++,
+      startPosition: [startPosition.x, startPosition.y, startPosition.z] as [number, number, number],
+      endPosition: [endPosition.x, endPosition.y, endPosition.z] as [number, number, number]
+    }
+
+    setOncomingVehicles(prev => [...prev, newVehicle])
   }, [])
 
   return (
@@ -66,6 +97,7 @@ export function GameScene() {
           rotationSpeed={3}
           onPositionChange={handlePlayerMove}
           onSpeedChange={handleSpeedChange}
+          onTriggerOncomingVehicle={handleTriggerOncomingVehicle}
           enableCameraFollow={true}
           isCruising={isCruising}
           isBraking={isBraking}
@@ -77,6 +109,19 @@ export function GameScene() {
 
         {/* 一些裝飾物 */}
         <DemoObjects />
+
+        {/* 對向車輛 */}
+        {oncomingVehicles.map(vehicle => (
+          <OncomingVehicle
+            key={vehicle.id}
+            startPosition={vehicle.startPosition}
+            endPosition={vehicle.endPosition}
+            speed={20}
+            onComplete={() => {
+              setOncomingVehicles(prev => prev.filter(v => v.id !== vehicle.id))
+            }}
+          />
+        ))}
 
         {/* 點擊處理器 */}
         <ClickHandler

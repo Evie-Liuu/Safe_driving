@@ -2,6 +2,8 @@ import { useGLTF } from '@react-three/drei'
 import { useEffect } from 'react'
 import * as THREE from 'three'
 import type { GLTF } from 'three-stdlib'
+import { SkeletonUtils } from 'three-stdlib'
+import { useMemo } from 'react'
 
 interface ModelLoaderProps {
   url: string
@@ -23,6 +25,8 @@ export function ModelLoader({
   scale = [1, 1, 1]
 }: ModelLoaderProps) {
   const gltf = useGLTF(url)
+  // 複製模型場景，以便多個實例可以同時顯示
+  const clonedScene = useMemo(() => SkeletonUtils.clone(gltf.scene), [gltf.scene])
 
   useEffect(() => {
     if (gltf && onLoad) {
@@ -32,7 +36,7 @@ export function ModelLoader({
 
   return (
     <primitive
-      object={gltf.scene}
+      object={clonedScene}
       position={position}
       rotation={rotation}
       scale={scale}
