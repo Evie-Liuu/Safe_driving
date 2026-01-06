@@ -8,6 +8,7 @@ import { PlayerController } from '../components/PlayerController'
 import { OncomingVehicle } from '../components/OncomingVehicle'
 import { PerformanceMonitor, PerformanceStats } from '../optimization/PerformanceMonitor'
 import { ModelLoader } from '../models/ModelLoader'
+import { MaleCharacter } from '../components/MaleCharacter'
 import { points as cruisePoints } from '@/game/data/RiskEvents_1'
 
 /**
@@ -112,6 +113,9 @@ export function GameScene() {
 
         {/* 一些裝飾物 */}
         <DemoObjects />
+
+        {/* 行走的路人 */}
+        <MaleCharacter position={[5, 0, 5]} rotation={[0, Math.PI / 4, 0]} />
 
         {/* 對向車輛 */}
         {oncomingVehicles.map(vehicle => (
