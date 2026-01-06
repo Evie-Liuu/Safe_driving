@@ -8,6 +8,7 @@ interface OncomingVehicleProps {
     endPosition: [number, number, number]
     speed?: number
     modelUrl?: string
+    color?: string | THREE.Color
     onComplete?: () => void
 }
 
@@ -20,6 +21,7 @@ export function OncomingVehicle({
     endPosition,
     speed = 20,
     modelUrl = '/src/assets/models/ferrari.glb',
+    color,
     onComplete
 }: OncomingVehicleProps) {
     const groupRef = useRef<THREE.Group>(null)
@@ -76,7 +78,7 @@ export function OncomingVehicle({
 
     return (
         <group ref={groupRef}>
-            <ModelLoader url={modelUrl} rotation={[0, Math.PI, 0]} />
+            <ModelLoader url={modelUrl} rotation={[0, Math.PI, 0]} color={color} />
         </group>
     )
 }

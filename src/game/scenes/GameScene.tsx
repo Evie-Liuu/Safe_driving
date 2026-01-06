@@ -28,6 +28,7 @@ export function GameScene() {
     id: number
     startPosition: [number, number, number]
     endPosition: [number, number, number]
+    color: string
   }>>([])
   const vehicleIdCounter = useRef(0)
 
@@ -65,7 +66,8 @@ export function GameScene() {
     const newVehicle = {
       id: vehicleIdCounter.current++,
       startPosition: [startPosition.x, startPosition.y, startPosition.z] as [number, number, number],
-      endPosition: [endPosition.x, endPosition.y, endPosition.z] as [number, number, number]
+      endPosition: [endPosition.x, endPosition.y, endPosition.z] as [number, number, number],
+      // color: `hsl(${Math.random() * 360}, 70%, 50%)`
     }
 
     setOncomingVehicles(prev => [...prev, newVehicle])
@@ -98,13 +100,14 @@ export function GameScene() {
           onPositionChange={handlePlayerMove}
           onSpeedChange={handleSpeedChange}
           onTriggerOncomingVehicle={handleTriggerOncomingVehicle}
-          enableCameraFollow={true}
+          enableCameraFollow={false}
           isCruising={isCruising}
           isBraking={isBraking}
           cruisePoints={cruisePoints}
         >
           {/* 玩家模型 */}
-          <ModelLoader url="/src/assets/models/ferrari.glb" rotation={[0, Math.PI, 0]} />
+          <ModelLoader url="/src/assets/models/Car1.glb" rotation={[0, Math.PI, 0]} />
+          {/* <ModelLoader url="/src/assets/models/ferrari.glb" rotation={[0, Math.PI, 0]} color="blue" /> */}
         </PlayerController>
 
         {/* 一些裝飾物 */}
@@ -117,6 +120,7 @@ export function GameScene() {
             startPosition={vehicle.startPosition}
             endPosition={vehicle.endPosition}
             speed={20}
+            // color={vehicle.color}
             onComplete={() => {
               setOncomingVehicles(prev => prev.filter(v => v.id !== vehicle.id))
             }}

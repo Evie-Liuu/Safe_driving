@@ -11,6 +11,7 @@ interface ModelLoaderProps {
   position?: [number, number, number]
   rotation?: [number, number, number]
   scale?: [number, number, number]
+  color?: string | THREE.Color
 }
 
 /**
@@ -22,7 +23,8 @@ export function ModelLoader({
   onLoad,
   position = [0, 0, 0],
   rotation = [0, 0, 0],
-  scale = [1, 1, 1]
+  scale = [1, 1, 1],
+  color
 }: ModelLoaderProps) {
   const gltf = useGLTF(url)
   // 複製模型場景，以便多個實例可以同時顯示
@@ -33,6 +35,29 @@ export function ModelLoader({
       onLoad(gltf)
     }
   }, [gltf, onLoad])
+
+  // 應用顏色
+  useEffect(() => {
+    if (!color || !clonedScene) return
+
+    clonedScene.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        // 複製材質以避免影響其他實例
+        console.log(child);
+        if (child.name !== 'body') return
+
+        if (Array.isArray(child.material)) {
+          child.material = child.material.map(m => m.clone())
+          child.material.forEach(m => (m as THREE.MeshStandardMaterial).color.set(color))
+        } else {
+          child.material = child.material.clone()
+          if ((child.material as THREE.MeshStandardMaterial).color) {
+            (child.material as THREE.MeshStandardMaterial).color.set(color)
+          }
+        }
+      }
+    })
+  }, [clonedScene, color])
 
   return (
     <primitive

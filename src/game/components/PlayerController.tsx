@@ -243,6 +243,8 @@ export function PlayerController({
       onPositionChange(groupRef.current.position)
     }
   })
+  console.log(children);
+
 
   return (
     <group ref={groupRef} position={position}>
