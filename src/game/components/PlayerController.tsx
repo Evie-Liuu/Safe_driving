@@ -109,6 +109,8 @@ export function PlayerController({
         left: false,
         right: false
       })
+      // Reset speed factor to avoid rapid overshooting when starting cruise
+      speedFactor.current = 0
     }
   }, [isCruising])
 
@@ -142,28 +144,39 @@ export function PlayerController({
       const currentPos = groupRef.current.position.clone()
 
       const direction = targetPoint.clone().sub(currentPos)
-      const distance = direction.length()
+
+      // Ignore Y axis for distance and rotation to prevent spiraling if height differs
+      const flatDirection = new THREE.Vector3(direction.x, 0, direction.z)
+      const distance = flatDirection.length()
+
+      console.log(distance);
 
       if (distance < 0.5) {
         // 到達目標點，切換到下一個點
         currentPointIndex.current = (currentPointIndex.current + 1) % cruisePoints.length
       } else {
         // 移動向目標
-        direction.normalize()
+        // Avoid zero vector normalization
+        if (flatDirection.lengthSq() > 0.0001) {
+          flatDirection.normalize()
 
-        // 平滑轉向
-        const targetRotation = Math.atan2(direction.x, direction.z)
-        let rotationDiff = targetRotation - groupRef.current.rotation.y
+          // 平滑轉向
+          const targetRotation = Math.atan2(flatDirection.x, flatDirection.z)
+          let rotationDiff = targetRotation - groupRef.current.rotation.y
 
-        // 確保旋轉角度在 -PI 到 PI 之間
-        while (rotationDiff > Math.PI) rotationDiff -= Math.PI * 2
-        while (rotationDiff < -Math.PI) rotationDiff += Math.PI * 2
+          // 確保旋轉角度在 -PI 到 PI 之間
+          while (rotationDiff > Math.PI) rotationDiff -= Math.PI * 2
+          while (rotationDiff < -Math.PI) rotationDiff += Math.PI * 2
 
-        if (Math.abs(rotationDiff) > 0.05) {
-          groupRef.current.rotation.y += rotationDiff * turnSpeed * 2 // 轉向稍微快一點
-        } else {
-          groupRef.current.rotation.y = targetRotation
+          if (Math.abs(rotationDiff) > 0.05) {
+            groupRef.current.rotation.y += rotationDiff * turnSpeed * 2 // 轉向稍微快一點
+          } else {
+            groupRef.current.rotation.y = targetRotation
+          }
         }
+
+        console.log(moveSpeed);
+        console.log('--------');
 
         // 向前移動
         groupRef.current.translateZ(moveSpeed)
