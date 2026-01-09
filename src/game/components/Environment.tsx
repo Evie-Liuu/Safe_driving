@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import * as THREE from 'three'
+import { ModelLoader } from '../models/ModelLoader'
 
 interface EnvironmentProps {
   skyColor?: string
@@ -26,7 +27,7 @@ export function Environment({
       <color attach="background" args={[skyColor]} />
 
       {/* 霧效果 */}
-      <fog attach="fog" args={[fogColor, fogNear, fogFar]} />
+      {/* <fog attach="fog" args={[fogColor, fogNear, fogFar]} /> */}
 
       {/* 環境光 */}
       <ambientLight intensity={0.5} />
@@ -46,10 +47,11 @@ export function Environment({
       />
 
       {/* 地面 */}
-      <mesh name='ground' rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
+      {/* <mesh name='ground' rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[500, 500]} />
         <meshStandardMaterial color={groundColor} />
-      </mesh>
+      </mesh> */}
+      <ModelLoader url="/src/assets/models/Floor.glb" position={[0, -1.55, 0]} />
 
 
       {/* 網格輔助線（開發用） */}
