@@ -1,0 +1,242 @@
+import {
+    EventAction,
+    ActionType,
+    MovementAction,
+    AnimationAction,
+    LightAction,
+    SoundAction,
+    ScriptAction,
+    EventContext
+} from './EventTypes'
+
+/**
+ * Action runtime state
+ */
+interface ActionState {
+    action: EventAction
+    startTime: number
+    endTime: number
+    isActive: boolean
+    isCompleted: boolean
+}
+
+/**
+ * Event executor
+ * Executes event actions with timeline coordination
+ */
+export class EventExecutor {
+    private timeline: Map<string, ActionState[]> = new Map()
+    private activeActions: Map<string, ActionState> = new Map()
+
+    /**
+     * Schedule actions for an event
+     */
+    scheduleActions(eventId: string, actions: EventAction[], startTime: number): void {
+        const actionStates: ActionState[] = actions.map(action => ({
+            action,
+            startTime: startTime + action.time,
+            endTime: startTime + action.time + (action.duration || 0),
+            isActive: false,
+            isCompleted: false
+        }))
+
+        this.timeline.set(eventId, actionStates)
+    }
+
+    /**
+     * Update action timeline
+     */
+    updateTimeline(
+        eventId: string,
+        currentTime: number,
+        actorRefs: Map<string, any>,
+        context: EventContext,
+        onActionCompleted?: (actionId: string) => void
+    ): void {
+        const actionStates = this.timeline.get(eventId)
+        if (!actionStates) return
+
+        for (const actionState of actionStates) {
+            if (actionState.isCompleted) continue
+
+            const { action, startTime, endTime } = actionState
+
+            // Check if action should start
+            if (!actionState.isActive && currentTime >= startTime) {
+                actionState.isActive = true
+                const actor = actorRefs.get(action.actorId)
+                if (actor) {
+                    this.executeAction(action, actor, context)
+                }
+            }
+
+            // Check if action should end
+            if (actionState.isActive && action.duration && currentTime >= endTime) {
+                actionState.isCompleted = true
+                if (onActionCompleted) {
+                    onActionCompleted(`${eventId}_${action.actorId}_${action.type}_${action.time}`)
+                }
+            }
+        }
+    }
+
+    /**
+     * Execute a single action
+     */
+    private executeAction(action: EventAction, actor: any, context: EventContext): void {
+        switch (action.type) {
+            case ActionType.MOVEMENT:
+                this.executeMovement(action as MovementAction, actor)
+                break
+
+            case ActionType.ANIMATION:
+                this.executeAnimation(action as AnimationAction, actor)
+                break
+
+            case ActionType.LIGHT:
+                this.executeLight(action as LightAction, actor)
+                break
+
+            case ActionType.SOUND:
+                this.executeSound(action as SoundAction, actor)
+                break
+
+            case ActionType.SCRIPT:
+                this.executeScript(action as ScriptAction, actor, context)
+                break
+
+            default:
+                console.warn(`Unknown action type: ${(action as any).type}`)
+        }
+    }
+
+    /**
+     * Execute movement action
+     */
+    private executeMovement(action: MovementAction, actor: any): void {
+        if (!actor.startMovement) {
+            console.warn('Actor does not support movement')
+            return
+        }
+
+        actor.startMovement({
+            path: action.path,
+            speed: action.speed,
+            loop: action.loop || false
+        })
+
+        console.log(`Movement started for actor ${action.actorId}`)
+    }
+
+    /**
+     * Execute animation action
+     */
+    private executeAnimation(action: AnimationAction, actor: any): void {
+        if (!actor.playAnimation) {
+            console.warn('Actor does not support animations')
+            return
+        }
+
+        actor.playAnimation({
+            name: action.name,
+            loop: action.loop || false,
+            fadeIn: action.fadeIn || 0.5,
+            fadeOut: action.fadeOut || 0.5
+        })
+
+        console.log(`Animation ${action.name} started for actor ${action.actorId}`)
+    }
+
+    /**
+     * Execute light action
+     */
+    private executeLight(action: LightAction, actor: any): void {
+        if (!actor.setLight) {
+            console.warn('Actor does not support lights')
+            return
+        }
+
+        actor.setLight({
+            type: action.lightType,
+            enabled: action.enabled,
+            blinkRate: action.blinkRate
+        })
+
+        console.log(`Light ${action.lightType} ${action.enabled ? 'enabled' : 'disabled'} for actor ${action.actorId}`)
+    }
+
+    /**
+     * Execute sound action
+     */
+    private executeSound(action: SoundAction, actor: any): void {
+        if (!actor.playSound) {
+            console.warn('Actor does not support sound')
+            return
+        }
+
+        actor.playSound({
+            url: action.soundUrl,
+            volume: action.volume || 1.0,
+            loop: action.loop || false
+        })
+
+        console.log(`Sound ${action.soundUrl} playing for actor ${action.actorId}`)
+    }
+
+    /**
+     * Execute custom script action
+     */
+    private executeScript(action: ScriptAction, actor: any, context: EventContext): void {
+        try {
+            action.script(actor, context)
+            console.log(`Script executed for actor ${action.actorId}`)
+        } catch (error) {
+            console.error(`Script execution failed for actor ${action.actorId}:`, error)
+        }
+    }
+
+    /**
+     * Check if all actions are completed for an event
+     */
+    isEventCompleted(eventId: string): boolean {
+        const actionStates = this.timeline.get(eventId)
+        if (!actionStates) return true
+
+        return actionStates.every(state => state.isCompleted)
+    }
+
+    /**
+     * Get completion progress for an event (0-1)
+     */
+    getProgress(eventId: string): number {
+        const actionStates = this.timeline.get(eventId)
+        if (!actionStates || actionStates.length === 0) return 1
+
+        const completedCount = actionStates.filter(state => state.isCompleted).length
+        return completedCount / actionStates.length
+    }
+
+    /**
+     * Cancel all actions for an event
+     */
+    cancelActions(eventId: string): void {
+        this.timeline.delete(eventId)
+
+        // Remove any active actions for this event
+        for (const [key, state] of this.activeActions.entries()) {
+            if (key.startsWith(eventId)) {
+                this.activeActions.delete(key)
+            }
+        }
+
+        console.log(`Actions canceled for event ${eventId}`)
+    }
+
+    /**
+     * Clear all timelines
+     */
+    clear(): void {
+        this.timeline.clear()
+        this.activeActions.clear()
+    }
+}

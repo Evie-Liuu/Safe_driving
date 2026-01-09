@@ -43,7 +43,6 @@ export function ModelLoader({
     clonedScene.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         // 複製材質以避免影響其他實例
-        console.log(child);
         if (child.name !== 'body') return
 
         if (Array.isArray(child.material)) {

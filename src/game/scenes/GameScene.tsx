@@ -1,6 +1,7 @@
 
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
-import { Canvas, useThree } from '@react-three/fiber'
+
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react'
+import { Canvas, useThree, useFrame } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import * as THREE from 'three'
 import { Environment } from '../components/Environment'
@@ -9,7 +10,13 @@ import { OncomingVehicle } from '../components/OncomingVehicle'
 import { PerformanceMonitor, PerformanceStats } from '../optimization/PerformanceMonitor'
 import { ModelLoader } from '../models/ModelLoader'
 import { MaleCharacter } from '../components/MaleCharacter'
-import { points as cruisePoints } from '@/game/data/RiskEvents_1'
+import { cruisePoints, events as riskEvents } from '@/game/data/RiskEvents_1'
+import { EventManager } from '../events/EventManager'
+import { EventExecutor } from '../events/EventExecutor'
+import { EventActor } from '../components/EventActor'
+import { EventActorHandle } from '../components/EventActor'
+import { EventSystemUpdater } from '../components/EventSystemUpdater'
+import type { PlayerState } from '../events/EventTypes'
 
 /**
  * 主遊戲場景
@@ -33,6 +40,13 @@ export function GameScene() {
   }>>([])
   const vehicleIdCounter = useRef(0)
 
+  // Event system
+  const eventManagerRef = useRef<EventManager | null>(null)
+  const eventExecutorRef = useRef<EventExecutor>(new EventExecutor())
+  const [activeEventActors, setActiveEventActors] = useState<Array<any>>([])
+  const actorRefsMap = useRef<Map<string, React.RefObject<EventActorHandle>>>(new Map())
+  const [playerRotation, setPlayerRotation] = useState(0)
+
   const handleStatsUpdate = useCallback((newStats: PerformanceStats) => {
     setStats(newStats)
   }, [])
@@ -47,6 +61,63 @@ export function GameScene() {
 
   const toggleCruise = useCallback(() => {
     setIsCruising(prev => !prev)
+  }, [])
+
+  // Initialize event manager
+  useEffect(() => {
+    const eventManager = new EventManager({
+      enableDebugVisualization: true,
+      maxConcurrentEvents: 3,
+      callbacks: {
+        onEventActivated: (eventId) => {
+          console.log(`🎯 Event activated: ${eventId}`)
+          const event = riskEvents.find(e => e.id === eventId)
+          if (event) {
+            // Create actor refs
+            const actorData = event.actors.map(actor => {
+              const actorRef = React.createRef<EventActorHandle>()
+              actorRefsMap.current.set(actor.id, actorRef)
+              return { ...actor, ref: actorRef }
+            })
+            setActiveEventActors(prev => [...prev, ...actorData])
+
+            // Schedule actions
+            eventExecutorRef.current.scheduleActions(
+              eventId,
+              event.actions,
+              performance.now() / 1000
+            )
+          }
+        },
+        onEventCompleted: (eventId, success) => {
+          console.log(`✅ Event ${success ? 'completed' : 'failed'}: ${eventId}`)
+          const event = riskEvents.find(e => e.id === eventId)
+          if (event) {
+            // Remove actor refs
+            event.actors.forEach(actor => {
+              actorRefsMap.current.delete(actor.id)
+            })
+            // Remove actors from scene
+            setActiveEventActors(prev =>
+              prev.filter(a => !event.actors.find(ea => ea.id === a.id))
+            )
+          }
+          eventExecutorRef.current.cancelActions(eventId)
+        },
+        onPlayerResponseRequired: (eventId, response) => {
+          console.log(`⚠️ Player response required for ${eventId}:`, response.type)
+        }
+      }
+    })
+
+    // Register all events from the route
+    eventManager.registerEvents(riskEvents)
+    eventManagerRef.current = eventManager
+
+    return () => {
+      eventManager.dispose()
+      eventExecutorRef.current.clear()
+    }
   }, [])
 
   const handleTriggerOncomingVehicle = useCallback((playerPosition: THREE.Vector3, playerRotation: number) => {
@@ -93,6 +164,17 @@ export function GameScene() {
           fogFar={200}
         />
 
+        {/* Event system updater */}
+        <EventSystemUpdater
+          eventManager={eventManagerRef.current}
+          eventExecutor={eventExecutorRef.current}
+          playerPosition={playerPosition}
+          playerSpeed={currentSpeed}
+          playerRotation={playerRotation}
+          isCruising={isCruising}
+          actorRefsMap={actorRefsMap.current}
+        />
+
         {/* 玩家控制器 */}
         <PlayerController
           position={[0, 0, 0]}
@@ -105,11 +187,21 @@ export function GameScene() {
           isCruising={isCruising}
           isBraking={isBraking}
           cruisePoints={cruisePoints}
+          onRotationChange={setPlayerRotation}
         >
           {/* 玩家模型 */}
           <ModelLoader url="/src/assets/models/Car1.glb" rotation={[0, Math.PI, 0]} />
-          {/* <ModelLoader url="/src/assets/models/ferrari.glb" rotation={[0, Math.PI, 0]} color="blue" /> */}
         </PlayerController>
+
+        {/* Event actors */}
+        {activeEventActors.map((actor) => (
+          <EventActor
+            key={actor.id}
+            ref={actor.ref}
+            {...actor}
+            enableDebug={true}
+          />
+        ))}
 
         {/* 一些裝飾物 */}
         <DemoObjects />
@@ -124,7 +216,6 @@ export function GameScene() {
             startPosition={vehicle.startPosition}
             endPosition={vehicle.endPosition}
             speed={20}
-            // color={vehicle.color}
             onComplete={() => {
               setOncomingVehicles(prev => prev.filter(v => v.id !== vehicle.id))
             }}
@@ -144,9 +235,6 @@ export function GameScene() {
 
         {/* 軌道控制器（開發用，實際遊戲中可能不需要） */}
         <OrbitControls enableDamping target={[playerPosition.x, playerPosition.y, playerPosition.z]} />
-
-        {/* 性能監控 */}
-        {/* <PerformanceMonitor enabled={true} onStats={handleStatsUpdate} /> */}
       </Canvas>
 
       {/* UI 疊加層 */}

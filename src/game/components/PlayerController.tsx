@@ -8,6 +8,7 @@ interface PlayerControllerProps {
   rotationSpeed?: number
   onPositionChange?: (position: THREE.Vector3) => void
   onSpeedChange?: (speed: number) => void
+  onRotationChange?: (rotation: number) => void
   onTriggerOncomingVehicle?: (playerPosition: THREE.Vector3, playerRotation: number) => void
   enableCameraFollow?: boolean
   children?: React.ReactNode
@@ -24,6 +25,7 @@ export function PlayerController({
   enableCameraFollow = true,
   onPositionChange,
   onSpeedChange,
+  onRotationChange,
   onTriggerOncomingVehicle,
   children,
   isCruising = false,
@@ -242,9 +244,12 @@ export function PlayerController({
     if (onPositionChange) {
       onPositionChange(groupRef.current.position)
     }
-  })
-  console.log(children);
 
+    // 回調旋轉變化
+    if (onRotationChange) {
+      onRotationChange(groupRef.current.rotation.y)
+    }
+  })
 
   return (
     <group ref={groupRef} position={position}>

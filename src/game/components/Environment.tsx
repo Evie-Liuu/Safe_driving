@@ -51,6 +51,7 @@ export function Environment({
         <meshStandardMaterial color={groundColor} />
       </mesh>
 
+
       {/* 網格輔助線（開發用） */}
       <gridHelper args={[500, 50, '#444444', '#888888']} />
     </>
