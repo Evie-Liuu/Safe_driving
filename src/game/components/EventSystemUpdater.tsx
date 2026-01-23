@@ -45,6 +45,14 @@ export function EventSystemUpdater({
             isCruising
         }
 
+        // Debug: Log player state periodically (every ~2 seconds)
+        if (Math.floor(currentTime) % 2 === 0 && currentTime - lastUpdateTime.current > 1.9) {
+            console.log(`[EventSystemUpdater] 🏃 Player State:`)
+            console.log(`  Position: (${playerPosition.x.toFixed(1)}, ${playerPosition.y.toFixed(1)}, ${playerPosition.z.toFixed(1)})`)
+            console.log(`  Speed: ${(playerSpeed * 3.6).toFixed(1)} km/h`)
+            console.log(`  Cruising: ${isCruising}`)
+        }
+
         // Check for new event triggers
         eventManager.checkTriggers(playerState, currentTime)
 
@@ -56,7 +64,11 @@ export function EventSystemUpdater({
         )
 
         // Update event executor timelines for each active event
-        const activeEventIds = Array.from(eventManager.getActiveEvents().map(e => e.id))
+        const activeEvents = eventManager.getActiveEvents()
+        const activeEventIds = Array.from(activeEvents.map(e => e.id))
+
+        // Debug: Log active events status
+        console.log(`[EventSystemUpdater] 📊 Active Events: ${activeEventIds.length}`, activeEventIds)
 
         for (const eventId of activeEventIds) {
             const context = eventManager.getEventContext(eventId)

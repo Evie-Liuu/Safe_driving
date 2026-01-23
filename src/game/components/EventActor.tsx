@@ -95,9 +95,15 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
         // Expose imperative handle for action execution
         useImperativeHandle(ref, () => ({
             startMovement: (config: MovementConfig) => {
+                console.log(`[EventActor] 🎯 startMovement CALLED for actor ${id}`)
+                console.log(`[EventActor] 📍 Path:`, config.path)
+                console.log(`[EventActor] ⚡ Speed: ${config.speed}, Loop: ${config.loop}`)
+
                 movementConfigRef.current = config
                 currentPathIndex.current = 0
-                console.log(`Actor ${id} starting movement along path`)
+
+                console.log(`[EventActor] ✅ Movement config set for actor ${id}`)
+                console.log(`[EventActor] 📌 Current position:`, groupRef.current?.position.toArray())
             },
 
             playAnimation: (config: AnimationConfig) => {
@@ -150,6 +156,11 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                     // Ignore Y axis for distance calculation
                     const flatDirection = new THREE.Vector3(direction.x, 0, direction.z)
                     const distance = flatDirection.length()
+
+                    // Debug: Log movement progress (throttled by logging every 60 frames)
+                    if (Math.random() < 0.016) { // ~1 fps logging
+                        console.log(`[EventActor] 🚶 Actor ${id} moving: waypoint ${currentPathIndex.current}/${path.length}, distance: ${distance.toFixed(2)}`)
+                    }
 
                     if (distance < 0.3) {
                         // Reached waypoint

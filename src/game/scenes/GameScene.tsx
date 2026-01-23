@@ -81,12 +81,24 @@ export function GameScene() {
             })
             setActiveEventActors(prev => [...prev, ...actorData])
 
-            // Schedule actions
-            eventExecutorRef.current.scheduleActions(
-              eventId,
-              event.actions,
-              performance.now() / 1000
-            )
+            // Schedule actions using the authoritative start time from context
+            // This ensures sync with the EventSystemUpdater's clock
+            const context = eventManager.getEventContext(eventId)
+            if (context) {
+              eventExecutorRef.current.scheduleActions(
+                eventId,
+                event.actions,
+                context.startTime
+              )
+            } else {
+              // Fallback (should normally not happen inside onEventActivated)
+              console.warn(`Could not find context for activated event ${eventId}`)
+              eventExecutorRef.current.scheduleActions(
+                eventId,
+                event.actions,
+                0 // Schedule immediately if context missing
+              )
+            }
           }
         },
         onEventCompleted: (eventId, success) => {

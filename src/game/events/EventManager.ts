@@ -15,6 +15,7 @@ import {
  * Handles event registration, triggering, and lifecycle management
  */
 export class EventManager {
+    private eventRegistry: Map<string, GameEvent> = new Map() // Store original event definitions
     private pendingEvents: Map<string, GameEvent> = new Map()
     private activeEvents: Map<string, EventContext> = new Map()
     private completedEvents: Set<string> = new Set()
@@ -36,12 +37,17 @@ export class EventManager {
      * Register an event to the system
      */
     registerEvent(event: GameEvent): void {
-        if (this.pendingEvents.has(event.id)) {
+        if (this.eventRegistry.has(event.id)) {
             console.warn(`Event ${event.id} already registered`)
             return
         }
 
+        // Store in registry for permanent reference
+        this.eventRegistry.set(event.id, event)
+
+        // Add to pending events for trigger checking
         this.pendingEvents.set(event.id, event)
+
         console.log(`Event registered: ${event.id} - ${event.name}`)
     }
 
@@ -62,8 +68,12 @@ export class EventManager {
         }
         this.lastCheckTime = currentTime
 
+        // Debug: Log pending events
+        console.log(`[EventManager] 🔍 Checking triggers... Pending: ${this.pendingEvents.size}, Active: ${this.activeEvents.size}`)
+
         // Check if we've reached max concurrent events
         if (this.activeEvents.size >= this.config.maxConcurrentEvents!) {
+            console.warn(`[EventManager] ⚠️ Max concurrent events reached: ${this.activeEvents.size}/${this.config.maxConcurrentEvents}`)
             return
         }
 
@@ -71,8 +81,13 @@ export class EventManager {
         const sortedEvents = Array.from(this.pendingEvents.values())
             .sort((a, b) => (b.priority || 0) - (a.priority || 0))
 
+        console.log(`[EventManager] 📋 Sorted events to check:`, sortedEvents.map(e => `${e.id} (priority: ${e.priority || 0})`))
+
         for (const event of sortedEvents) {
-            if (this.shouldTriggerEvent(event, playerState)) {
+            const shouldTrigger = this.shouldTriggerEvent(event, playerState)
+            console.log(`[EventManager] 🎯 Event '${event.id}' should trigger? ${shouldTrigger ? 'YES ✅' : 'NO ❌'}`)
+
+            if (shouldTrigger) {
                 this.activateEvent(event, playerState, currentTime)
                 break // Only activate one event per check cycle
             }
@@ -87,20 +102,36 @@ export class EventManager {
 
         switch (trigger.type) {
             case TriggerType.PROXIMITY:
-                if (!trigger.position || !trigger.radius) return false
+                if (!trigger.position || !trigger.radius) {
+                    console.warn(`[EventManager] ❌ Event '${event.id}' missing position or radius`)
+                    return false
+                }
 
                 const eventPos = new THREE.Vector3(...trigger.position)
                 const distance = playerState.position.distanceTo(eventPos)
+                const speedKmh = playerState.speed * 3.6
 
-                if (distance > trigger.radius) return false
+                // Debug log for proximity checks
+                console.log(`[EventManager] 📏 Event '${event.id}': Distance=${distance.toFixed(1)}/${trigger.radius}, Speed=${speedKmh.toFixed(1)} km/h`)
+
+                if (distance > trigger.radius) {
+                    console.log(`[EventManager] ❌ Too far: ${distance.toFixed(1)} > ${trigger.radius}`)
+                    return false
+                }
 
                 // Check speed requirements if specified
                 if (trigger.requiredSpeed) {
-                    const speedKmh = playerState.speed * 3.6
-                    if (trigger.requiredSpeed.min && speedKmh < trigger.requiredSpeed.min) return false
-                    if (trigger.requiredSpeed.max && speedKmh > trigger.requiredSpeed.max) return false
+                    if (trigger.requiredSpeed.min && speedKmh < trigger.requiredSpeed.min) {
+                        console.log(`[EventManager] ❌ Speed too low: ${speedKmh.toFixed(1)} < ${trigger.requiredSpeed.min}`)
+                        return false
+                    }
+                    if (trigger.requiredSpeed.max && speedKmh > trigger.requiredSpeed.max) {
+                        console.log(`[EventManager] ❌ Speed too high: ${speedKmh.toFixed(1)} > ${trigger.requiredSpeed.max}`)
+                        return false
+                    }
                 }
 
+                console.log(`[EventManager] ✅ All proximity checks passed for '${event.id}'!`)
                 return true
 
             case TriggerType.TIME:
@@ -327,11 +358,14 @@ export class EventManager {
      * Get event by ID (searches all states)
      */
     private getEventById(eventId: string): GameEvent | undefined {
+        // First check registry (contains all registered events)
+        const event = this.eventRegistry.get(eventId)
+        if (event) return event
+
+        // Fallback to pending events
         const pending = this.pendingEvents.get(eventId)
         if (pending) return pending
 
-        // Would need to store original event definitions separately
-        // For now, we'll just return undefined for active/completed events
         return undefined
     }
 
@@ -358,9 +392,20 @@ export class EventManager {
      */
     getActiveEvents(): GameEvent[] {
         const activeEventIds = Array.from(this.activeEvents.keys())
-        return activeEventIds
-            .map(id => this.pendingEvents.get(id))
+        console.log(`[EventManager] 🔍 getActiveEvents called, active IDs:`, activeEventIds)
+
+        const events = activeEventIds
+            .map(id => {
+                const event = this.eventRegistry.get(id)
+                if (!event) {
+                    console.warn(`[EventManager] ⚠️ Event '${id}' not found in registry!`)
+                }
+                return event
+            })
             .filter(Boolean) as GameEvent[]
+
+        console.log(`[EventManager] 📦 Returning ${events.length} active events`)
+        return events
     }
 
     /**
@@ -383,6 +428,7 @@ export class EventManager {
      * Dispose and cleanup
      */
     dispose(): void {
+        this.eventRegistry.clear()
         this.pendingEvents.clear()
         this.activeEvents.clear()
         this.completedEvents.clear()

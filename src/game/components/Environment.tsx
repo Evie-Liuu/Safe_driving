@@ -53,6 +53,9 @@ export function Environment({
       </mesh> */}
       <ModelLoader url="/src/assets/models/Floor.glb" position={[0, -1.55, 0]} />
 
+      {/* <ModelLoader url="/src/assets/models/TrafficLight.glb" position={[0, 0, 0]} onLoad={(gltf) => {
+        console.log(gltf)
+      }} /> */}
 
       {/* 網格輔助線（開發用） */}
       <gridHelper args={[500, 50, '#444444', '#888888']} />
