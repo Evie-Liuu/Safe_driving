@@ -15,7 +15,7 @@ import {
  * Handles event registration, triggering, and lifecycle management
  */
 export class EventManager {
-    private eventRegistry: Map<string, GameEvent> = new Map() // Store original event definitions
+    private eventRegistry: Map<string, GameEvent> = new Map() // 儲存所有事件定義
     private pendingEvents: Map<string, GameEvent> = new Map()
     private activeEvents: Map<string, EventContext> = new Map()
     private completedEvents: Set<string> = new Set()
