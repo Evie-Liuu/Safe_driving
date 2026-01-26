@@ -57,8 +57,8 @@ export class EventExecutor {
         if (!actionStates) return
 
         // Debug: Log actorRefs contents
-        console.log(`[EventExecutor] 🔍 Event: ${eventId}, ActorRefs size: ${actorRefs.size}`)
-        console.log(`[EventExecutor] 📋 Available actors:`, Array.from(actorRefs.keys()))
+        // console.log(`[EventExecutor] 🔍 Event: ${eventId}, ActorRefs size: ${actorRefs.size}`)
+        // console.log(`[EventExecutor] 📋 Available actors:`, Array.from(actorRefs.keys()))
 
         for (const actionState of actionStates) {
             if (actionState.isCompleted) continue
@@ -66,24 +66,24 @@ export class EventExecutor {
             const { action, startTime, endTime } = actionState
 
             // Debug: Log action state
-            console.log(`[EventExecutor] 🎬 Action: ${action.type} for ${action.actorId}`)
-            console.log(`[EventExecutor] ⏰ Time - Current: ${currentTime.toFixed(2)}, Start: ${startTime.toFixed(2)}, Active: ${actionState.isActive}`)
+            // console.log(`[EventExecutor] 🎬 Action: ${action.type} for ${action.actorId}`)
+            // console.log(`[EventExecutor] ⏰ Time - Current: ${currentTime.toFixed(2)}, Start: ${startTime.toFixed(2)}, Active: ${actionState.isActive}`)
 
             // Check if action should start
             if (!actionState.isActive && currentTime >= startTime) {
                 const actor = actorRefs.get(action.actorId)
 
-                console.log(`[EventExecutor] 🔎 Looking for actor '${action.actorId}': ${actor ? 'FOUND ✅' : 'NOT FOUND ❌'}`)
+                // console.log(`[EventExecutor] 🔎 Looking for actor '${action.actorId}': ${actor ? 'FOUND ✅' : 'NOT FOUND ❌'}`)
 
                 // Only start if actor is available
                 if (actor) {
                     actionState.isActive = true
-                    console.log(`[EventExecutor] ▶️ Executing ${action.type} action for ${action.actorId}`)
+                    // console.log(`[EventExecutor] ▶️ Executing ${action.type} action for ${action.actorId}`)
                     this.executeAction(action, actor, context)
                 } else {
                     // Actor not ready yet, wait for next frame
-                    console.warn(`[EventExecutor] ⏳ Waiting for actor '${action.actorId}' to execute ${action.type}`)
-                    console.warn(`[EventExecutor] 📍 Available actors in map:`, Array.from(actorRefs.keys()).join(', ') || 'NONE')
+                    // console.warn(`[EventExecutor] ⏳ Waiting for actor '${action.actorId}' to execute ${action.type}`)
+                    // console.warn(`[EventExecutor] 📍 Available actors in map:`, Array.from(actorRefs.keys()).join(', ') || 'NONE')
                 }
             }
 
@@ -132,18 +132,18 @@ export class EventExecutor {
      * Execute movement action
      */
     private executeMovement(action: MovementAction, actor: any): void {
-        console.log(`[EventExecutor] 🚗 executeMovement called for actor ${action.actorId}`)
-        console.log(`[EventExecutor] 📍 Movement path:`, action.path)
-        console.log(`[EventExecutor] ⚡ Speed: ${action.speed}, Loop: ${action.loop}`)
+        // console.log(`[EventExecutor] 🚗 executeMovement called for actor ${action.actorId}`)
+        // console.log(`[EventExecutor] 📍 Movement path:`, action.path)
+        // console.log(`[EventExecutor] ⚡ Speed: ${action.speed}, Loop: ${action.loop}`)
 
         if (!actor.startMovement) {
-            console.error(`[EventExecutor] ❌ Actor ${action.actorId} does not support movement!`)
-            console.error(`[EventExecutor] 🔍 Actor object:`, actor)
-            console.error(`[EventExecutor] 🔍 Available methods:`, Object.keys(actor))
+            // console.error(`[EventExecutor] ❌ Actor ${action.actorId} does not support movement!`)
+            // console.error(`[EventExecutor] 🔍 Actor object:`, actor)
+            // console.error(`[EventExecutor] 🔍 Available methods:`, Object.keys(actor))
             return
         }
 
-        console.log(`[EventExecutor] ✅ Actor has startMovement method, calling it now...`)
+        // console.log(`[EventExecutor] ✅ Actor has startMovement method, calling it now...`)
 
         actor.startMovement({
             path: action.path,

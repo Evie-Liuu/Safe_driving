@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { ModelLoader } from '../models/ModelLoader'
 import { EventActor as EventActorType, ActorType } from '../events/EventTypes'
+import { AnimationController } from '../animations/AnimationController'
 
 /**
  * Movement configuration
@@ -86,29 +87,53 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
         // Light materials refs for blinking
         const lightMaterialsRef = useRef<THREE.MeshStandardMaterial[]>([])
 
+        // Animation controller
+        const animationControllerRef = useRef<AnimationController | null>(null)
+
         useEffect(() => {
             if (groupRef.current) {
                 console.log(`EventActor ${id} (${type}) initialized at`, initialPosition)
             }
         }, [id, type, initialPosition])
 
+        // Cleanup animation controller on unmount
+        useEffect(() => {
+            return () => {
+                if (animationControllerRef.current) {
+                    animationControllerRef.current.dispose()
+                    animationControllerRef.current = null
+                }
+            }
+        }, [])
+
         // Expose imperative handle for action execution
         useImperativeHandle(ref, () => ({
             startMovement: (config: MovementConfig) => {
-                console.log(`[EventActor] 🎯 startMovement CALLED for actor ${id}`)
-                console.log(`[EventActor] 📍 Path:`, config.path)
-                console.log(`[EventActor] ⚡ Speed: ${config.speed}, Loop: ${config.loop}`)
+                // console.log(`[EventActor] 🎯 startMovement CALLED for actor ${id}`)
+                // console.log(`[EventActor] 📍 Path:`, config.path)
+                // console.log(`[EventActor] ⚡ Speed: ${config.speed}, Loop: ${config.loop}`)
 
                 movementConfigRef.current = config
                 currentPathIndex.current = 0
 
-                console.log(`[EventActor] ✅ Movement config set for actor ${id}`)
-                console.log(`[EventActor] 📌 Current position:`, groupRef.current?.position.toArray())
+                // console.log(`[EventActor] ✅ Movement config set for actor ${id}`)
+                // console.log(`[EventActor] 📌 Current position:`, groupRef.current?.position.toArray())
             },
 
             playAnimation: (config: AnimationConfig) => {
-                // TODO: Integrate with AnimationController
-                console.log(`Actor ${id} playing animation: ${config.name}`)
+                if (!animationControllerRef.current) {
+                    console.warn(`Actor ${id} has no animation controller initialized`)
+                    return
+                }
+
+                const loopMode = config.loop ? THREE.LoopRepeat : THREE.LoopOnce
+
+                animationControllerRef.current.play(config.name, {
+                    loop: loopMode,
+                    clampWhenFinished: !config.loop
+                })
+
+                console.log(`Actor ${id} playing animation: ${config.name} (loop: ${config.loop})`)
             },
 
             setLight: (config: LightConfig) => {
@@ -142,6 +167,11 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
         // Update movement and lights
         useFrame((state, delta) => {
             if (!groupRef.current) return
+
+            // Update animation mixer
+            if (animationControllerRef.current) {
+                animationControllerRef.current.update(delta)
+            }
 
             // Handle movement
             if (movementConfigRef.current) {
@@ -218,9 +248,19 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
             }
         })
 
-        // Helper to find light meshes in model
+        // Helper to initialize model after loading
         const onModelLoaded = (gltf: any) => {
             const scene = gltf.scene
+            console.log(`Actor ${id} loaded model:`, scene)
+
+            // Initialize animation controller if animations exist
+            if (gltf.animations && gltf.animations.length > 0 && groupRef.current) {
+                animationControllerRef.current = new AnimationController(groupRef.current)
+                animationControllerRef.current.loadAnimationsFromGLTF(gltf)
+
+                const animationNames = animationControllerRef.current.getAnimationNames()
+                console.log(`Actor ${id} loaded ${animationNames.length} animations:`, animationNames)
+            }
 
             // Look for meshes with names containing "light" or "lamp"
             scene.traverse((child: any) => {
@@ -243,6 +283,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
 
         return (
             <group ref={groupRef} position={initialPosition} rotation={rotationEuler} scale={scale}>
+                {/* TODO */}
                 <ModelLoader
                     url={model}
                     color={color}

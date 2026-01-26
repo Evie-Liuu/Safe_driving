@@ -115,13 +115,13 @@ export const events: GameEvent[] = [
                 duration: 8
             },
             // TODO: Add walking animation when animation system is integrated
-            // {
-            //     actorId: 'pedestrian_1',
-            //     type: ActionType.ANIMATION,
-            //     name: 'Male_Walking_Animation',
-            //     loop: true,
-            //     time: 0
-            // }
+            {
+                actorId: 'pedestrian_1',
+                type: ActionType.ANIMATION,
+                name: 'Male_Walking_Animation',
+                loop: true,
+                time: 0
+            }
         ],
         requiredPlayerResponse: {
             type: PlayerResponseType.DECELERATE,

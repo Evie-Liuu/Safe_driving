@@ -202,7 +202,7 @@ export function GameScene() {
           onRotationChange={setPlayerRotation}
         >
           {/* 玩家模型 */}
-          <ModelLoader url="/src/assets/models/Car1.glb" rotation={[0, Math.PI, 0]} />
+          <ModelLoader url="/src/assets/models/Scooter1_Rigged.glb" rotation={[0, 0, 0]} />
         </PlayerController>
 
         {/* Event actors */}

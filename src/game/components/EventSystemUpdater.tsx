@@ -68,7 +68,7 @@ export function EventSystemUpdater({
         const activeEventIds = Array.from(activeEvents.map(e => e.id))
 
         // Debug: Log active events status
-        console.log(`[EventSystemUpdater] 📊 Active Events: ${activeEventIds.length}`, activeEventIds)
+        // console.log(`[EventSystemUpdater] 📊 Active Events: ${activeEventIds.length}`, activeEventIds)
 
         for (const eventId of activeEventIds) {
             const context = eventManager.getEventContext(eventId)

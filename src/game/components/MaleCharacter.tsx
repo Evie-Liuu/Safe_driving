@@ -17,23 +17,23 @@ export function MaleCharacter({
 
     // Load model and animation
     const gltf = useGLTF('/src/assets/models/Male1_Rigged.glb')
-    const { animations } = useGLTF('/src/assets/models/Male_Walking_Animation.glb')
+    // const { animations } = useGLTF('/src/assets/models/Male_Walking_Animation.glb')
 
     // Bind animations to the group
-    const { actions } = useAnimations(animations, group)
+    // const { actions } = useAnimations(animations, group)
 
-    useEffect(() => {
-        // There should be only one animation in the file usually, or we can look for "Walk"
-        // Since the file is named Male_Walking_Animation, we try to play the first one.
-        if (actions && animations.length > 0) {
-            const action = actions[animations[0].name]
-            // action?.reset().fadeIn(0.5).play()
-        }
+    // useEffect(() => {
+    //     // There should be only one animation in the file usually, or we can look for "Walk"
+    //     // Since the file is named Male_Walking_Animation, we try to play the first one.
+    //     if (actions && animations.length > 0) {
+    //         const action = actions[animations[0].name]
+    //         // action?.reset().fadeIn(0.5).play()
+    //     }
 
-        return () => {
-            actions && Object.values(actions).forEach(action => action?.fadeOut(0.5))
-        }
-    }, [actions, animations])
+    //     return () => {
+    //         actions && Object.values(actions).forEach(action => action?.fadeOut(0.5))
+    //     }
+    // }, [actions, animations])
 
     return (
         <group ref={group} position={position} rotation={rotation} scale={scale} dispose={null}>
@@ -43,4 +43,4 @@ export function MaleCharacter({
 }
 
 useGLTF.preload('/src/assets/models/Male1_Rigged.glb')
-useGLTF.preload('/src/assets/models/Male_Walking_Animation.glb')
+// useGLTF.preload('/src/assets/models/Male_Walking_Animation.glb')

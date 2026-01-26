@@ -69,7 +69,7 @@ export class EventManager {
         this.lastCheckTime = currentTime
 
         // Debug: Log pending events
-        console.log(`[EventManager] 🔍 Checking triggers... Pending: ${this.pendingEvents.size}, Active: ${this.activeEvents.size}`)
+        // console.log(`[EventManager] 🔍 Checking triggers... Pending: ${this.pendingEvents.size}, Active: ${this.activeEvents.size}`)
 
         // Check if we've reached max concurrent events
         if (this.activeEvents.size >= this.config.maxConcurrentEvents!) {
@@ -81,11 +81,11 @@ export class EventManager {
         const sortedEvents = Array.from(this.pendingEvents.values())
             .sort((a, b) => (b.priority || 0) - (a.priority || 0))
 
-        console.log(`[EventManager] 📋 Sorted events to check:`, sortedEvents.map(e => `${e.id} (priority: ${e.priority || 0})`))
+        // console.log(`[EventManager] 📋 Sorted events to check:`, sortedEvents.map(e => `${e.id} (priority: ${e.priority || 0})`))
 
         for (const event of sortedEvents) {
             const shouldTrigger = this.shouldTriggerEvent(event, playerState)
-            console.log(`[EventManager] 🎯 Event '${event.id}' should trigger? ${shouldTrigger ? 'YES ✅' : 'NO ❌'}`)
+            // console.log(`[EventManager] 🎯 Event '${event.id}' should trigger? ${shouldTrigger ? 'YES ✅' : 'NO ❌'}`)
 
             if (shouldTrigger) {
                 this.activateEvent(event, playerState, currentTime)
@@ -112,10 +112,10 @@ export class EventManager {
                 const speedKmh = playerState.speed * 3.6
 
                 // Debug log for proximity checks
-                console.log(`[EventManager] 📏 Event '${event.id}': Distance=${distance.toFixed(1)}/${trigger.radius}, Speed=${speedKmh.toFixed(1)} km/h`)
+                // console.log(`[EventManager] 📏 Event '${event.id}': Distance=${distance.toFixed(1)}/${trigger.radius}, Speed=${speedKmh.toFixed(1)} km/h`)
 
                 if (distance > trigger.radius) {
-                    console.log(`[EventManager] ❌ Too far: ${distance.toFixed(1)} > ${trigger.radius}`)
+                    // console.log(`[EventManager] ❌ Too far: ${distance.toFixed(1)} > ${trigger.radius}`)
                     return false
                 }
 
@@ -392,7 +392,7 @@ export class EventManager {
      */
     getActiveEvents(): GameEvent[] {
         const activeEventIds = Array.from(this.activeEvents.keys())
-        console.log(`[EventManager] 🔍 getActiveEvents called, active IDs:`, activeEventIds)
+        // console.log(`[EventManager] 🔍 getActiveEvents called, active IDs:`, activeEventIds)
 
         const events = activeEventIds
             .map(id => {
@@ -404,7 +404,7 @@ export class EventManager {
             })
             .filter(Boolean) as GameEvent[]
 
-        console.log(`[EventManager] 📦 Returning ${events.length} active events`)
+        // console.log(`[EventManager] 📦 Returning ${events.length} active events`)
         return events
     }
 
