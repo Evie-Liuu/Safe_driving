@@ -346,64 +346,68 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                         })
                     }
 
-                    // Initialize animation controller
+                    // Add clonedScene to the group first, so AnimationMixer can find all nodes
                     if (groupRef.current) {
-                        const animController = new AnimationController(groupRef.current)
+                        groupRef.current.add(clonedScene)
+                    }
 
-                        // Load animations from main model
-                        animController.loadAnimationsFromGLTF(gltf)
+                    // Initialize animation controller with clonedScene (not groupRef)
+                    // This ensures the mixer root contains all the bones for retargeting
+                    const animController = new AnimationController(clonedScene)
 
-                        // Load external animations if provided
-                        if (animationUrls.length > 0) {
-                            // Reuse the logic we just implemented in the imperative handle, but we can't call it directly from here easily without refactoring more.
-                            // So we'll validly duplicate the logic slightly or better yet, we can't access the ref current handle easily.
-                            // Let's just keep the loop here for distinct initial loading.
-                            for (const animUrl of animationUrls) {
-                                try {
-                                    const animManager = AnimationManager.getInstance()
-                                    let animGltf = animManager.getAnimation(animUrl)
+                    // Load animations from main model
+                    animController.loadAnimationsFromGLTF(gltf)
 
-                                    if (!animGltf) {
-                                        console.log(`[EventActor] ⚠️ Animation not in cache, loading: ${animUrl}`)
-                                        animGltf = await new Promise<GLTF>((resolve, reject) => {
-                                            getSharedLoader().load(
-                                                animUrl,
-                                                (result) => resolve(result),
-                                                undefined,
-                                                reject
-                                            )
-                                        })
-                                    }
+                    // Load external animations if provided
+                    if (animationUrls.length > 0) {
+                        // Reuse the logic we just implemented in the imperative handle, but we can't call it directly from here easily without refactoring more.
+                        // So we'll validly duplicate the logic slightly or better yet, we can't access the ref current handle easily.
+                        // Let's just keep the loop here for distinct initial loading.
+                        for (const animUrl of animationUrls) {
+                            try {
+                                const animManager = AnimationManager.getInstance()
+                                let animGltf = animManager.getAnimation(animUrl)
 
-                                    if (!isMounted) return
-
-                                    // Load separate animations
-                                    if (animGltf) {
-                                        animController.loadSeparateAnimations(animGltf, clonedScene)
-                                        console.log(`Actor ${id} loaded external animation from: ${animUrl}`)
-                                    }
-                                } catch (error) {
-                                    console.error(`Actor ${id} failed to load animation from ${animUrl}:`, error)
+                                if (!animGltf) {
+                                    console.log(`[EventActor] ⚠️ Animation not in cache, loading: ${animUrl}`)
+                                    animGltf = await new Promise<GLTF>((resolve, reject) => {
+                                        getSharedLoader().load(
+                                            animUrl,
+                                            (result) => resolve(result),
+                                            undefined,
+                                            reject
+                                        )
+                                    })
                                 }
+
+                                if (!isMounted) return
+
+                                // Load separate animations
+                                if (animGltf) {
+                                    animController.loadSeparateAnimations(animGltf, clonedScene)
+                                    console.log(`Actor ${id} loaded external animation from: ${animUrl}`)
+                                }
+                            } catch (error) {
+                                console.error(`Actor ${id} failed to load animation from ${animUrl}:`, error)
                             }
                         }
+                    }
 
-                        animationControllerRef.current = animController
+                    animationControllerRef.current = animController
 
-                        const animationNames = animController.getAnimationNames()
-                        console.log(`Actor ${id} loaded ${animationNames.length} total animations:`, animationNames)
+                    const animationNames = animController.getAnimationNames()
+                    console.log(`Actor ${id} loaded ${animationNames.length} total animations:`, animationNames)
 
-                        // Check for pending animation
-                        if (pendingAnimationRef.current) {
-                            console.log(`[EventActor] ▶️ Playing queued animation for ${id}: ${pendingAnimationRef.current.name}`)
-                            const config = pendingAnimationRef.current
-                            const loopMode = config.loop ? THREE.LoopRepeat : THREE.LoopOnce
-                            animController.play(config.name, {
-                                loop: loopMode,
-                                clampWhenFinished: !config.loop
-                            })
-                            pendingAnimationRef.current = null
-                        }
+                    // Check for pending animation
+                    if (pendingAnimationRef.current) {
+                        console.log(`[EventActor] ▶️ Playing queued animation for ${id}: ${pendingAnimationRef.current.name}`)
+                        const config = pendingAnimationRef.current
+                        const loopMode = config.loop ? THREE.LoopRepeat : THREE.LoopOnce
+                        animController.play(config.name, {
+                            loop: loopMode,
+                            clampWhenFinished: !config.loop
+                        })
+                        pendingAnimationRef.current = null
                     }
 
                     // Look for light meshes
@@ -453,14 +457,10 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
             initialRotation[2]
         ]
 
-        // Always render the group so ref is available, but only render model when loaded
+        // Always render the group so ref is available
+        // Model is added to group in useEffect, not rendered here
         return (
             <group ref={groupRef} position={initialPosition} rotation={rotationEuler} scale={scale}>
-                {/* Only render the model when loaded */}
-                {!isLoading && modelSceneRef.current && (
-                    <primitive object={modelSceneRef.current} />
-                )}
-
                 {/* Debug visualization */}
                 {enableDebug && (
                     <>
