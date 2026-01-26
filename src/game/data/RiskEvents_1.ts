@@ -98,7 +98,7 @@ export const events: GameEvent[] = [
                 initialRotation: [0, -Math.PI / 2, 0],
                 scale: [1, 1, 1],
                 animationUrls: [
-                    '/src/assets/models/animations/Male_Walking_Animation.glb'
+                    '/src/assets/animations/character/Male_Walking_Animation.glb'
                 ]
             }
         ],
@@ -121,8 +121,8 @@ export const events: GameEvent[] = [
             {
                 actorId: 'pedestrian_1',
                 type: ActionType.ANIMATION,
-                name: 'Male_Walking_Animation',
-                // name: 'mixamo.com',
+                // name: 'Male_Walking_Animation',
+                name: 'mixamo.com',
                 loop: true,
                 time: 0
             }
@@ -159,7 +159,10 @@ export const events: GameEvent[] = [
                 model: '/src/assets/models/Car1.glb',
                 initialPosition: [4.5, 0, -88],
                 initialRotation: [0, Math.PI, 0],
-                color: '#2E86AB' // Blue car
+                color: '#2E86AB', // Blue car
+                animationUrls: [
+                    '/src/assets/animations/car/Car_Main_LeftDoor_Opening_Animation.glb'
+                ]
             }
         ],
         actions: [

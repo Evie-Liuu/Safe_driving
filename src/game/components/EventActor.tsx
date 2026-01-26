@@ -61,6 +61,7 @@ export interface EventActorHandle {
 interface EventActorProps extends EventActorType {
     animationUrls?: string[]
     onComplete?: () => void
+    onReady?: (actorId: string) => void
     enableDebug?: boolean
 }
 
@@ -80,6 +81,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
             scale = [1, 1, 1],
             color,
             onComplete,
+            onReady,
             enableDebug = false
         },
         ref
@@ -100,6 +102,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
         const [isLoading, setIsLoading] = useState(true)
         const modelSceneRef = useRef<THREE.Object3D | null>(null)
         const pendingAnimationRef = useRef<AnimationConfig | null>(null)
+        const pendingMovementRef = useRef<MovementConfig | null>(null)
 
         useEffect(() => {
             if (groupRef.current) {
@@ -120,21 +123,23 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
         // Expose imperative handle for action execution
         useImperativeHandle(ref, () => ({
             startMovement: (config: MovementConfig) => {
-                // console.log(`[EventActor] 🎯 startMovement CALLED for actor ${id}`)
-                // console.log(`[EventActor] 📍 Path:`, config.path)
-                // console.log(`[EventActor] ⚡ Speed: ${config.speed}, Loop: ${config.loop}`)
+                // If still loading, queue the movement
+                if (isLoading) {
+                    console.log(`[EventActor] ⏳ Actor ${id} still loading, queuing movement`)
+                    pendingMovementRef.current = config
+                    return
+                }
 
                 movementConfigRef.current = config
                 currentPathIndex.current = 0
-
-                // console.log(`[EventActor] ✅ Movement config set for actor ${id}`)
-                // console.log(`[EventActor] 📌 Current position:`, groupRef.current?.position.toArray())
+                console.log(`[EventActor] ✅ Movement started for actor ${id}`)
             },
 
 
             playAnimation: (config: AnimationConfig) => {
-                if (!animationControllerRef.current) {
-                    // console.log(`[EventActor] ⏳ Actor ${id} animation controller not ready, queuing animation: ${config.name}`)
+                // If still loading or controller not ready, queue the animation
+                if (isLoading || !animationControllerRef.current) {
+                    console.log(`[EventActor] ⏳ Actor ${id} not ready, queuing animation: ${config.name}`)
                     pendingAnimationRef.current = config
                     return
                 }
@@ -219,7 +224,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                     }
                 }
             }
-        }))
+        }), [id, isLoading, onComplete])
 
         // Update movement and lights
         useFrame((state, delta) => {
@@ -413,7 +418,6 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                     }
 
                     // Look for light meshes
-
                     clonedScene.traverse((child) => {
                         if (child instanceof THREE.Mesh) {
                             if (child.name.toLowerCase().includes('light') ||
@@ -428,6 +432,19 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                     console.log(`Actor ${id} loaded model:`, clonedScene)
                     setIsLoading(false)
 
+                    // Process pending movement if any
+                    if (pendingMovementRef.current) {
+                        console.log(`[EventActor] ▶️ Starting queued movement for ${id}`)
+                        movementConfigRef.current = pendingMovementRef.current
+                        currentPathIndex.current = 0
+                        pendingMovementRef.current = null
+                    }
+
+                    // Notify parent that this actor is ready
+                    if (onReady) {
+                        onReady(id)
+                    }
+
                 } catch (error) {
                     console.error(`Actor ${id} failed to load model:`, error)
                     setIsLoading(false)
@@ -439,7 +456,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
             return () => {
                 isMounted = false
             }
-        }, [id, model, color])
+        }, [id, model, color, animationUrls, onReady])
 
         const rotationEuler: [number, number, number] = [
             initialRotation[0],
@@ -447,22 +464,25 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
             initialRotation[2]
         ]
 
-        // Don't render anything while loading
-        if (isLoading || !modelSceneRef.current) {
-            return null
-        }
-
+        // Always render the group so ref is available, but only render model when loaded
         return (
             <group ref={groupRef} position={initialPosition} rotation={rotationEuler} scale={scale}>
-                <primitive object={modelSceneRef.current} />
+                {/* Only render the model when loaded */}
+                {!isLoading && modelSceneRef.current && (
+                    <primitive object={modelSceneRef.current} />
+                )}
 
                 {/* Debug visualization */}
                 {enableDebug && (
                     <>
-                        {/* Actor position marker */}
+                        {/* Actor position marker - show even during loading */}
                         <mesh position={[0, 2, 0]}>
                             <sphereGeometry args={[0.3, 16, 16]} />
-                            <meshBasicMaterial color="red" transparent opacity={0.5} />
+                            <meshBasicMaterial
+                                color={isLoading ? 'orange' : 'red'}
+                                transparent
+                                opacity={0.5}
+                            />
                         </mesh>
 
                         {/* Path visualization */}

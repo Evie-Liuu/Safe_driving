@@ -18,6 +18,7 @@ import { EventActorHandle } from '../components/EventActor'
 import { EventSystemUpdater } from '../components/EventSystemUpdater'
 import { PlayerState, ActionType, ScriptAction } from '../events/EventTypes'
 import { AnimationManager } from '../animations/AnimationManager'
+import { GLTFLoader, DRACOLoader } from 'three-stdlib'
 
 /**
  * 主遊戲場景
@@ -48,6 +49,10 @@ export function GameScene() {
   const actorRefsMap = useRef<Map<string, React.RefObject<EventActorHandle>>>(new Map())
   const [playerRotation, setPlayerRotation] = useState(0)
 
+  // Track loading state for animations and models
+  const [isAssetsLoaded, setIsAssetsLoaded] = useState(false)
+  const readyActorsRef = useRef<Set<string>>(new Set())
+
   const handleStatsUpdate = useCallback((newStats: PerformanceStats) => {
     setStats(newStats)
   }, [])
@@ -64,38 +69,87 @@ export function GameScene() {
     setIsCruising(prev => !prev)
   }, [])
 
-  // Preload animations
+  // Preload all assets (animations + models)
   useEffect(() => {
-    const loadAnimations = async () => {
-      const allUrls = new Set<string>()
+    const preloadAllAssets = async () => {
+      const animationUrls = new Set<string>()
+      const modelUrls = new Set<string>()
 
+      // Collect all unique URLs from events
       riskEvents.forEach(event => {
-        // 1. Actor animations
+        // 1. Actor models
         event.actors.forEach(actor => {
+          modelUrls.add(actor.model)
+          // 2. Actor animations
           if (actor.animationUrls) {
-            actor.animationUrls.forEach(url => allUrls.add(url))
+            actor.animationUrls.forEach(url => animationUrls.add(url))
           }
         })
 
-        // 2. Action animations (prepare)
+        // 3. Action animations (prepare)
         event.actions.forEach(action => {
           if (action.type === ActionType.PREPARE_ANIMATION && (action as any).animationUrls) {
-            ((action as any).animationUrls as string[]).forEach(url => allUrls.add(url))
+            ((action as any).animationUrls as string[]).forEach(url => animationUrls.add(url))
           }
         })
       })
 
-      if (allUrls.size > 0) {
-        console.log(`[GameScene] 📥 Pre-loading ${allUrls.size} unique animations from events...`)
-        await AnimationManager.getInstance().loadAnimations(Array.from(allUrls))
-      }
+      console.log(`[GameScene] 📥 Pre-loading ${modelUrls.size} models and ${animationUrls.size} animations...`)
+
+      // Create loader with DRACO support
+      const loader = new GLTFLoader()
+      const dracoLoader = new DRACOLoader()
+      dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/')
+      loader.setDRACOLoader(dracoLoader)
+
+      // Preload models
+      const modelPromises = Array.from(modelUrls).map(url =>
+        new Promise<void>((resolve) => {
+          loader.load(
+            url,
+            () => {
+              console.log(`[GameScene] ✅ Model cached: ${url}`)
+              resolve()
+            },
+            undefined,
+            (error) => {
+              console.error(`[GameScene] ❌ Failed to load model: ${url}`, error)
+              resolve() // Don't block on failure
+            }
+          )
+        })
+      )
+
+      // Preload animations
+      const animationPromise = animationUrls.size > 0
+        ? AnimationManager.getInstance().loadAnimations(Array.from(animationUrls))
+        : Promise.resolve()
+
+      // Wait for all assets
+      await Promise.all([...modelPromises, animationPromise])
+
+      console.log(`[GameScene] ✅ All assets preloaded!`)
+      setIsAssetsLoaded(true)
     }
 
-    loadAnimations()
+    preloadAllAssets()
   }, [])
 
-  // Initialize event manager
+  // Callback for when an actor is ready (model + animations loaded)
+  const handleActorReady = useCallback((actorId: string) => {
+    readyActorsRef.current.add(actorId)
+    console.log(`[GameScene] 🎭 Actor ready: ${actorId}, total ready: ${readyActorsRef.current.size}`)
+  }, [])
+
+  // Initialize event manager (only after assets are loaded)
   useEffect(() => {
+    if (!isAssetsLoaded) {
+      console.log(`[GameScene] ⏳ Waiting for assets to load before initializing event manager...`)
+      return
+    }
+
+    console.log(`[GameScene] 🚀 Assets loaded, initializing event manager...`)
+
     const eventManager = new EventManager({
       enableDebugVisualization: true,
       maxConcurrentEvents: 3,
@@ -108,7 +162,7 @@ export function GameScene() {
             const actorData = event.actors.map(actor => {
               const actorRef = React.createRef<EventActorHandle>()
               actorRefsMap.current.set(actor.id, actorRef)
-              return { ...actor, ref: actorRef }
+              return { ...actor, ref: actorRef, eventId }
             })
             setActiveEventActors(prev => [...prev, ...actorData])
 
@@ -136,9 +190,10 @@ export function GameScene() {
           console.log(`✅ Event ${success ? 'completed' : 'failed'}: ${eventId}`)
           const event = riskEvents.find(e => e.id === eventId)
           if (event) {
-            // Remove actor refs
+            // Remove actor refs and ready status
             event.actors.forEach(actor => {
               actorRefsMap.current.delete(actor.id)
+              readyActorsRef.current.delete(actor.id)
             })
             // Remove actors from scene
             setActiveEventActors(prev =>
@@ -161,7 +216,7 @@ export function GameScene() {
       eventManager.dispose()
       eventExecutorRef.current.clear()
     }
-  }, [])
+  }, [isAssetsLoaded])
 
   const handleTriggerOncomingVehicle = useCallback((playerPosition: THREE.Vector3, playerRotation: number) => {
     // 計算對向車道位置（左側3.5米）
@@ -242,6 +297,7 @@ export function GameScene() {
             key={actor.id}
             ref={actor.ref}
             {...actor}
+            onReady={handleActorReady}
             enableDebug={true}
           />
         ))}

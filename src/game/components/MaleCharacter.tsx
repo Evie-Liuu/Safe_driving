@@ -17,7 +17,7 @@ export function MaleCharacter({
 
     // Load model and animation
     const gltf = useGLTF('/src/assets/models/Male1_Rigged.glb')
-    const { animations } = useGLTF('/src/assets/models/animations/Male_Walking_Animation.glb')
+    const { animations } = useGLTF('/src/assets/animations/character/Male_Walking_Animation.glb')
 
     // Bind animations to the group
     const { actions } = useAnimations(animations, group)
@@ -43,4 +43,4 @@ export function MaleCharacter({
 }
 
 useGLTF.preload('/src/assets/models/Male1_Rigged.glb')
-useGLTF.preload('/src/assets/models/animations/Male_Walking_Animation.glb')
+useGLTF.preload('/src/assets/animations/character/Male_Walking_Animation.glb')
