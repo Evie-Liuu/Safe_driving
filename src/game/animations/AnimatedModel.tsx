@@ -3,8 +3,8 @@ import { useFrame } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import type { GLTF } from 'three-stdlib'
-import { GLTFLoader } from 'three-stdlib'
 import { AnimationController } from './AnimationController'
+import { getSharedLoader } from '../utils/SharedLoader'
 
 interface AnimatedModelProps {
   modelUrl: string
@@ -48,8 +48,7 @@ export function AnimatedModel({
       for (const url of animationUrls) {
         try {
           const animGltf = await new Promise<GLTF>((resolve, reject) => {
-            const loader = new GLTFLoader()
-            loader.load(
+            getSharedLoader().load(
               url,
               (result) => resolve(result),
               undefined,
@@ -128,8 +127,7 @@ export function useAnimationController(
 
     const loadModel = async () => {
       const gltf = await new Promise<GLTF>((resolve, reject) => {
-        const loader = new GLTFLoader()
-        loader.load(
+        getSharedLoader().load(
           modelUrl,
           (result) => resolve(result),
           undefined,
@@ -144,8 +142,7 @@ export function useAnimationController(
       for (const url of animationUrls) {
         try {
           const animGltf = await new Promise<GLTF>((resolve, reject) => {
-            const loader = new GLTFLoader()
-            loader.load(
+            getSharedLoader().load(
               url,
               (result) => resolve(result),
               undefined,

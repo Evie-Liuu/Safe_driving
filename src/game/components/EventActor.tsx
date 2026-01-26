@@ -2,7 +2,8 @@ import { useRef, useEffect, useImperativeHandle, forwardRef, useState } from 're
 import { useFrame } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
-import { GLTFLoader, SkeletonUtils, DRACOLoader } from 'three-stdlib'
+import { SkeletonUtils } from 'three-stdlib'
+import { getSharedLoader } from '../utils/SharedLoader'
 import type { GLTF } from 'three-stdlib'
 import { EventActor as EventActorType, ActorType } from '../events/EventTypes'
 import { AnimationController } from '../animations/AnimationController'
@@ -199,11 +200,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                         if (!animGltf) {
                             console.log(`[EventActor] ⚠️ Animation not in cache, loading: ${animUrl}`)
                             animGltf = await new Promise<GLTF>((resolve, reject) => {
-                                const loader = new GLTFLoader()
-                                const dracoLoader = new DRACOLoader()
-                                dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/')
-                                loader.setDRACOLoader(dracoLoader)
-                                loader.load(
+                                getSharedLoader().load(
                                     animUrl,
                                     (result) => resolve(result),
                                     undefined,
@@ -316,13 +313,9 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
 
             const loadModelAndAnimations = async () => {
                 try {
-                    // Load main model
+                    // Load main model using shared loader
                     const gltf = await new Promise<GLTF>((resolve, reject) => {
-                        const loader = new GLTFLoader()
-                        const dracoLoader = new DRACOLoader()
-                        dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/')
-                        loader.setDRACOLoader(dracoLoader)
-                        loader.load(
+                        getSharedLoader().load(
                             model,
                             (result) => resolve(result),
                             undefined,
@@ -373,11 +366,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                                     if (!animGltf) {
                                         console.log(`[EventActor] ⚠️ Animation not in cache, loading: ${animUrl}`)
                                         animGltf = await new Promise<GLTF>((resolve, reject) => {
-                                            const loader = new GLTFLoader()
-                                            const dracoLoader = new DRACOLoader()
-                                            dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/')
-                                            loader.setDRACOLoader(dracoLoader)
-                                            loader.load(
+                                            getSharedLoader().load(
                                                 animUrl,
                                                 (result) => resolve(result),
                                                 undefined,

@@ -18,7 +18,7 @@ import { EventActorHandle } from '../components/EventActor'
 import { EventSystemUpdater } from '../components/EventSystemUpdater'
 import { PlayerState, ActionType, ScriptAction } from '../events/EventTypes'
 import { AnimationManager } from '../animations/AnimationManager'
-import { GLTFLoader, DRACOLoader } from 'three-stdlib'
+import { getSharedLoader } from '../utils/SharedLoader'
 
 /**
  * 主遊戲場景
@@ -96,11 +96,8 @@ export function GameScene() {
 
       console.log(`[GameScene] 📥 Pre-loading ${modelUrls.size} models and ${animationUrls.size} animations...`)
 
-      // Create loader with DRACO support
-      const loader = new GLTFLoader()
-      const dracoLoader = new DRACOLoader()
-      dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/')
-      loader.setDRACOLoader(dracoLoader)
+      // Use shared loader to prevent WASM memory exhaustion
+      const loader = getSharedLoader()
 
       // Preload models
       const modelPromises = Array.from(modelUrls).map(url =>

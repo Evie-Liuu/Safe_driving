@@ -1,5 +1,5 @@
-import { GLTFLoader } from 'three-stdlib'
 import type { GLTF } from 'three-stdlib'
+import { getSharedLoader } from '../utils/SharedLoader'
 
 /**
  * Manager for handling shared animations
@@ -8,10 +8,9 @@ import type { GLTF } from 'three-stdlib'
 export class AnimationManager {
     private static instance: AnimationManager
     private animationCache: Map<string, GLTF> = new Map()
-    private loader: GLTFLoader
 
     constructor() {
-        this.loader = new GLTFLoader()
+        // Uses shared loader via getSharedLoader()
     }
 
     public static getInstance(): AnimationManager {
@@ -44,7 +43,7 @@ export class AnimationManager {
      */
     private loadSingleAnimation(url: string): Promise<void> {
         return new Promise((resolve, reject) => {
-            this.loader.load(
+            getSharedLoader().load(
                 url,
                 (gltf) => {
                     this.animationCache.set(url, gltf)

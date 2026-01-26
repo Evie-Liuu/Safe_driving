@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import type { GLTF } from 'three-stdlib'
-import { GLTFLoader } from 'three-stdlib'
+import { getSharedLoader } from '../utils/SharedLoader'
 
 interface ModelCacheEntry {
   gltf: GLTF
@@ -55,9 +55,8 @@ export class ModelManager {
    * @returns GLTF 物件
    */
   private async loadModel(url: string): Promise<GLTF> {
-    const loader = new GLTFLoader()
     return new Promise((resolve, reject) => {
-      loader.load(
+      getSharedLoader().load(
         url,
         (gltf) => resolve(gltf),
         undefined,
