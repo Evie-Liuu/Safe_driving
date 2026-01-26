@@ -57,7 +57,7 @@ export function Environment({
       {/* <ModelLoader url="/src/assets/models/TrafficLight.glb" position={[0, 0, 0]} onLoad={(gltf) => {
         console.log(gltf)
       }} /> */}
-      <AnimatedModel modelUrl="/src/assets/models/Male1_Rigged.glb"
+      {/* <AnimatedModel modelUrl="/src/assets/models/Male1_Rigged.glb"
         animationUrls={[
           "/src/assets/models/animations/Male_Walking_Animation.glb",
         ]}
@@ -67,7 +67,7 @@ export function Environment({
           // 獲取所有可用動畫
           const animations = controller.getAnimationNames()
           console.log('可用動畫:', animations)
-        }} />
+        }} /> */}
 
       {/* 網格輔助線（開發用） */}
       <gridHelper args={[500, 50, '#444444', '#888888']} />

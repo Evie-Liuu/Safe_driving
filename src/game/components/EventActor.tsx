@@ -1,9 +1,12 @@
-import { useRef, useEffect, useImperativeHandle, forwardRef } from 'react'
+import { useRef, useEffect, useImperativeHandle, forwardRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
-import { ModelLoader } from '../models/ModelLoader'
+import { GLTFLoader, SkeletonUtils, DRACOLoader } from 'three-stdlib'
+import type { GLTF } from 'three-stdlib'
 import { EventActor as EventActorType, ActorType } from '../events/EventTypes'
 import { AnimationController } from '../animations/AnimationController'
+import { AnimationManager } from '../animations/AnimationManager'
 
 /**
  * Movement configuration
@@ -52,9 +55,11 @@ export interface EventActorHandle {
     playSound: (config: SoundConfig) => void
     getPosition: () => THREE.Vector3
     getRotation: () => number
+    loadAnimations: (urls: string[]) => Promise<void>
 }
 
 interface EventActorProps extends EventActorType {
+    animationUrls?: string[]
     onComplete?: () => void
     enableDebug?: boolean
 }
@@ -69,6 +74,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
             id,
             type,
             model,
+            animationUrls = [],
             initialPosition,
             initialRotation = [0, 0, 0],
             scale = [1, 1, 1],
@@ -89,6 +95,11 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
 
         // Animation controller
         const animationControllerRef = useRef<AnimationController | null>(null)
+
+        // Loading state and model scene
+        const [isLoading, setIsLoading] = useState(true)
+        const modelSceneRef = useRef<THREE.Object3D | null>(null)
+        const pendingAnimationRef = useRef<AnimationConfig | null>(null)
 
         useEffect(() => {
             if (groupRef.current) {
@@ -120,9 +131,11 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                 // console.log(`[EventActor] 📌 Current position:`, groupRef.current?.position.toArray())
             },
 
+
             playAnimation: (config: AnimationConfig) => {
                 if (!animationControllerRef.current) {
-                    console.warn(`Actor ${id} has no animation controller initialized`)
+                    // console.log(`[EventActor] ⏳ Actor ${id} animation controller not ready, queuing animation: ${config.name}`)
+                    pendingAnimationRef.current = config
                     return
                 }
 
@@ -143,10 +156,12 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
 
                 if (!config.enabled) {
                     // Turn off all lights
-                    lightMaterialsRef.current.forEach(mat => {
-                        mat.emissive.setHex(0x000000)
-                        mat.emissiveIntensity = 0
-                    })
+                    if (lightMaterialsRef.current) {
+                        lightMaterialsRef.current.forEach(mat => {
+                            mat.emissive.setHex(0x000000)
+                            mat.emissiveIntensity = 0
+                        })
+                    }
                 }
             },
 
@@ -161,6 +176,48 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
 
             getRotation: () => {
                 return groupRef.current?.rotation.y || 0
+            },
+
+            loadAnimations: async (urls: string[]) => {
+                if (!animationControllerRef.current || !modelSceneRef.current) {
+                    console.warn(`Cannot load animations for actor ${id}: Controller or scene not ready`)
+                    return
+                }
+
+                console.log(`[EventActor] 📥 Loading ${urls.length} animations for actor ${id}...`)
+
+                for (const animUrl of urls) {
+                    try {
+                        const animManager = AnimationManager.getInstance()
+                        let animGltf = animManager.getAnimation(animUrl)
+
+                        if (!animGltf) {
+                            console.log(`[EventActor] ⚠️ Animation not in cache, loading: ${animUrl}`)
+                            animGltf = await new Promise<GLTF>((resolve, reject) => {
+                                const loader = new GLTFLoader()
+                                const dracoLoader = new DRACOLoader()
+                                dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/')
+                                loader.setDRACOLoader(dracoLoader)
+                                loader.load(
+                                    animUrl,
+                                    (result) => resolve(result),
+                                    undefined,
+                                    reject
+                                )
+                            })
+                        }
+
+                        if (!groupRef.current) return // Component unmounted
+
+                        // Load separate animations
+                        if (animGltf && modelSceneRef.current) {
+                            animationControllerRef.current.loadSeparateAnimations(animGltf, modelSceneRef.current)
+                            console.log(`[EventActor] ✅ Actor ${id} loaded external animation from: ${animUrl}`)
+                        }
+                    } catch (error) {
+                        console.error(`[EventActor] ❌ Actor ${id} failed to load animation from ${animUrl}:`, error)
+                    }
+                }
             }
         }))
 
@@ -248,32 +305,141 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
             }
         })
 
-        // Helper to initialize model after loading
-        const onModelLoaded = (gltf: any) => {
-            const scene = gltf.scene
-            console.log(`Actor ${id} loaded model:`, scene)
+        // Load model and animations
+        useEffect(() => {
+            let isMounted = true
 
-            // Initialize animation controller if animations exist
-            if (gltf.animations && gltf.animations.length > 0 && groupRef.current) {
-                animationControllerRef.current = new AnimationController(groupRef.current)
-                animationControllerRef.current.loadAnimationsFromGLTF(gltf)
+            const loadModelAndAnimations = async () => {
+                try {
+                    // Load main model
+                    const gltf = await new Promise<GLTF>((resolve, reject) => {
+                        const loader = new GLTFLoader()
+                        const dracoLoader = new DRACOLoader()
+                        dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/')
+                        loader.setDRACOLoader(dracoLoader)
+                        loader.load(
+                            model,
+                            (result) => resolve(result),
+                            undefined,
+                            reject
+                        )
+                    })
 
-                const animationNames = animationControllerRef.current.getAnimationNames()
-                console.log(`Actor ${id} loaded ${animationNames.length} animations:`, animationNames)
-            }
+                    if (!isMounted) return
 
-            // Look for meshes with names containing "light" or "lamp"
-            scene.traverse((child: any) => {
-                if (child instanceof THREE.Mesh) {
-                    if (child.name.toLowerCase().includes('light') ||
-                        child.name.toLowerCase().includes('lamp')) {
-                        if (child.material instanceof THREE.MeshStandardMaterial) {
-                            lightMaterialsRef.current.push(child.material)
+                    // Clone the scene for independent instances
+                    const clonedScene = SkeletonUtils.clone(gltf.scene)
+                    modelSceneRef.current = clonedScene
+
+                    // Apply color if specified
+                    if (color) {
+                        clonedScene.traverse((child) => {
+                            if (child instanceof THREE.Mesh && child.name === 'body') {
+                                if (Array.isArray(child.material)) {
+                                    child.material = child.material.map(m => m.clone())
+                                    child.material.forEach(m => (m as THREE.MeshStandardMaterial).color.set(color))
+                                } else {
+                                    child.material = child.material.clone()
+                                    if ((child.material as THREE.MeshStandardMaterial).color) {
+                                        (child.material as THREE.MeshStandardMaterial).color.set(color)
+                                    }
+                                }
+                            }
+                        })
+                    }
+
+                    // Initialize animation controller
+                    if (groupRef.current) {
+                        const animController = new AnimationController(groupRef.current)
+
+                        // Load animations from main model
+                        animController.loadAnimationsFromGLTF(gltf)
+
+                        // Load external animations if provided
+                        if (animationUrls.length > 0) {
+                            // Reuse the logic we just implemented in the imperative handle, but we can't call it directly from here easily without refactoring more.
+                            // So we'll validly duplicate the logic slightly or better yet, we can't access the ref current handle easily.
+                            // Let's just keep the loop here for distinct initial loading.
+                            for (const animUrl of animationUrls) {
+                                try {
+                                    const animManager = AnimationManager.getInstance()
+                                    let animGltf = animManager.getAnimation(animUrl)
+
+                                    if (!animGltf) {
+                                        console.log(`[EventActor] ⚠️ Animation not in cache, loading: ${animUrl}`)
+                                        animGltf = await new Promise<GLTF>((resolve, reject) => {
+                                            const loader = new GLTFLoader()
+                                            const dracoLoader = new DRACOLoader()
+                                            dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/')
+                                            loader.setDRACOLoader(dracoLoader)
+                                            loader.load(
+                                                animUrl,
+                                                (result) => resolve(result),
+                                                undefined,
+                                                reject
+                                            )
+                                        })
+                                    }
+
+                                    if (!isMounted) return
+
+                                    // Load separate animations
+                                    if (animGltf) {
+                                        animController.loadSeparateAnimations(animGltf, clonedScene)
+                                        console.log(`Actor ${id} loaded external animation from: ${animUrl}`)
+                                    }
+                                } catch (error) {
+                                    console.error(`Actor ${id} failed to load animation from ${animUrl}:`, error)
+                                }
+                            }
+                        }
+
+                        animationControllerRef.current = animController
+
+                        const animationNames = animController.getAnimationNames()
+                        console.log(`Actor ${id} loaded ${animationNames.length} total animations:`, animationNames)
+
+                        // Check for pending animation
+                        if (pendingAnimationRef.current) {
+                            console.log(`[EventActor] ▶️ Playing queued animation for ${id}: ${pendingAnimationRef.current.name}`)
+                            const config = pendingAnimationRef.current
+                            const loopMode = config.loop ? THREE.LoopRepeat : THREE.LoopOnce
+                            animController.play(config.name, {
+                                loop: loopMode,
+                                clampWhenFinished: !config.loop
+                            })
+                            pendingAnimationRef.current = null
                         }
                     }
+
+                    // Look for light meshes
+
+                    clonedScene.traverse((child) => {
+                        if (child instanceof THREE.Mesh) {
+                            if (child.name.toLowerCase().includes('light') ||
+                                child.name.toLowerCase().includes('lamp')) {
+                                if (child.material instanceof THREE.MeshStandardMaterial) {
+                                    lightMaterialsRef.current.push(child.material)
+                                }
+                            }
+                        }
+                    })
+
+                    console.log(`Actor ${id} loaded model:`, clonedScene)
+                    setIsLoading(false)
+
+                } catch (error) {
+                    console.error(`Actor ${id} failed to load model:`, error)
+                    setIsLoading(false)
                 }
-            })
-        }
+            }
+
+            loadModelAndAnimations()
+
+            return () => {
+                isMounted = false
+            }
+        }, [id, model, color])
 
         const rotationEuler: [number, number, number] = [
             initialRotation[0],
@@ -281,14 +447,14 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
             initialRotation[2]
         ]
 
+        // Don't render anything while loading
+        if (isLoading || !modelSceneRef.current) {
+            return null
+        }
+
         return (
             <group ref={groupRef} position={initialPosition} rotation={rotationEuler} scale={scale}>
-                {/* TODO */}
-                <ModelLoader
-                    url={model}
-                    color={color}
-                    onLoad={onModelLoaded}
-                />
+                <primitive object={modelSceneRef.current} />
 
                 {/* Debug visualization */}
                 {enableDebug && (

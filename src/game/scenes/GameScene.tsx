@@ -16,7 +16,8 @@ import { EventExecutor } from '../events/EventExecutor'
 import { EventActor } from '../components/EventActor'
 import { EventActorHandle } from '../components/EventActor'
 import { EventSystemUpdater } from '../components/EventSystemUpdater'
-import type { PlayerState } from '../events/EventTypes'
+import { PlayerState, ActionType, ScriptAction } from '../events/EventTypes'
+import { AnimationManager } from '../animations/AnimationManager'
 
 /**
  * 主遊戲場景
@@ -36,7 +37,7 @@ export function GameScene() {
     id: number
     startPosition: [number, number, number]
     endPosition: [number, number, number]
-    color: string
+    color?: string
   }>>([])
   const vehicleIdCounter = useRef(0)
 
@@ -61,6 +62,36 @@ export function GameScene() {
 
   const toggleCruise = useCallback(() => {
     setIsCruising(prev => !prev)
+  }, [])
+
+  // Preload animations
+  useEffect(() => {
+    const loadAnimations = async () => {
+      const allUrls = new Set<string>()
+
+      riskEvents.forEach(event => {
+        // 1. Actor animations
+        event.actors.forEach(actor => {
+          if (actor.animationUrls) {
+            actor.animationUrls.forEach(url => allUrls.add(url))
+          }
+        })
+
+        // 2. Action animations (prepare)
+        event.actions.forEach(action => {
+          if (action.type === ActionType.PREPARE_ANIMATION && (action as any).animationUrls) {
+            ((action as any).animationUrls as string[]).forEach(url => allUrls.add(url))
+          }
+        })
+      })
+
+      if (allUrls.size > 0) {
+        console.log(`[GameScene] 📥 Pre-loading ${allUrls.size} unique animations from events...`)
+        await AnimationManager.getInstance().loadAnimations(Array.from(allUrls))
+      }
+    }
+
+    loadAnimations()
   }, [])
 
   // Initialize event manager

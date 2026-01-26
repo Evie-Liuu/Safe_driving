@@ -123,6 +123,10 @@ export class EventExecutor {
                 this.executeScript(action as ScriptAction, actor, context)
                 break
 
+            case ActionType.PREPARE_ANIMATION:
+                this.executePrepareAnimation(action as any, actor)
+                break
+
             default:
                 console.warn(`Unknown action type: ${(action as any).type}`)
         }
@@ -219,6 +223,30 @@ export class EventExecutor {
         } catch (error) {
             console.error(`Script execution failed for actor ${action.actorId}:`, error)
         }
+    }
+
+    /**
+     * Execute prepare animation action
+     */
+    private executePrepareAnimation(action: any, actor: any): void {
+        if (!actor.loadAnimations) {
+            console.warn('Actor does not support loading animations')
+            return
+        }
+
+        actor.loadAnimations(action.animationUrls)
+            .then(() => {
+                console.log(`Animations prepared for actor ${action.actorId}`)
+            })
+            .catch((err: any) => {
+                console.error(`Failed to prepare animations for actor ${action.actorId}:`, err)
+            })
+
+        // This action is considered "started" immediately, completion is handled by duration if specified,
+        // or effectively immediate if we don't block. 
+        // For now, we fire and forget the loading, but in a real scenario we might want to wait.
+        // However, the action system is time-based.
+        console.log(`Prepare animation started for actor ${action.actorId}`)
     }
 
     /**

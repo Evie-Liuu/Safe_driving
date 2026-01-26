@@ -27,7 +27,8 @@ export enum ActionType {
     ANIMATION = 'animation',
     SOUND = 'sound',
     SCRIPT = 'script',
-    LIGHT = 'light'
+    LIGHT = 'light',
+    PREPARE_ANIMATION = 'prepare_animation'
 }
 
 /**
@@ -81,6 +82,7 @@ export interface EventActor {
     id: string
     type: ActorType
     model: string
+    animationUrls?: string[] // External animation files (supports separate animations)
     initialPosition: [number, number, number]
     initialRotation?: [number, number, number]
     scale?: [number, number, number]
@@ -147,6 +149,14 @@ export interface ScriptAction extends BaseEventAction {
 }
 
 /**
+ * Prepare animation action (load animations dynamically)
+ */
+export interface PrepareAnimationAction extends BaseEventAction {
+    type: ActionType.PREPARE_ANIMATION
+    animationUrls: string[]
+}
+
+/**
  * Union type for all event actions
  */
 export type EventAction =
@@ -155,6 +165,7 @@ export type EventAction =
     | SoundAction
     | LightAction
     | ScriptAction
+    | PrepareAnimationAction
 
 /**
  * Required player response
