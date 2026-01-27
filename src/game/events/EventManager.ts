@@ -7,7 +7,9 @@ import {
     EventManagerConfig,
     EventCallbacks,
     TriggerType,
-    PlayerResponseType
+    PlayerResponseType,
+    PrepareInstruction,
+    PrepareActionType
 } from './EventTypes'
 
 /**
@@ -413,6 +415,42 @@ export class EventManager {
      */
     getEventContext(eventId: string): EventContext | undefined {
         return this.activeEvents.get(eventId)
+    }
+
+    /**
+     * Check prepare zones for pending events (cruise auto-response)
+     * Returns the highest-priority prepare instruction if player is in a prepare zone
+     */
+    checkPrepareZone(playerState: PlayerState): PrepareInstruction | null {
+        if (!playerState.isCruising) return null
+
+        let bestInstruction: PrepareInstruction | null = null
+        let bestPriority = -1
+
+        for (const [, event] of this.pendingEvents) {
+            if (!event.prepareConfig || !event.trigger.position) continue
+
+            const eventPos = new THREE.Vector3(...event.trigger.position)
+            const distance = playerState.position.distanceTo(eventPos)
+
+            if (distance <= event.prepareConfig.radius && distance > (event.trigger.radius || 0)) {
+                const priority = event.priority || 0
+                if (priority > bestPriority) {
+                    bestPriority = priority
+                    const config = event.prepareConfig
+                    bestInstruction = {
+                        eventId: event.id,
+                        shouldBrake: config.actions.includes(PrepareActionType.DECELERATE),
+                        targetSpeedFactor: config.targetSpeedFactor ?? 0.5,
+                        laneOffset: config.actions.includes(PrepareActionType.LANE_SWITCH)
+                            ? (config.laneOffset ?? -1.5)
+                            : 0
+                    }
+                }
+            }
+        }
+
+        return bestInstruction
     }
 
     /**

@@ -1,4 +1,4 @@
-import { GameEvent, TriggerType, ActionType, ActorType, PlayerResponseType } from '../events/EventTypes'
+import { GameEvent, TriggerType, ActionType, ActorType, PlayerResponseType, PrepareActionType } from '../events/EventTypes'
 
 /**
  * Cruise points for the route
@@ -7,7 +7,7 @@ export const cruisePoints: [number, number, number][] = [
     [0, 0, 0],
     [2, 0, -15],
     [1, 0, -49],
-    [2, 0, -95],
+    [2, 0, -125],
 ]
 
 // Maintain backwards compatibility
@@ -75,7 +75,12 @@ export const events: GameEvent[] = [
             playerPassed: true,
             maxSpeed: 60 // Player must pass at reasonable speed
         },
-        priority: 10
+        priority: 10,
+        prepareConfig: {
+            radius: 35, // Start preparing 35m away (trigger is 20m)
+            actions: [PrepareActionType.DECELERATE],
+            targetSpeedFactor: 0.5
+        }
     },
     {
         id: 'pedestrian_crossing',
@@ -138,7 +143,12 @@ export const events: GameEvent[] = [
             playerPassed: true,
             maxSpeed: 40
         },
-        priority: 15 // Higher priority than taxi event
+        priority: 15, // Higher priority than taxi event
+        prepareConfig: {
+            radius: 40, // Start preparing 40m away (trigger is 25m)
+            actions: [PrepareActionType.DECELERATE],
+            targetSpeedFactor: 0.3
+        }
     },
     {
         id: 'parked_car_door_opening',
@@ -191,6 +201,12 @@ export const events: GameEvent[] = [
         completionCriteria: {
             playerPassed: true
         },
-        priority: 8
+        priority: 8,
+        prepareConfig: {
+            radius: 30, // Start preparing 30m away (trigger is 18m)
+            actions: [PrepareActionType.DECELERATE, PrepareActionType.LANE_SWITCH],
+            targetSpeedFactor: 0.5,
+            laneOffset: -6.5 // Shift left 1.5m to avoid door
+        }
     }
 ]

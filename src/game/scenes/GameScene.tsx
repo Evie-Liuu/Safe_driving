@@ -16,7 +16,7 @@ import { EventExecutor } from '../events/EventExecutor'
 import { EventActor } from '../components/EventActor'
 import { EventActorHandle } from '../components/EventActor'
 import { EventSystemUpdater } from '../components/EventSystemUpdater'
-import { PlayerState, ActionType, ScriptAction } from '../events/EventTypes'
+import { PlayerState, ActionType, ScriptAction, PrepareInstruction } from '../events/EventTypes'
 import { AnimationManager } from '../animations/AnimationManager'
 import { getSharedLoader } from '../utils/SharedLoader'
 
@@ -48,6 +48,9 @@ export function GameScene() {
   const [activeEventActors, setActiveEventActors] = useState<Array<any>>([])
   const actorRefsMap = useRef<Map<string, React.RefObject<EventActorHandle>>>(new Map())
   const [playerRotation, setPlayerRotation] = useState(0)
+  const [autoBraking, setAutoBraking] = useState(false)
+  const [autoLaneOffset, setAutoLaneOffset] = useState(0)
+  const [autoSpeedFactor, setAutoSpeedFactor] = useState(0)
 
   // Track loading state for animations and models
   const [isAssetsLoaded, setIsAssetsLoaded] = useState(false)
@@ -67,6 +70,18 @@ export function GameScene() {
 
   const toggleCruise = useCallback(() => {
     setIsCruising(prev => !prev)
+  }, [])
+
+  const handlePrepareInstruction = useCallback((instruction: PrepareInstruction | null) => {
+    if (instruction) {
+      setAutoBraking(instruction.shouldBrake)
+      setAutoLaneOffset(instruction.laneOffset)
+      setAutoSpeedFactor(instruction.targetSpeedFactor)
+    } else {
+      setAutoBraking(false)
+      setAutoLaneOffset(0)
+      setAutoSpeedFactor(0)
+    }
   }, [])
 
   // Preload all assets (animations + models)
@@ -268,6 +283,7 @@ export function GameScene() {
           playerRotation={playerRotation}
           isCruising={isCruising}
           actorRefsMap={actorRefsMap.current}
+          onPrepareInstruction={handlePrepareInstruction}
         />
 
         {/* 玩家控制器 */}
@@ -278,10 +294,12 @@ export function GameScene() {
           onPositionChange={handlePlayerMove}
           onSpeedChange={handleSpeedChange}
           onTriggerOncomingVehicle={handleTriggerOncomingVehicle}
-          enableCameraFollow={false}
+          enableCameraFollow={true}
           isCruising={isCruising}
-          isBraking={isBraking}
+          isBraking={isBraking || autoBraking}
           cruisePoints={cruisePoints}
+          laneOffset={autoLaneOffset}
+          targetSpeedFactor={autoSpeedFactor}
           onRotationChange={setPlayerRotation}
         >
           {/* 玩家模型 */}

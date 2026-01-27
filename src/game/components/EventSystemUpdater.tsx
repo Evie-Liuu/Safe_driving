@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import { EventManager } from '../events/EventManager'
 import { EventExecutor } from '../events/EventExecutor'
 import { EventActorHandle } from '../components/EventActor'
-import type { PlayerState } from '../events/EventTypes'
+import type { PlayerState, PrepareInstruction } from '../events/EventTypes'
 import { useRef } from 'react'
 
 interface EventSystemUpdaterProps {
@@ -14,6 +14,7 @@ interface EventSystemUpdaterProps {
     playerRotation: number
     isCruising: boolean
     actorRefsMap: Map<string, React.RefObject<EventActorHandle>>
+    onPrepareInstruction?: (instruction: PrepareInstruction | null) => void
 }
 
 /**
@@ -27,7 +28,8 @@ export function EventSystemUpdater({
     playerSpeed,
     playerRotation,
     isCruising,
-    actorRefsMap
+    actorRefsMap,
+    onPrepareInstruction
 }: EventSystemUpdaterProps) {
     const lastUpdateTime = useRef(0)
     const eventToActorsMap = useRef<Map<string, string[]>>(new Map())
@@ -51,6 +53,12 @@ export function EventSystemUpdater({
             console.log(`  Position: (${playerPosition.x.toFixed(1)}, ${playerPosition.y.toFixed(1)}, ${playerPosition.z.toFixed(1)})`)
             console.log(`  Speed: ${(playerSpeed * 3.6).toFixed(1)} km/h`)
             console.log(`  Cruising: ${isCruising}`)
+        }
+
+        // Check prepare zones for auto cruise response
+        if (onPrepareInstruction) {
+            const instruction = eventManager.checkPrepareZone(playerState)
+            onPrepareInstruction(instruction)
         }
 
         // Check for new event triggers

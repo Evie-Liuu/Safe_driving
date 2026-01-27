@@ -204,6 +204,34 @@ export interface EventContext {
 }
 
 /**
+ * Auto-prepare action type for cruise mode
+ */
+export enum PrepareActionType {
+    DECELERATE = 'decelerate',
+    LANE_SWITCH = 'lane_switch'
+}
+
+/**
+ * Auto-prepare configuration when approaching danger events in cruise mode
+ */
+export interface PrepareConfig {
+    radius: number // Detection radius (larger than trigger radius)
+    actions: PrepareActionType[]
+    targetSpeedFactor?: number // Speed multiplier (0-1), e.g. 0.5 = half speed
+    laneOffset?: number // Lateral offset in meters (positive = left, negative = right)
+}
+
+/**
+ * Prepare zone detection result
+ */
+export interface PrepareInstruction {
+    eventId: string
+    shouldBrake: boolean
+    targetSpeedFactor: number
+    laneOffset: number
+}
+
+/**
  * Main game event interface
  */
 export interface GameEvent {
@@ -217,6 +245,7 @@ export interface GameEvent {
     completionCriteria?: CompletionCriteria
     priority?: number // Higher priority events trigger first
     repeatable?: boolean
+    prepareConfig?: PrepareConfig // Auto-prepare when approaching in cruise mode
 }
 
 /**

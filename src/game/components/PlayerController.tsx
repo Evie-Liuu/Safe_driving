@@ -30,16 +30,21 @@ export function PlayerController({
   children,
   isCruising = false,
   cruisePoints = [],
-  isBraking = false
+  isBraking = false,
+  laneOffset = 0,
+  targetSpeedFactor = 0
 }: PlayerControllerProps & {
   isCruising?: boolean
   cruisePoints?: [number, number, number][]
   isBraking?: boolean
+  laneOffset?: number
+  targetSpeedFactor?: number // 0 = full brake, 1 = full speed
 }) {
   const groupRef = useRef<THREE.Group>(null)
   const { camera } = useThree()
   const currentPointIndex = useRef(0)
   const speedFactor = useRef(1)
+  const currentLaneOffset = useRef(0)
   const lastTriggerTime = useRef(0)
   const nextTriggerDelay = useRef(Math.random() * 10 + 5) // 5-15秒隨機間隔
 
@@ -126,8 +131,9 @@ export function PlayerController({
 
     // 更新速度因子
     if (isCruising) {
-      if (isBraking) {
-        speedFactor.current = Math.max(0, speedFactor.current - delta * 2)
+      const minSpeed = isBraking ? targetSpeedFactor : 1
+      if (speedFactor.current > minSpeed) {
+        speedFactor.current = Math.max(minSpeed, speedFactor.current - delta * 2)
       } else {
         speedFactor.current = Math.min(1, speedFactor.current + delta * 2)
       }
@@ -142,6 +148,15 @@ export function PlayerController({
     // 回調速度變化
     if (onSpeedChange) {
       onSpeedChange(currentSpeed)
+    }
+
+    // Smoothly interpolate lane offset
+    if (isCruising) {
+      const targetOffset = laneOffset
+      const offsetDiff = targetOffset - currentLaneOffset.current
+      currentLaneOffset.current += offsetDiff * Math.min(1, delta * 3) // Smooth lerp
+    } else {
+      currentLaneOffset.current = 0
     }
 
     if (isCruising && cruisePoints.length > 0) {
@@ -162,6 +177,10 @@ export function PlayerController({
 
       // 巡航邏輯
       const targetPoint = new THREE.Vector3(...cruisePoints[currentPointIndex.current])
+      // Apply lane offset (perpendicular to forward direction on X axis)
+      if (Math.abs(currentLaneOffset.current) > 0.01) {
+        targetPoint.x += currentLaneOffset.current
+      }
       const currentPos = groupRef.current.position.clone()
 
       const direction = targetPoint.clone().sub(currentPos)
