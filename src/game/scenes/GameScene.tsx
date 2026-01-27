@@ -16,7 +16,7 @@ import { EventExecutor } from '../events/EventExecutor'
 import { EventActor } from '../components/EventActor'
 import { EventActorHandle } from '../components/EventActor'
 import { EventSystemUpdater } from '../components/EventSystemUpdater'
-import { PlayerState, ActionType, ScriptAction, PrepareInstruction, DangerClickJudgment } from '../events/EventTypes'
+import { PlayerState, ActionType, ScriptAction, PrepareInstruction, DangerClickJudgment, PrepareZoneStatus } from '../events/EventTypes'
 import { AnimationManager } from '../animations/AnimationManager'
 import { getSharedLoader } from '../utils/SharedLoader'
 
@@ -67,7 +67,6 @@ export function GameScene() {
     eventName: string
   } | null>(null)
   const judgmentTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const missTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Track loading state for animations and models
   const [isAssetsLoaded, setIsAssetsLoaded] = useState(false)
@@ -93,8 +92,7 @@ export function GameScene() {
     if (instruction) {
       // Track when we first enter prepare zone for this event
       if (!activeDanger || activeDanger.eventId !== instruction.eventId) {
-        const now = performance.now()
-        dangerEnteredTimeRef.current = now
+        dangerEnteredTimeRef.current = performance.now()
         brakingStartTimeRef.current = 0
         dangerClickedRef.current = false
         setActiveDanger({
@@ -103,18 +101,6 @@ export function GameScene() {
           triggerPosition: instruction.triggerPosition,
           clickDeadline: instruction.clickDeadline
         })
-
-        // Set miss timer
-        if (missTimerRef.current) clearTimeout(missTimerRef.current)
-        missTimerRef.current = setTimeout(() => {
-          if (!dangerClickedRef.current) {
-            setJudgmentResult({ judgment: DangerClickJudgment.MISS, eventName: instruction.eventName })
-            setActiveDanger(null)
-            // Clear judgment after 2s
-            if (judgmentTimerRef.current) clearTimeout(judgmentTimerRef.current)
-            judgmentTimerRef.current = setTimeout(() => setJudgmentResult(null), 2000)
-          }
-        }, instruction.clickDeadline * 1000)
       }
 
       // Track when braking starts
@@ -122,26 +108,33 @@ export function GameScene() {
         brakingStartTimeRef.current = performance.now()
       }
 
+      // Player entered trigger radius — hide marker but don't judge as miss
+      if (instruction.status === PrepareZoneStatus.INSIDE_TRIGGER && activeDanger && !dangerClickedRef.current) {
+        setActiveDanger(null)
+      }
+
       setAutoBraking(instruction.shouldBrake)
       setAutoLaneOffset(instruction.laneOffset)
       setAutoSpeedFactor(instruction.targetSpeedFactor)
     } else {
+      // instruction is null → player is outside all prepare zones (too far / passed)
+      if (activeDanger && !dangerClickedRef.current) {
+        const name = activeDanger.eventName
+        setJudgmentResult({ judgment: DangerClickJudgment.MISS, eventName: name })
+        setActiveDanger(null)
+        if (judgmentTimerRef.current) clearTimeout(judgmentTimerRef.current)
+        judgmentTimerRef.current = setTimeout(() => setJudgmentResult(null), 2000)
+      }
+
       setAutoBraking(false)
       setAutoLaneOffset(0)
       setAutoSpeedFactor(0)
-      // Don't clear activeDanger here - let miss timer handle it
     }
   }, [activeDanger])
 
   const handleDangerClick = useCallback(() => {
     if (!activeDanger || dangerClickedRef.current) return
     dangerClickedRef.current = true
-
-    // Clear miss timer
-    if (missTimerRef.current) {
-      clearTimeout(missTimerRef.current)
-      missTimerRef.current = null
-    }
 
     const clickTime = performance.now()
     const brakingStart = brakingStartTimeRef.current

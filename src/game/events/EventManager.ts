@@ -9,7 +9,8 @@ import {
     TriggerType,
     PlayerResponseType,
     PrepareInstruction,
-    PrepareActionType
+    PrepareActionType,
+    PrepareZoneStatus
 } from './EventTypes'
 
 /**
@@ -432,24 +433,37 @@ export class EventManager {
 
             const eventPos = new THREE.Vector3(...event.trigger.position)
             const distance = playerState.position.distanceTo(eventPos)
+            const config = event.prepareConfig
+            const triggerRadius = event.trigger.radius || 0
+            const priority = event.priority || 0
 
-            if (distance <= event.prepareConfig.radius && distance > (event.trigger.radius || 0)) {
-                const priority = event.priority || 0
-                if (priority > bestPriority) {
-                    bestPriority = priority
-                    const config = event.prepareConfig
-                    bestInstruction = {
-                        eventId: event.id,
-                        eventName: event.name,
-                        triggerPosition: event.trigger.position!,
-                        shouldBrake: config.actions.includes(PrepareActionType.DECELERATE),
-                        targetSpeedFactor: config.targetSpeedFactor ?? 0.5,
-                        laneOffset: config.actions.includes(PrepareActionType.LANE_SWITCH)
-                            ? (config.laneOffset ?? -1.5)
-                            : 0,
-                        clickDeadline: config.clickDeadline ?? 5
-                    }
-                }
+            if (priority <= bestPriority) continue
+
+            // Determine zone status
+            let status: PrepareZoneStatus
+            if (distance <= triggerRadius) {
+                status = PrepareZoneStatus.INSIDE_TRIGGER
+            } else if (distance <= config.radius) {
+                status = PrepareZoneStatus.IN_PREPARE_ZONE
+            } else {
+                status = PrepareZoneStatus.OUTSIDE
+            }
+
+            // Only return instructions for events within prepare or trigger range
+            if (status === PrepareZoneStatus.OUTSIDE) continue
+
+            bestPriority = priority
+            bestInstruction = {
+                eventId: event.id,
+                eventName: event.name,
+                triggerPosition: event.trigger.position!,
+                shouldBrake: config.actions.includes(PrepareActionType.DECELERATE),
+                targetSpeedFactor: config.targetSpeedFactor ?? 0.5,
+                laneOffset: config.actions.includes(PrepareActionType.LANE_SWITCH)
+                    ? (config.laneOffset ?? -1.5)
+                    : 0,
+                clickDeadline: config.clickDeadline ?? 5,
+                status
             }
         }
 

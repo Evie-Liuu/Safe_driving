@@ -232,6 +232,15 @@ export enum DangerClickJudgment {
 }
 
 /**
+ * Prepare zone status
+ */
+export enum PrepareZoneStatus {
+    IN_PREPARE_ZONE = 'in_prepare_zone',
+    INSIDE_TRIGGER = 'inside_trigger',  // Player entered trigger radius (not a miss)
+    OUTSIDE = 'outside'                 // Player is beyond prepare radius (miss)
+}
+
+/**
  * Prepare zone detection result
  */
 export interface PrepareInstruction {
@@ -242,6 +251,7 @@ export interface PrepareInstruction {
     targetSpeedFactor: number
     laneOffset: number
     clickDeadline: number
+    status: PrepareZoneStatus
 }
 
 /**
