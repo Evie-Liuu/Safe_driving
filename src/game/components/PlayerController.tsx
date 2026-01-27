@@ -236,27 +236,18 @@ export function PlayerController({
       }
     }
 
-    // 更新相機位置（第一人稱視角）
+    // 更新相機位置（機車騎士第一人稱視角）
     if (enableCameraFollow) {
-      // // Offset for Driver's eye position (approximate)
-      // const offset = new THREE.Vector3(0, 1.2, 0.5)
-      // offset.applyQuaternion(groupRef.current.quaternion)
+      // 騎士眼睛位置：高度約 1.5m，稍微前方 0.3m
+      const eyeOffset = new THREE.Vector3(0, 2.5, -1.0)
+      eyeOffset.applyQuaternion(groupRef.current.quaternion)
+      camera.position.copy(groupRef.current.position).add(eyeOffset)
 
-      // const cameraPos = groupRef.current.position.clone().add(offset)
-      // camera.position.copy(cameraPos)
-
-      // // Look at a point in front of the car
-      // const lookOffset = new THREE.Vector3(0, 1.2, 10) // 10 units forward
-      // lookOffset.applyQuaternion(groupRef.current.quaternion)
-      // const lookTarget = groupRef.current.position.clone().add(lookOffset)
-
-      // camera.lookAt(lookTarget)
-
-      // 更新相機位置（第三人稱視角）
-      const offset = new THREE.Vector3(1, 4, -8)
-      offset.applyQuaternion(groupRef.current.quaternion)
-      camera.position.copy(groupRef.current.position).add(offset)
-      camera.lookAt(groupRef.current.position)
+      // 看向前方遠處
+      const lookOffset = new THREE.Vector3(0, 1.3, 20)
+      lookOffset.applyQuaternion(groupRef.current.quaternion)
+      const lookTarget = groupRef.current.position.clone().add(lookOffset)
+      camera.lookAt(lookTarget)
     }
 
     // 回調位置變化
