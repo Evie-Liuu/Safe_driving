@@ -219,6 +219,16 @@ export interface PrepareConfig {
     actions: PrepareActionType[]
     targetSpeedFactor?: number // Speed multiplier (0-1), e.g. 0.5 = half speed
     laneOffset?: number // Lateral offset in meters (positive = left, negative = right)
+    clickDeadline?: number // Max seconds allowed to click the danger factor (default: 5)
+}
+
+/**
+ * Danger click judgment result
+ */
+export enum DangerClickJudgment {
+    FAST = 'fast',
+    SLOW = 'slow',
+    MISS = 'miss'
 }
 
 /**
@@ -226,9 +236,12 @@ export interface PrepareConfig {
  */
 export interface PrepareInstruction {
     eventId: string
+    eventName: string
+    triggerPosition: [number, number, number]
     shouldBrake: boolean
     targetSpeedFactor: number
     laneOffset: number
+    clickDeadline: number
 }
 
 /**

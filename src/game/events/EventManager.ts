@@ -440,11 +440,14 @@ export class EventManager {
                     const config = event.prepareConfig
                     bestInstruction = {
                         eventId: event.id,
+                        eventName: event.name,
+                        triggerPosition: event.trigger.position!,
                         shouldBrake: config.actions.includes(PrepareActionType.DECELERATE),
                         targetSpeedFactor: config.targetSpeedFactor ?? 0.5,
                         laneOffset: config.actions.includes(PrepareActionType.LANE_SWITCH)
                             ? (config.laneOffset ?? -1.5)
-                            : 0
+                            : 0,
+                        clickDeadline: config.clickDeadline ?? 5
                     }
                 }
             }

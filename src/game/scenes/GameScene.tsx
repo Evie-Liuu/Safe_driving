@@ -16,7 +16,7 @@ import { EventExecutor } from '../events/EventExecutor'
 import { EventActor } from '../components/EventActor'
 import { EventActorHandle } from '../components/EventActor'
 import { EventSystemUpdater } from '../components/EventSystemUpdater'
-import { PlayerState, ActionType, ScriptAction, PrepareInstruction } from '../events/EventTypes'
+import { PlayerState, ActionType, ScriptAction, PrepareInstruction, DangerClickJudgment } from '../events/EventTypes'
 import { AnimationManager } from '../animations/AnimationManager'
 import { getSharedLoader } from '../utils/SharedLoader'
 
@@ -52,6 +52,23 @@ export function GameScene() {
   const [autoLaneOffset, setAutoLaneOffset] = useState(0)
   const [autoSpeedFactor, setAutoSpeedFactor] = useState(0)
 
+  // Danger click judgment system
+  const [activeDanger, setActiveDanger] = useState<{
+    eventId: string
+    eventName: string
+    triggerPosition: [number, number, number]
+    clickDeadline: number
+  } | null>(null)
+  const dangerEnteredTimeRef = useRef<number>(0)
+  const brakingStartTimeRef = useRef<number>(0)
+  const dangerClickedRef = useRef(false)
+  const [judgmentResult, setJudgmentResult] = useState<{
+    judgment: DangerClickJudgment
+    eventName: string
+  } | null>(null)
+  const judgmentTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const missTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   // Track loading state for animations and models
   const [isAssetsLoaded, setIsAssetsLoaded] = useState(false)
   const readyActorsRef = useRef<Set<string>>(new Set())
@@ -74,6 +91,37 @@ export function GameScene() {
 
   const handlePrepareInstruction = useCallback((instruction: PrepareInstruction | null) => {
     if (instruction) {
+      // Track when we first enter prepare zone for this event
+      if (!activeDanger || activeDanger.eventId !== instruction.eventId) {
+        const now = performance.now()
+        dangerEnteredTimeRef.current = now
+        brakingStartTimeRef.current = 0
+        dangerClickedRef.current = false
+        setActiveDanger({
+          eventId: instruction.eventId,
+          eventName: instruction.eventName,
+          triggerPosition: instruction.triggerPosition,
+          clickDeadline: instruction.clickDeadline
+        })
+
+        // Set miss timer
+        if (missTimerRef.current) clearTimeout(missTimerRef.current)
+        missTimerRef.current = setTimeout(() => {
+          if (!dangerClickedRef.current) {
+            setJudgmentResult({ judgment: DangerClickJudgment.MISS, eventName: instruction.eventName })
+            setActiveDanger(null)
+            // Clear judgment after 2s
+            if (judgmentTimerRef.current) clearTimeout(judgmentTimerRef.current)
+            judgmentTimerRef.current = setTimeout(() => setJudgmentResult(null), 2000)
+          }
+        }, instruction.clickDeadline * 1000)
+      }
+
+      // Track when braking starts
+      if (instruction.shouldBrake && brakingStartTimeRef.current === 0) {
+        brakingStartTimeRef.current = performance.now()
+      }
+
       setAutoBraking(instruction.shouldBrake)
       setAutoLaneOffset(instruction.laneOffset)
       setAutoSpeedFactor(instruction.targetSpeedFactor)
@@ -81,8 +129,39 @@ export function GameScene() {
       setAutoBraking(false)
       setAutoLaneOffset(0)
       setAutoSpeedFactor(0)
+      // Don't clear activeDanger here - let miss timer handle it
     }
-  }, [])
+  }, [activeDanger])
+
+  const handleDangerClick = useCallback(() => {
+    if (!activeDanger || dangerClickedRef.current) return
+    dangerClickedRef.current = true
+
+    // Clear miss timer
+    if (missTimerRef.current) {
+      clearTimeout(missTimerRef.current)
+      missTimerRef.current = null
+    }
+
+    const clickTime = performance.now()
+    const brakingStart = brakingStartTimeRef.current
+
+    // Determine judgment: clicked before braking = Fast, after = Slow
+    let judgment: DangerClickJudgment
+    if (brakingStart === 0 || clickTime < brakingStart) {
+      judgment = DangerClickJudgment.FAST
+    } else {
+      judgment = DangerClickJudgment.SLOW
+    }
+
+    const eventName = activeDanger.eventName
+    setJudgmentResult({ judgment, eventName })
+    setActiveDanger(null)
+
+    // Clear judgment display after 2s
+    if (judgmentTimerRef.current) clearTimeout(judgmentTimerRef.current)
+    judgmentTimerRef.current = setTimeout(() => setJudgmentResult(null), 2000)
+  }, [activeDanger])
 
   // Preload all assets (animations + models)
   useEffect(() => {
@@ -336,6 +415,14 @@ export function GameScene() {
           />
         ))}
 
+        {/* 危險因子點擊標記 */}
+        {activeDanger && (
+          <DangerMarker
+            position={activeDanger.triggerPosition}
+            onClick={handleDangerClick}
+          />
+        )}
+
         {/* 點擊處理器 */}
         <ClickHandler
           onClick={(point) => {
@@ -361,6 +448,36 @@ export function GameScene() {
         onBrakeStart={() => setIsBraking(true)}
         onBrakeEnd={() => setIsBraking(false)}
       />
+
+      {/* 判定結果顯示 */}
+      {judgmentResult && (
+        <JudgmentDisplay
+          judgment={judgmentResult.judgment}
+          eventName={judgmentResult.eventName}
+        />
+      )}
+
+      {/* 危險因子提示 */}
+      {activeDanger && !dangerClickedRef.current && (
+        <div style={{
+          position: 'absolute',
+          top: '15%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          color: '#ff4444',
+          fontFamily: 'monospace',
+          fontSize: '18px',
+          fontWeight: 'bold',
+          background: 'rgba(0, 0, 0, 0.6)',
+          padding: '10px 20px',
+          borderRadius: '8px',
+          border: '2px solid #ff4444',
+          pointerEvents: 'none',
+          animation: 'pulse 1s infinite'
+        }}>
+          點擊畫面中的危險因子!
+        </div>
+      )}
     </div>
   )
 }
@@ -620,6 +737,100 @@ function PointVisualization({
         </mesh>
       ))}
     </group>
+  )
+}
+
+/**
+ * 3D 危險因子標記（可點擊）
+ */
+function DangerMarker({
+  position,
+  onClick
+}: {
+  position: [number, number, number]
+  onClick: () => void
+}) {
+  const meshRef = useRef<THREE.Mesh>(null)
+  const [hovered, setHovered] = useState(false)
+
+  useFrame((state) => {
+    if (!meshRef.current) return
+    // Floating animation
+    meshRef.current.position.y = position[1] + 3 + Math.sin(state.clock.getElapsedTime() * 3) * 0.3
+    meshRef.current.rotation.y += 0.02
+  })
+
+  return (
+    <mesh
+      ref={meshRef}
+      position={[position[0], position[1] + 3, position[2]]}
+      onClick={(e) => {
+        e.stopPropagation()
+        onClick()
+      }}
+      onPointerOver={() => setHovered(true)}
+      onPointerOut={() => setHovered(false)}
+    >
+      <octahedronGeometry args={[0.8, 0]} />
+      <meshStandardMaterial
+        color={hovered ? '#ffff00' : '#ff4444'}
+        emissive={hovered ? '#ffff00' : '#ff0000'}
+        emissiveIntensity={hovered ? 1.5 : 0.8}
+        transparent
+        opacity={0.9}
+      />
+    </mesh>
+  )
+}
+
+/**
+ * 判定結果顯示
+ */
+function JudgmentDisplay({
+  judgment,
+  eventName
+}: {
+  judgment: DangerClickJudgment
+  eventName: string
+}) {
+  const colorMap = {
+    [DangerClickJudgment.FAST]: '#44ff44',
+    [DangerClickJudgment.SLOW]: '#ffa500',
+    [DangerClickJudgment.MISS]: '#ff4444'
+  }
+  const labelMap = {
+    [DangerClickJudgment.FAST]: 'FAST',
+    [DangerClickJudgment.SLOW]: 'SLOW',
+    [DangerClickJudgment.MISS]: 'MISS'
+  }
+
+  return (
+    <div style={{
+      position: 'absolute',
+      top: '30%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      textAlign: 'center',
+      pointerEvents: 'none'
+    }}>
+      <div style={{
+        fontSize: '64px',
+        fontWeight: 'bold',
+        fontFamily: 'monospace',
+        color: colorMap[judgment],
+        textShadow: `0 0 20px ${colorMap[judgment]}, 0 0 40px ${colorMap[judgment]}`,
+      }}>
+        {labelMap[judgment]}
+      </div>
+      <div style={{
+        fontSize: '18px',
+        fontFamily: 'monospace',
+        color: '#ffffff',
+        marginTop: '8px'
+      }}>
+        {eventName}
+      </div>
+    </div>
   )
 }
 
