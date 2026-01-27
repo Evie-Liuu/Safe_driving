@@ -98,7 +98,7 @@ export const events: GameEvent[] = [
                 initialRotation: [0, -Math.PI / 2, 0],
                 scale: [1, 1, 1],
                 animationUrls: [
-                    '/src/assets/animations/character/Male_Walking_Animation.glb'
+                    '/src/assets/animations/character/Male_Walking_Remain_Animation.glb'
                 ]
             }
         ],
@@ -122,7 +122,7 @@ export const events: GameEvent[] = [
                 actorId: 'pedestrian_1',
                 type: ActionType.ANIMATION,
                 // name: 'Male_Walking_Animation',
-                name: 'mixamo.com',
+                name: 'Take 001',
                 loop: true,
                 time: 0
             }
