@@ -35,7 +35,7 @@ export const events: GameEvent[] = [
                 type: ActorType.VEHICLE,
                 model: '/src/assets/models/ferrari.glb', // Using ferrari as taxi model for now
                 initialPosition: [5, 0, -30],
-                initialRotation: [0, Math.PI, 0],
+                initialRotation: [0, 0, 0],
                 color: '#FFD700' // Gold color for taxi
             }
         ],
@@ -156,9 +156,9 @@ export const events: GameEvent[] = [
             {
                 id: 'parked_car_1',
                 type: ActorType.VEHICLE,
-                model: '/src/assets/models/Car1.glb',
+                model: '/src/assets/models/Car_Main_Rigged.glb',
                 initialPosition: [4.5, 0, -88],
-                initialRotation: [0, Math.PI, 0],
+                initialRotation: [0, 0, 0],
                 color: '#2E86AB', // Blue car
                 animationUrls: [
                     '/src/assets/animations/car/Car_Main_LeftDoor_Opening_Animation.glb'
@@ -174,7 +174,14 @@ export const events: GameEvent[] = [
                 enabled: true,
                 blinkRate: 1.5,
                 time: 0,
-                duration: 5
+                duration: 8
+            },
+            {
+                actorId: 'parked_car_1',
+                type: ActionType.ANIMATION,
+                name: 'Take 001.005',
+                loop: true,
+                time: 0
             }
         ],
         requiredPlayerResponse: {
