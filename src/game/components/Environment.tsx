@@ -52,7 +52,10 @@ export function Environment({
         <planeGeometry args={[500, 500]} />
         <meshStandardMaterial color={groundColor} />
       </mesh> */}
-      <ModelLoader url="/src/assets/models/Floor.glb" position={[0, -1.55, 0]} />
+      {/* <ModelLoader url="/src/assets/models/Floor.glb" position={[0, -1.55, 0]} /> */}
+      <ModelLoader url="/src/assets/models/Map_city.glb" position={[0, -1.55, 0]} onLoad={(gltf) => {
+        console.log(gltf)
+      }} />
 
       {/* <ModelLoader url="/src/assets/models/TrafficLight.glb" position={[0, 0, 0]} onLoad={(gltf) => {
         console.log(gltf)

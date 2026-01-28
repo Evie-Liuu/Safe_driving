@@ -110,7 +110,7 @@ export function GameScene() {
 
       // Player entered trigger radius — hide marker but don't judge as miss
       if (instruction.status === PrepareZoneStatus.INSIDE_TRIGGER && activeDanger && !dangerClickedRef.current) {
-        setActiveDanger(null)
+        // setActiveDanger(null)
       }
 
       setAutoBraking(instruction.shouldBrake)
@@ -366,7 +366,7 @@ export function GameScene() {
           onPositionChange={handlePlayerMove}
           onSpeedChange={handleSpeedChange}
           onTriggerOncomingVehicle={handleTriggerOncomingVehicle}
-          enableCameraFollow={true}
+          enableCameraFollow={false}
           isCruising={isCruising}
           isBraking={isBraking || autoBraking}
           cruisePoints={cruisePoints}
@@ -390,7 +390,7 @@ export function GameScene() {
         ))}
 
         {/* 一些裝飾物 */}
-        <DemoObjects />
+        {/* <DemoObjects /> */}
 
         {/* 行走的路人 */}
         <MaleCharacter position={[5, 0, 5]} rotation={[0, Math.PI / 4, 0]} />
@@ -670,7 +670,8 @@ function ClickHandler({ onClick }: { onClick: (point: THREE.Vector3) => void }) 
     // plane.rotation.x = -Math.PI / 2 // 水平放置
     // scene.add(plane)
     const target = scene.children.find(
-      (child) => child.name === 'ground'
+      // (child) => child.name === 'ground'
+      (child) => child.name === 'Base'
     )
 
     const intersects = raycaster.current.intersectObject(target)

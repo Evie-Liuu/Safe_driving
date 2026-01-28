@@ -23,7 +23,7 @@ export const events: GameEvent[] = [
         description: '計程車打開雙黃燈並靠邊停車，玩家需要減速通過',
         trigger: {
             type: TriggerType.PROXIMITY,
-            position: [2, 0, -25],
+            position: [5, 0, -30],
             radius: 20,
             requiredSpeed: {
                 min: 10 // Only trigger if player is moving (36 km/h)
@@ -88,8 +88,8 @@ export const events: GameEvent[] = [
         description: '行人從路邊穿越道路，玩家需要減速或停車',
         trigger: {
             type: TriggerType.PROXIMITY,
-            position: [1, 0, -60],
-            radius: 25,
+            position: [8, 0, -65],
+            radius: 20,
             requiredSpeed: {
                 min: 5
             }
@@ -122,7 +122,7 @@ export const events: GameEvent[] = [
                 time: 0,
                 duration: 8
             },
-            // TODO: Add walking animation when animation system is integrated
+            // Add walking animation when animation system is integrated
             {
                 actorId: 'pedestrian_1',
                 type: ActionType.ANIMATION,
@@ -145,7 +145,7 @@ export const events: GameEvent[] = [
         },
         priority: 15, // Higher priority than taxi event
         prepareConfig: {
-            radius: 40, // Start preparing 40m away (trigger is 25m)
+            radius: 25, // Start preparing 40m away (trigger is 25m)
             actions: [PrepareActionType.DECELERATE],
             targetSpeedFactor: 0.3
         }
@@ -189,7 +189,7 @@ export const events: GameEvent[] = [
             {
                 actorId: 'parked_car_1',
                 type: ActionType.ANIMATION,
-                name: 'Take 001.005',
+                name: 'Take 001.016',
                 loop: true,
                 time: 0
             }

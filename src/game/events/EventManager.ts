@@ -439,7 +439,7 @@ export class EventManager {
 
             if (priority <= bestPriority) continue
 
-            // Determine zone status
+            // TODO: Determine zone status
             let status: PrepareZoneStatus
             if (distance <= triggerRadius) {
                 status = PrepareZoneStatus.INSIDE_TRIGGER
