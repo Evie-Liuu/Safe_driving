@@ -75,6 +75,9 @@ export function GameScene() {
   // Track pre-spawned events (actors visible but actions not yet triggered)
   const preSpawnedEventIds = useRef<Set<string>>(new Set())
 
+  // Track which events player has clicked/acknowledged (for MISS judgment on completion)
+  const clickedEventIds = useRef<Set<string>>(new Set())
+
   const handleStatsUpdate = useCallback((newStats: PerformanceStats) => {
     setStats(newStats)
   }, [])
@@ -111,33 +114,65 @@ export function GameScene() {
         brakingStartTimeRef.current = performance.now()
       }
 
-      // Player entered trigger radius — hide marker but don't judge as miss
+      // Player entered trigger radius — clear danger marker (event was triggered successfully)
       if (instruction.status === PrepareZoneStatus.INSIDE_TRIGGER && activeDanger && !dangerClickedRef.current) {
-        // setActiveDanger(null)
+        // Event activated = player acknowledged the danger by approaching, not a miss
+        setActiveDanger(null)
       }
 
       setAutoBraking(instruction.shouldBrake)
       setAutoLaneOffset(instruction.laneOffset)
       setAutoSpeedFactor(instruction.targetSpeedFactor)
     } else {
-      // instruction is null → player is outside all prepare zones (too far / passed)
+      // instruction is null → player is outside all prepare zones
       if (activeDanger && !dangerClickedRef.current) {
-        const name = activeDanger.eventName
-        setJudgmentResult({ judgment: DangerClickJudgment.MISS, eventName: name })
-        setActiveDanger(null)
-        if (judgmentTimerRef.current) clearTimeout(judgmentTimerRef.current)
-        judgmentTimerRef.current = setTimeout(() => setJudgmentResult(null), 2000)
+        // Check if the event was activated (player entered trigger radius)
+        // If event is now active, it's NOT a miss - player triggered the event
+        const eventContext = eventManagerRef.current?.getEventContext(activeDanger.eventId)
+        if (eventContext) {
+          // Event is active - player successfully triggered it, clear without MISS
+          // MISS judgment will be handled in onEventCompleted if player didn't click
+          console.log(`[GameScene] ✅ Event ${activeDanger.eventId} was triggered, clearing danger marker`)
+          // MISS
+          setActiveDanger(null)
+        } else {
+          // Event was NOT activated - check if player has moved far enough to be considered a miss
+          // This handles the "passing by from the side" scenario
+          const triggerPos = activeDanger.triggerPosition
+          const distanceFromEvent = Math.sqrt(
+            Math.pow(playerPosition.x - triggerPos[0], 2) +
+            Math.pow(playerPosition.z - triggerPos[2], 2)
+          )
+
+          // Find the event's prepare radius to determine miss threshold
+          const event = riskEvents.find(e => e.id === activeDanger.eventId)
+          const prepareRadius = event?.prepareConfig?.radius || 25
+          const missThreshold = prepareRadius + 15 // Player must be well beyond prepare zone
+
+          if (distanceFromEvent > missThreshold) {
+            const name = activeDanger.eventName
+            console.log(`[GameScene] ❌ Player passed event ${activeDanger.eventId} without triggering (distance: ${distanceFromEvent.toFixed(1)}m) - MISS`)
+            setJudgmentResult({ judgment: DangerClickJudgment.MISS, eventName: name })
+            setActiveDanger(null)
+            if (judgmentTimerRef.current) clearTimeout(judgmentTimerRef.current)
+            judgmentTimerRef.current = setTimeout(() => setJudgmentResult(null), 2000)
+          }
+          // If not far enough yet, keep activeDanger active (player might still approach)
+        }
       }
 
       setAutoBraking(false)
       setAutoLaneOffset(0)
       setAutoSpeedFactor(0)
     }
-  }, [activeDanger])
+  }, [activeDanger, playerPosition.x, playerPosition.z])
 
   const handleDangerClick = useCallback(() => {
     if (!activeDanger || dangerClickedRef.current) return
     dangerClickedRef.current = true
+
+    // Track that player clicked this event (for MISS judgment on completion)
+    clickedEventIds.current.add(activeDanger.eventId)
 
     const clickTime = performance.now()
     const brakingStart = brakingStartTimeRef.current
@@ -282,6 +317,18 @@ export function GameScene() {
           console.log(`✅ Event ${success ? 'completed' : 'failed'}: ${eventId}`)
           const event = riskEvents.find(e => e.id === eventId)
           if (event) {
+            // Check if player missed clicking this danger event
+            if (event.prepareConfig && !clickedEventIds.current.has(eventId)) {
+              console.log(`[GameScene] ❌ Event ${eventId} completed without player click - MISS`)
+              setJudgmentResult({ judgment: DangerClickJudgment.MISS, eventName: event.name })
+              if (judgmentTimerRef.current) clearTimeout(judgmentTimerRef.current)
+              judgmentTimerRef.current = setTimeout(() => setJudgmentResult(null), 2000)
+            }
+
+            // Clear tracking for this event
+            clickedEventIds.current.delete(eventId)
+            setActiveDanger(prev => prev?.eventId === eventId ? null : prev)
+
             // Remove actor refs and ready status
             event.actors.forEach(actor => {
               actorRefsMap.current.delete(actor.id)

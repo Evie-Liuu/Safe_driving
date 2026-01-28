@@ -97,7 +97,7 @@ export const events: GameEvent[] = [
         },
         priority: 8,
         prepareConfig: {
-            radius: 25, // Start preparing 30m away (trigger is 18m)
+            radius: 25, // Start preparing 25m away (trigger is 18m)
             actions: [PrepareActionType.DECELERATE, PrepareActionType.LANE_SWITCH],
             targetSpeedFactor: 0.5,
             laneOffset: -6.5 // Shift left 1.5m to avoid door
