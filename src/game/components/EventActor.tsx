@@ -94,7 +94,8 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
         const lightBlinkTime = useRef(0)
 
         // Light materials refs for blinking
-        const lightMaterialsRef = useRef<THREE.MeshStandardMaterial[]>([])
+        // const lightMaterialsRef = useRef<THREE.MeshStandardMaterial[]>([])
+        const lightMaterialsRef = useRef<THREE.Mesh[]>([])
 
         // Animation controller
         const animationControllerRef = useRef<AnimationController | null>(null)
@@ -163,9 +164,13 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                 if (!config.enabled) {
                     // Turn off all lights
                     if (lightMaterialsRef.current) {
-                        lightMaterialsRef.current.forEach(mat => {
-                            mat.emissive.setHex(0x000000)
-                            mat.emissiveIntensity = 0
+                        lightMaterialsRef.current.forEach(light => {
+                            if (light.material instanceof THREE.MeshStandardMaterial) {
+                                // let mat = light.material.clone()
+                                // mat.emissive.setHex(0x000000)
+                                // mat.emissiveIntensity = 0
+                                // light.material = mat
+                            }
                         })
                     }
                 }
@@ -294,14 +299,19 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                 const isOn = Math.floor(lightBlinkTime.current / blinkInterval) % 2 === 0
 
                 // Update light materials
-                lightMaterialsRef.current.forEach(mat => {
-                    if (isOn) {
-                        // Orange/amber for hazard lights
-                        mat.emissive.setHex(0xff8800)
-                        mat.emissiveIntensity = 2
-                    } else {
-                        mat.emissive.setHex(0x000000)
-                        mat.emissiveIntensity = 0
+                lightMaterialsRef.current.forEach(light => {
+                    if (light.material instanceof THREE.MeshStandardMaterial) {
+                        let mat = light.material.clone()
+                        if (isOn) {
+                            // Orange/amber for hazard lights
+                            mat.emissive.setHex(0xff8800)
+                            mat.emissiveIntensity = 2
+                            light.material = mat
+                        } else {
+                            // mat.emissive.setHex(0x000000)
+                            // mat.emissiveIntensity = 0
+                            light.material = light.original_material
+                        }
                     }
                 })
             }
@@ -414,9 +424,14 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                     clonedScene.traverse((child) => {
                         if (child instanceof THREE.Mesh) {
                             if (child.name.toLowerCase().includes('light') ||
-                                child.name.toLowerCase().includes('lamp')) {
+                                child.name.toLowerCase().includes('lamp') ||
+                                child.name.toLowerCase().includes('back_left') ||
+                                child.name.toLowerCase().includes('back_right') ||
+                                child.name.toLowerCase().includes('front_left') ||
+                                child.name.toLowerCase().includes('front_right')) {
                                 if (child.material instanceof THREE.MeshStandardMaterial) {
-                                    lightMaterialsRef.current.push(child.material)
+                                    child.original_material = child.material.clone()
+                                    lightMaterialsRef.current.push(child)
                                 }
                             }
                         }

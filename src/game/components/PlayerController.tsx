@@ -262,7 +262,7 @@ export function PlayerController({
   })
 
   return (
-    <group ref={groupRef} position={position}>
+    <group ref={groupRef} position={position} rotation={[0, -Math.PI, 0]}>
       {children}
     </group>
   )

@@ -360,7 +360,7 @@ export function GameScene() {
 
         {/* 玩家控制器 */}
         <PlayerController
-          position={[0, 0, 0]}
+          position={[...cruisePoints[0]]}
           speed={16.67}
           rotationSpeed={3}
           onPositionChange={handlePlayerMove}
@@ -669,10 +669,9 @@ function ClickHandler({ onClick }: { onClick: (point: THREE.Vector3) => void }) 
     // const plane = new THREE.Mesh(planeGeometry, planeMaterial)
     // plane.rotation.x = -Math.PI / 2 // 水平放置
     // scene.add(plane)
-    const target = scene.children.find(
-      // (child) => child.name === 'ground'
-      (child) => child.name === 'Base'
-    )
+    const target = scene.getObjectByName('Base')
+
+    if (!target) return
 
     const intersects = raycaster.current.intersectObject(target)
 
