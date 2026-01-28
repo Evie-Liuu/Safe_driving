@@ -16,12 +16,12 @@ export function MaleCharacter({
     const group = useRef<THREE.Group>(null)
 
     // Load model and animation
-    const gltf = useGLTF('/src/assets/models/Car_Main_Rigged.glb')
-    const { animations } = useGLTF('/src/assets/animations/car/Car_Main_RightDoor_Opening_Animation_TEST.glb')
+    // const gltf = useGLTF('/src/assets/models/Car_Main_Rigged.glb')
+    // const { animations } = useGLTF('/src/assets/animations/car/Car_Main_RightDoor_Opening_Animation_TEST.glb')
     // const gltf = useGLTF('/src/assets/models/Scooter1_Rigged.glb')
     // const { animations } = useGLTF('/src/assets/animations/car/Scooter_Moving_Animation.glb')
-    // const gltf = useGLTF('/src/assets/models/Male1_Rigged.glb')
-    // const { animations } = useGLTF('/src/assets/animations/character/Male_Walking_Remain_Animation.glb')
+    const gltf = useGLTF('/src/assets/models/Male1_Rigged.glb')
+    const { animations } = useGLTF('/src/assets/animations/character/Male_OpenCarLeftDoor_Inside_Animation.glb')
 
     // Bind animations to the group
     const { actions } = useAnimations(animations, group)
@@ -62,11 +62,11 @@ export function MaleCharacter({
     )
 }
 
-// useGLTF.preload('/src/assets/models/Male1_Rigged.glb')
-// useGLTF.preload('/src/assets/animations/character/Male_Walking_Remain_Animation.glb')
+useGLTF.preload('/src/assets/models/Male1_Rigged.glb')
+useGLTF.preload('/src/assets/animations/character/Male_OpenCarLeftDoor_Inside_Animation.glb')
 
 // useGLTF.preload('/src/assets/models/Scooter1_Rigged.glb')
 // useGLTF.preload('/src/assets/animations/car/Scooter_Moving_Animation.glb')
 
-useGLTF.preload('/src/assets/models/Car_Main_Rigged.glb')
-useGLTF.preload('/src/assets/animations/car/Car_Main_RightDoor_Opening_Animation_TEST.glb')
+// useGLTF.preload('/src/assets/models/Car_Main_Rigged.glb')
+// useGLTF.preload('/src/assets/animations/car/Car_Main_RightDoor_Opening_Animation_TEST.glb')
