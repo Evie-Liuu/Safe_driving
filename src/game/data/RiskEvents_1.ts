@@ -15,8 +15,8 @@ export const cruisePoints: [number, number, number][] = [
     [52, 0, -110],
     [100.46, 0, -109],
 
-    [1, 0, -49],
-    [2, 0, -125],
+    // [1, 0, -49],
+    // [2, 0, -125],
 ]
 
 // Maintain backwards compatibility
