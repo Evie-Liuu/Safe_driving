@@ -17,7 +17,7 @@ export function MaleCharacter({
 
     // Load model and animation
     const gltf = useGLTF('/src/assets/models/Car_Main_Rigged.glb')
-    const { animations } = useGLTF('/src/assets/animations/character/Male_Riding_Scooter_Animation.glb')
+    const { animations } = useGLTF('/src/assets/animations/car/Car_Main_RightDoor_Opening_Animation_TEST.glb')
     // const gltf = useGLTF('/src/assets/models/Scooter1_Rigged.glb')
     // const { animations } = useGLTF('/src/assets/animations/car/Scooter_Moving_Animation.glb')
     // const gltf = useGLTF('/src/assets/models/Male1_Rigged.glb')
@@ -69,4 +69,4 @@ export function MaleCharacter({
 // useGLTF.preload('/src/assets/animations/car/Scooter_Moving_Animation.glb')
 
 useGLTF.preload('/src/assets/models/Car_Main_Rigged.glb')
-useGLTF.preload('/src/assets/animations/character/Male_Riding_Scooter_Animation.glb')
+useGLTF.preload('/src/assets/animations/car/Car_Main_RightDoor_Opening_Animation_TEST.glb')
