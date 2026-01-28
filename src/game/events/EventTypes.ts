@@ -269,6 +269,7 @@ export interface GameEvent {
     priority?: number // Higher priority events trigger first
     repeatable?: boolean
     prepareConfig?: PrepareConfig // Auto-prepare when approaching in cruise mode
+    spawnRadius?: number // Pre-spawn actors when player enters this radius (should be larger than trigger radius)
 }
 
 /**

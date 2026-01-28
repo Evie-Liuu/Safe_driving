@@ -72,6 +72,9 @@ export function GameScene() {
   const [isAssetsLoaded, setIsAssetsLoaded] = useState(false)
   const readyActorsRef = useRef<Set<string>>(new Set())
 
+  // Track pre-spawned events (actors visible but actions not yet triggered)
+  const preSpawnedEventIds = useRef<Set<string>>(new Set())
+
   const handleStatsUpdate = useCallback((newStats: PerformanceStats) => {
     setStats(newStats)
   }, [])
@@ -242,13 +245,18 @@ export function GameScene() {
           console.log(`🎯 Event activated: ${eventId}`)
           const event = riskEvents.find(e => e.id === eventId)
           if (event) {
-            // Create actor refs
-            const actorData = event.actors.map(actor => {
-              const actorRef = React.createRef<EventActorHandle>()
-              actorRefsMap.current.set(actor.id, actorRef)
-              return { ...actor, ref: actorRef, eventId }
-            })
-            setActiveEventActors(prev => [...prev, ...actorData])
+            // Only spawn actors if not already pre-spawned
+            if (!preSpawnedEventIds.current.has(eventId)) {
+              // Create actor refs
+              const actorData = event.actors.map(actor => {
+                const actorRef = React.createRef<EventActorHandle>()
+                actorRefsMap.current.set(actor.id, actorRef)
+                return { ...actor, ref: actorRef, eventId }
+              })
+              setActiveEventActors(prev => [...prev, ...actorData])
+            } else {
+              console.log(`[GameScene] ✅ Actors already pre-spawned for event: ${eventId}`)
+            }
 
             // Schedule actions using the authoritative start time from context
             // This ensures sync with the EventSystemUpdater's clock
@@ -283,6 +291,8 @@ export function GameScene() {
             setActiveEventActors(prev =>
               prev.filter(a => !event.actors.find(ea => ea.id === a.id))
             )
+            // Clear pre-spawned tracking
+            preSpawnedEventIds.current.delete(eventId)
           }
           eventExecutorRef.current.cancelActions(eventId)
         },
@@ -301,6 +311,42 @@ export function GameScene() {
       eventExecutorRef.current.clear()
     }
   }, [isAssetsLoaded])
+
+  // Pre-spawn actors when player enters spawnRadius (before trigger)
+  useEffect(() => {
+    if (!isAssetsLoaded) return
+
+    riskEvents.forEach(event => {
+      // Skip if no spawnRadius defined or already pre-spawned
+      if (!event.spawnRadius || preSpawnedEventIds.current.has(event.id)) return
+
+      // Skip if event is already active (triggered)
+      if (eventManagerRef.current?.getEventContext(event.id)) return
+
+      // Check if player is within spawn radius
+      const triggerPos = event.trigger.position
+      if (!triggerPos) return
+
+      const distance = Math.sqrt(
+        Math.pow(playerPosition.x - triggerPos[0], 2) +
+        Math.pow(playerPosition.z - triggerPos[2], 2)
+      )
+
+      if (distance <= event.spawnRadius) {
+        console.log(`[GameScene] 🎭 Pre-spawning actors for event: ${event.id} (distance: ${distance.toFixed(1)}m, spawnRadius: ${event.spawnRadius}m)`)
+
+        // Create actor refs and spawn actors
+        const actorData = event.actors.map(actor => {
+          const actorRef = React.createRef<EventActorHandle>()
+          actorRefsMap.current.set(actor.id, actorRef)
+          return { ...actor, ref: actorRef, eventId: event.id, isPreSpawned: true }
+        })
+
+        setActiveEventActors(prev => [...prev, ...actorData])
+        preSpawnedEventIds.current.add(event.id)
+      }
+    })
+  }, [playerPosition, isAssetsLoaded])
 
   const handleTriggerOncomingVehicle = useCallback((playerPosition: THREE.Vector3, playerRotation: number) => {
     // 計算對向車道位置（左側3.5米）
@@ -366,7 +412,7 @@ export function GameScene() {
           onPositionChange={handlePlayerMove}
           onSpeedChange={handleSpeedChange}
           onTriggerOncomingVehicle={handleTriggerOncomingVehicle}
-          enableCameraFollow={false}
+          enableCameraFollow={true}
           isCruising={isCruising}
           isBraking={isBraking || autoBraking}
           cruisePoints={cruisePoints}

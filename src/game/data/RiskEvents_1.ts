@@ -47,7 +47,7 @@ export const events: GameEvent[] = [
                 initialRotation: [0, -Math.PI, 0],
                 color: '#2E86AB', // Blue car
                 animationUrls: [
-                    '/src/assets/animations/car/Car_Main_LeftDoor_Opening_Animation.glb'
+                    '/src/assets/animations/car/Car_Main_RightDoor_Opening_Animation.glb'
                 ]
             },
             {
@@ -58,7 +58,7 @@ export const events: GameEvent[] = [
                 initialRotation: [0, -Math.PI / 2, 0],
                 scale: [1, 1, 1],
                 animationUrls: [
-                    '/src/assets/animations/character/Male_OpenCarLeftDoor_Inside_Animation.glb'
+                    '/src/assets/animations/character/Male_OpenCarRightDoor_Inside_Animation.glb'
                 ]
             }
         ],
@@ -76,7 +76,7 @@ export const events: GameEvent[] = [
             {
                 actorId: 'parked_car_1',
                 type: ActionType.ANIMATION,
-                name: 'Take 001.016',
+                name: 'Car_Main|Take 001|BaseLayer',
                 loop: false,
                 time: 0
             },
@@ -101,7 +101,8 @@ export const events: GameEvent[] = [
             actions: [PrepareActionType.DECELERATE, PrepareActionType.LANE_SWITCH],
             targetSpeedFactor: 0.5,
             laneOffset: -6.5 // Shift left 1.5m to avoid door
-        }
+        },
+        spawnRadius: 80 // Pre-spawn actors 50m away for smooth visual experience
     },
     // {
     //     id: 'taxi_roadside_stop',
