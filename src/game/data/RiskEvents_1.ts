@@ -49,7 +49,18 @@ export const events: GameEvent[] = [
                 animationUrls: [
                     '/src/assets/animations/car/Car_Main_LeftDoor_Opening_Animation.glb'
                 ]
-            }
+            },
+            // {
+            //     id: 'driver_1',
+            //     type: ActorType.PEDESTRIAN,
+            //     model: '/src/assets/models/Male1_Rigged.glb',
+            //     initialPosition: [8, 0, -65],
+            //     initialRotation: [0, -Math.PI / 2, 0],
+            //     scale: [1, 1, 1],
+            //     animationUrls: [
+            //         '/src/assets/animations/character/Male_Walking_Remain_Animation.glb'
+            //     ]
+            // }
         ],
         actions: [
             // Just a stationary hazard - could add door opening animation later
