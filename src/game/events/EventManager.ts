@@ -228,17 +228,22 @@ export class EventManager {
 
         const criteria = event.completionCriteria
 
-        // Check if player has passed the event location
+        // Check if player has passed the event location (using distance calculation)
         if (criteria.playerPassed) {
             const eventPos = event.trigger.position
             if (!eventPos) return false
 
-            const eventZ = eventPos[2]
-            const playerZ = playerState.position.z
+            // Calculate distance from event position
+            const eventVec = new THREE.Vector3(eventPos[0], eventPos[1], eventPos[2])
+            const distance = playerState.position.distanceTo(eventVec)
 
-            // Assuming forward movement is negative Z direction
-            if (playerZ < eventZ - (event.trigger.radius || 0)) {
-                // Player has passed
+            // Player must be beyond trigger radius + buffer to be considered "passed"
+            const triggerRadius = event.trigger.radius || 0
+            // TODO
+            const passedThreshold = triggerRadius + 10 // 10m buffer beyond trigger radius
+
+            if (distance > passedThreshold) {
+                // Player has passed (moved far enough from event)
 
                 // Check speed criteria if specified
                 const speedKmh = playerState.speed * 3.6
