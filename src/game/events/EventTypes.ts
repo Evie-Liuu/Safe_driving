@@ -228,7 +228,8 @@ export interface PrepareConfig {
 export enum DangerClickJudgment {
     FAST = 'fast',
     SLOW = 'slow',
-    MISS = 'miss'
+    MISS = 'miss',
+    WRONG = 'wrong'  // Clicked when no danger present
 }
 
 /**

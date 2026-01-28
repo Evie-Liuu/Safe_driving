@@ -78,6 +78,12 @@ export function GameScene() {
   // Track which events player has clicked/acknowledged (for MISS judgment on completion)
   const clickedEventIds = useRef<Set<string>>(new Set())
 
+  // Click error tolerance system (3 wrong clicks allowed)
+  const MAX_WRONG_CLICKS = 3
+  const [wrongClickCount, setWrongClickCount] = useState(0)
+  const [isClickDisabled, setIsClickDisabled] = useState(false)
+  const clickCooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const handleStatsUpdate = useCallback((newStats: PerformanceStats) => {
     setStats(newStats)
   }, [])
@@ -167,32 +173,74 @@ export function GameScene() {
     }
   }, [activeDanger, playerPosition.x, playerPosition.z])
 
-  const handleDangerClick = useCallback(() => {
-    if (!activeDanger || dangerClickedRef.current) return
-    dangerClickedRef.current = true
+  // Handle screen click for danger identification
+  const handleScreenClick = useCallback(() => {
+    // Ignore clicks if disabled (exceeded wrong click limit)
+    if (isClickDisabled) return
 
-    // Track that player clicked this event (for MISS judgment on completion)
-    clickedEventIds.current.add(activeDanger.eventId)
+    // Ignore if already clicked for current danger
+    if (activeDanger && dangerClickedRef.current) return
 
-    const clickTime = performance.now()
-    const brakingStart = brakingStartTimeRef.current
-
-    // Determine judgment: clicked before braking = Fast, after = Slow
-    let judgment: DangerClickJudgment
-    if (brakingStart === 0 || clickTime < brakingStart) {
-      judgment = DangerClickJudgment.FAST
-    } else {
-      judgment = DangerClickJudgment.SLOW
-    }
-
-    const eventName = activeDanger.eventName
-    setJudgmentResult({ judgment, eventName })
-    setActiveDanger(null)
-
-    // Clear judgment display after 2s
+    // Clear any existing judgment timer
     if (judgmentTimerRef.current) clearTimeout(judgmentTimerRef.current)
-    judgmentTimerRef.current = setTimeout(() => setJudgmentResult(null), 2000)
-  }, [activeDanger])
+
+    if (activeDanger) {
+      // CORRECT CLICK - There's an active danger
+      dangerClickedRef.current = true
+
+      // Track that player clicked this event (for MISS judgment on completion)
+      clickedEventIds.current.add(activeDanger.eventId)
+
+      // Reset wrong click count on successful identification
+      setWrongClickCount(0)
+
+      const clickTime = performance.now()
+      const brakingStart = brakingStartTimeRef.current
+
+      // Determine judgment: clicked before braking = Fast, after = Slow
+      let judgment: DangerClickJudgment
+      if (brakingStart === 0 || clickTime < brakingStart) {
+        judgment = DangerClickJudgment.FAST
+      } else {
+        judgment = DangerClickJudgment.SLOW
+      }
+
+      const eventName = activeDanger.eventName
+      setJudgmentResult({ judgment, eventName })
+      setActiveDanger(null)
+
+      // Clear judgment display after 2s
+      judgmentTimerRef.current = setTimeout(() => setJudgmentResult(null), 2000)
+    } else {
+      // WRONG CLICK - No danger present
+      const newWrongCount = wrongClickCount + 1
+      setWrongClickCount(newWrongCount)
+
+      // Show wrong click feedback
+      setJudgmentResult({ judgment: DangerClickJudgment.WRONG, eventName: `剩餘 ${MAX_WRONG_CLICKS - newWrongCount} 次` })
+
+      if (newWrongCount >= MAX_WRONG_CLICKS) {
+        // Exceeded limit - disable clicks temporarily
+        setIsClickDisabled(true)
+        console.log(`[GameScene] ❌ Exceeded wrong click limit (${MAX_WRONG_CLICKS})`)
+
+        // Re-enable after cooldown (3 seconds)
+        if (clickCooldownRef.current) clearTimeout(clickCooldownRef.current)
+        clickCooldownRef.current = setTimeout(() => {
+          setIsClickDisabled(false)
+          setWrongClickCount(0)
+          setJudgmentResult(null)
+          console.log(`[GameScene] ✅ Click re-enabled after cooldown`)
+        }, 3000)
+      } else {
+        // Clear wrong click feedback after 1s
+        judgmentTimerRef.current = setTimeout(() => setJudgmentResult(null), 1000)
+      }
+    }
+  }, [activeDanger, wrongClickCount, isClickDisabled])
+
+  // Keep old function name for compatibility
+  const handleDangerClick = handleScreenClick
 
   // Preload all assets (animations + models)
   useEffect(() => {
@@ -524,6 +572,66 @@ export function GameScene() {
         <OrbitControls enableDamping target={[playerPosition.x, playerPosition.y, playerPosition.z]} />
       </Canvas>
 
+      {/* 全螢幕點擊區域 - 用於辨識危險 */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          cursor: isClickDisabled ? 'not-allowed' : 'pointer',
+          zIndex: 10
+        }}
+        onClick={handleScreenClick}
+      />
+
+      {/* 剩餘點擊次數顯示 */}
+      <div style={{
+        position: 'absolute',
+        top: '10px',
+        right: '10px',
+        display: 'flex',
+        gap: '5px',
+        zIndex: 20,
+        pointerEvents: 'none'
+      }}>
+        {Array.from({ length: MAX_WRONG_CLICKS }).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              width: '20px',
+              height: '20px',
+              borderRadius: '50%',
+              border: '2px solid #fff',
+              background: i < (MAX_WRONG_CLICKS - wrongClickCount) ? '#44ff44' : '#ff4444',
+              boxShadow: '0 0 5px rgba(0,0,0,0.5)'
+            }}
+          />
+        ))}
+      </div>
+
+      {/* 點擊禁用提示 */}
+      {isClickDisabled && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: 'rgba(0, 0, 0, 0.8)',
+          color: '#ff4444',
+          padding: '20px 40px',
+          borderRadius: '10px',
+          fontFamily: 'monospace',
+          fontSize: '24px',
+          fontWeight: 'bold',
+          zIndex: 30,
+          pointerEvents: 'none'
+        }}>
+          冷卻中...
+        </div>
+      )}
+
       {/* UI 疊加層 */}
       <UIOverlay
         playerPosition={playerPosition}
@@ -671,7 +779,8 @@ function UIOverlay({
       pointerEvents: 'none',
       display: 'flex',
       flexDirection: 'column',
-      gap: '10px'
+      gap: '10px',
+      zIndex: 50
     }}>
       <div>
         <h3 style={{ margin: '0 0 10px 0' }}>遊戲控制</h3>
@@ -882,12 +991,14 @@ function JudgmentDisplay({
   const colorMap = {
     [DangerClickJudgment.FAST]: '#44ff44',
     [DangerClickJudgment.SLOW]: '#ffa500',
-    [DangerClickJudgment.MISS]: '#ff4444'
+    [DangerClickJudgment.MISS]: '#ff4444',
+    [DangerClickJudgment.WRONG]: '#888888'
   }
   const labelMap = {
     [DangerClickJudgment.FAST]: 'FAST',
     [DangerClickJudgment.SLOW]: 'SLOW',
-    [DangerClickJudgment.MISS]: 'MISS'
+    [DangerClickJudgment.MISS]: 'MISS',
+    [DangerClickJudgment.WRONG]: '誤點'
   }
 
   return (
@@ -897,7 +1008,8 @@ function JudgmentDisplay({
       left: '50%',
       transform: 'translate(-50%, -50%)',
       textAlign: 'center',
-      pointerEvents: 'none'
+      pointerEvents: 'none',
+      zIndex: 100
     }}>
       <div style={{
         fontSize: '64px',
