@@ -17,7 +17,7 @@ export function MaleCharacter({
 
     // Load model and animation
     const gltf = useGLTF('/src/assets/models/Car_Main_Rigged.glb')
-    const { animations } = useGLTF('/src/assets/animations/car/Car_Main_LeftDoor_Opening_Animation.glb')
+    const { animations } = useGLTF('/src/assets/animations/character/Male_Riding_Scooter_Animation.glb')
     // const gltf = useGLTF('/src/assets/models/Scooter1_Rigged.glb')
     // const { animations } = useGLTF('/src/assets/animations/car/Scooter_Moving_Animation.glb')
     // const gltf = useGLTF('/src/assets/models/Male1_Rigged.glb')
@@ -31,12 +31,14 @@ export function MaleCharacter({
         console.log('Available animations:', animations);
 
         if (actions) {
-            const actionName = 'Take 001.016';
+            const actionName = 'Car_Main|Take 001|BaseLayer';
             const action = actions[actionName];
 
             if (action) {
-                // action.reset().fadeIn(0.5).play();
-                // action.setLoop(THREE.LoopRepeat, Infinity);
+                // setTimeout(() => {
+                //     action.reset().fadeIn(0.5).play();
+                //     action.setLoop(THREE.LoopRepeat, Infinity);
+                // }, 1000)
             } else {
                 console.warn(`Animation "${actionName}" not found in`, Object.keys(actions));
                 // Fallback to first animation if specific one is missing
@@ -67,4 +69,4 @@ export function MaleCharacter({
 // useGLTF.preload('/src/assets/animations/car/Scooter_Moving_Animation.glb')
 
 useGLTF.preload('/src/assets/models/Car_Main_Rigged.glb')
-useGLTF.preload('/src/assets/animations/car/Car_Main_LeftDoor_Opening_Animation.glb')
+useGLTF.preload('/src/assets/animations/character/Male_Riding_Scooter_Animation.glb')
