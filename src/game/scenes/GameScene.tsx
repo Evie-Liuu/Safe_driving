@@ -16,7 +16,7 @@ import { EventExecutor } from '../events/EventExecutor'
 import { EventActor } from '../components/EventActor'
 import { EventActorHandle } from '../components/EventActor'
 import { EventSystemUpdater } from '../components/EventSystemUpdater'
-import { PlayerState, ActionType, ScriptAction, PrepareInstruction, DangerClickJudgment, PrepareZoneStatus } from '../events/EventTypes'
+import { PlayerState, ActionType, ScriptAction, PrepareInstruction, DangerClickJudgment, PrepareZoneStatus, GameEvent } from '../events/EventTypes'
 import { AnimationManager } from '../animations/AnimationManager'
 import { getSharedLoader } from '../utils/SharedLoader'
 
@@ -84,6 +84,20 @@ export function GameScene() {
   const [isClickDisabled, setIsClickDisabled] = useState(false)
   const clickCooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Scoring system
+  const SCORE_FAST = 12.5
+  const SCORE_SLOW = 6.25
+  const SCORE_MISS = 0
+  const MAX_MISS_TOLERANCE = 3
+  const [scoreHistory, setScoreHistory] = useState<Array<{
+    eventName: string
+    judgment: DangerClickJudgment
+    score: number
+  }>>([])
+  const [missCount, setMissCount] = useState(0)
+  const [showScorePanel, setShowScorePanel] = useState(false)
+  const [gameEnded, setGameEnded] = useState(false)
+
   const handleStatsUpdate = useCallback((newStats: PerformanceStats) => {
     setStats(newStats)
   }, [])
@@ -98,6 +112,56 @@ export function GameScene() {
 
   const toggleCruise = useCallback(() => {
     setIsCruising(prev => !prev)
+  }, [])
+
+  // Record score for a judgment
+  const recordScore = useCallback((eventName: string, judgment: DangerClickJudgment) => {
+    let score = SCORE_MISS
+    if (judgment === DangerClickJudgment.FAST) {
+      score = SCORE_FAST
+    } else if (judgment === DangerClickJudgment.SLOW) {
+      score = SCORE_SLOW
+    } else if (judgment === DangerClickJudgment.MISS) {
+      setMissCount(prev => prev + 1)
+    }
+    // WRONG clicks don't affect score history
+
+    if (judgment !== DangerClickJudgment.WRONG) {
+      setScoreHistory(prev => [...prev, { eventName, judgment, score }])
+    }
+  }, [])
+
+  // Handle cruise complete - show score panel
+  const handleCruiseComplete = useCallback(() => {
+    console.log('[GameScene] 🏁 Cruise completed!')
+    setIsCruising(false)
+    setGameEnded(true)
+    setShowScorePanel(true)
+  }, [])
+
+  // Restart game
+  const handleRestart = useCallback(() => {
+    // Reset all game state
+    setScoreHistory([])
+    setMissCount(0)
+    setWrongClickCount(0)
+    setIsClickDisabled(false)
+    setShowScorePanel(false)
+    setGameEnded(false)
+    setActiveDanger(null)
+    setJudgmentResult(null)
+    clickedEventIds.current.clear()
+    dangerClickedRef.current = false
+
+    // Reset event manager
+    if (eventManagerRef.current) {
+      eventManagerRef.current.reset()
+      // Re-register events
+      eventManagerRef.current.registerEvents(riskEvents)
+    }
+
+    // Reload the page to fully reset (simplest approach)
+    window.location.reload()
   }, [])
 
   const handlePrepareInstruction = useCallback((instruction: PrepareInstruction | null) => {
@@ -158,6 +222,7 @@ export function GameScene() {
             const name = activeDanger.eventName
             console.log(`[GameScene] ❌ Player passed event ${activeDanger.eventId} without triggering (distance: ${distanceFromEvent.toFixed(1)}m) - MISS`)
             setJudgmentResult({ judgment: DangerClickJudgment.MISS, eventName: name })
+            recordScore(name, DangerClickJudgment.MISS)
             setActiveDanger(null)
             if (judgmentTimerRef.current) clearTimeout(judgmentTimerRef.current)
             judgmentTimerRef.current = setTimeout(() => setJudgmentResult(null), 2000)
@@ -206,6 +271,7 @@ export function GameScene() {
 
       const eventName = activeDanger.eventName
       setJudgmentResult({ judgment, eventName })
+      recordScore(eventName, judgment)
       setActiveDanger(null)
 
       // Clear judgment display after 2s
@@ -369,6 +435,7 @@ export function GameScene() {
             if (event.prepareConfig && !clickedEventIds.current.has(eventId)) {
               console.log(`[GameScene] ❌ Event ${eventId} completed without player click - MISS`)
               setJudgmentResult({ judgment: DangerClickJudgment.MISS, eventName: event.name })
+              recordScore(event.name, DangerClickJudgment.MISS)
               if (judgmentTimerRef.current) clearTimeout(judgmentTimerRef.current)
               judgmentTimerRef.current = setTimeout(() => setJudgmentResult(null), 2000)
             }
@@ -532,8 +599,9 @@ export function GameScene() {
           onPositionChange={handlePlayerMove}
           onSpeedChange={handleSpeedChange}
           onTriggerOncomingVehicle={handleTriggerOncomingVehicle}
+          onCruiseComplete={handleCruiseComplete}
           enableCameraFollow={true}
-          isCruising={isCruising}
+          isCruising={isCruising && !gameEnded}
           isBraking={isBraking || autoBraking}
           cruisePoints={cruisePoints}
           laneOffset={autoLaneOffset}
@@ -598,7 +666,7 @@ export function GameScene() {
       </Canvas>
 
       {/* 全螢幕點擊區域 - 用於辨識危險 */}
-      {/* <div
+      <div
         style={{
           position: 'absolute',
           top: 0,
@@ -609,7 +677,7 @@ export function GameScene() {
           zIndex: 10
         }}
         onClick={handleScreenClick}
-      /> */}
+      />
 
       {/* 剩餘點擊次數顯示 */}
       <div style={{
@@ -669,10 +737,20 @@ export function GameScene() {
       />
 
       {/* 判定結果顯示 */}
-      {judgmentResult && (
+      {judgmentResult && !showScorePanel && (
         <JudgmentDisplay
           judgment={judgmentResult.judgment}
           eventName={judgmentResult.eventName}
+        />
+      )}
+
+      {/* 結算面板 */}
+      {showScorePanel && (
+        <ScorePanel
+          scoreHistory={scoreHistory}
+          missCount={missCount}
+          maxMissTolerance={MAX_MISS_TOLERANCE}
+          onRestart={handleRestart}
         />
       )}
 
@@ -1052,6 +1130,194 @@ function JudgmentDisplay({
         marginTop: '8px'
       }}>
         {eventName}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * 結算面板
+ */
+function ScorePanel({
+  scoreHistory,
+  missCount,
+  maxMissTolerance,
+  onRestart
+}: {
+  scoreHistory: Array<{ eventName: string; judgment: DangerClickJudgment; score: number }>
+  missCount: number
+  maxMissTolerance: number
+  onRestart: () => void
+}) {
+  const totalScore = scoreHistory.reduce((sum, item) => sum + item.score, 0)
+  const maxPossibleScore = scoreHistory.length * 12.5
+  const percentage = maxPossibleScore > 0 ? Math.round((totalScore / maxPossibleScore) * 100) : 0
+
+  const fastCount = scoreHistory.filter(s => s.judgment === DangerClickJudgment.FAST).length
+  const slowCount = scoreHistory.filter(s => s.judgment === DangerClickJudgment.SLOW).length
+  const missCountInHistory = scoreHistory.filter(s => s.judgment === DangerClickJudgment.MISS).length
+
+  // Determine grade based on percentage
+  let grade = 'F'
+  let gradeColor = '#ff4444'
+  if (percentage >= 90) { grade = 'S'; gradeColor = '#ffd700' }
+  else if (percentage >= 80) { grade = 'A'; gradeColor = '#44ff44' }
+  else if (percentage >= 70) { grade = 'B'; gradeColor = '#88ff88' }
+  else if (percentage >= 60) { grade = 'C'; gradeColor = '#ffa500' }
+  else if (percentage >= 50) { grade = 'D'; gradeColor = '#ff8844' }
+
+  return (
+    <div style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0, 0, 0, 0.85)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 200
+    }}>
+      <div style={{
+        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+        borderRadius: '20px',
+        padding: '40px',
+        minWidth: '400px',
+        maxWidth: '500px',
+        boxShadow: '0 0 40px rgba(0, 100, 255, 0.3)',
+        border: '2px solid rgba(100, 150, 255, 0.3)'
+      }}>
+        <h1 style={{
+          textAlign: 'center',
+          fontSize: '32px',
+          fontFamily: 'monospace',
+          color: '#fff',
+          marginBottom: '30px',
+          textShadow: '0 0 10px rgba(100, 150, 255, 0.5)'
+        }}>
+          🏁 行程結束
+        </h1>
+
+        {/* Grade */}
+        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+          <div style={{
+            fontSize: '80px',
+            fontWeight: 'bold',
+            fontFamily: 'monospace',
+            color: gradeColor,
+            textShadow: `0 0 30px ${gradeColor}`
+          }}>
+            {grade}
+          </div>
+          <div style={{
+            fontSize: '24px',
+            color: '#aaa',
+            fontFamily: 'monospace'
+          }}>
+            {percentage}%
+          </div>
+        </div>
+
+        {/* Score breakdown */}
+        <div style={{
+          background: 'rgba(0, 0, 0, 0.3)',
+          borderRadius: '10px',
+          padding: '20px',
+          marginBottom: '20px'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontSize: '18px',
+            fontFamily: 'monospace',
+            color: '#fff',
+            marginBottom: '15px'
+          }}>
+            <span>總分</span>
+            <span style={{ color: '#ffd700' }}>{totalScore.toFixed(1)} 分</span>
+          </div>
+
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '15px' }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontSize: '14px',
+              fontFamily: 'monospace',
+              color: '#44ff44',
+              marginBottom: '8px'
+            }}>
+              <span>⚡ FAST ({fastCount})</span>
+              <span>+{(fastCount * 12.5).toFixed(1)}</span>
+            </div>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontSize: '14px',
+              fontFamily: 'monospace',
+              color: '#ffa500',
+              marginBottom: '8px'
+            }}>
+              <span>🐢 SLOW ({slowCount})</span>
+              <span>+{(slowCount * 6.25).toFixed(1)}</span>
+            </div>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontSize: '14px',
+              fontFamily: 'monospace',
+              color: '#ff4444'
+            }}>
+              <span>❌ MISS ({missCountInHistory})</span>
+              <span>+0</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Miss tolerance warning */}
+        {missCount > 0 && (
+          <div style={{
+            background: 'rgba(255, 68, 68, 0.2)',
+            borderRadius: '8px',
+            padding: '10px 15px',
+            marginBottom: '20px',
+            fontSize: '14px',
+            fontFamily: 'monospace',
+            color: '#ff6666',
+            textAlign: 'center'
+          }}>
+            ⚠️ MISS 次數: {missCount} / {maxMissTolerance}
+          </div>
+        )}
+
+        {/* Restart button */}
+        <button
+          onClick={onRestart}
+          style={{
+            width: '100%',
+            padding: '15px',
+            fontSize: '18px',
+            fontFamily: 'monospace',
+            fontWeight: 'bold',
+            color: '#fff',
+            background: 'linear-gradient(135deg, #4a90d9 0%, #357abd 100%)',
+            border: 'none',
+            borderRadius: '10px',
+            cursor: 'pointer',
+            boxShadow: '0 4px 15px rgba(74, 144, 217, 0.4)',
+            transition: 'transform 0.2s, box-shadow 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.02)'
+            e.currentTarget.style.boxShadow = '0 6px 20px rgba(74, 144, 217, 0.6)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.boxShadow = '0 4px 15px rgba(74, 144, 217, 0.4)'
+          }}
+        >
+          🔄 重新開始
+        </button>
       </div>
     </div>
   )

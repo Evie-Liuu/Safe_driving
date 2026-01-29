@@ -10,6 +10,7 @@ interface PlayerControllerProps {
   onSpeedChange?: (speed: number) => void
   onRotationChange?: (rotation: number) => void
   onTriggerOncomingVehicle?: (playerPosition: THREE.Vector3, playerRotation: number) => void
+  onCruiseComplete?: () => void
   enableCameraFollow?: boolean
   children?: React.ReactNode
 }
@@ -27,6 +28,7 @@ export function PlayerController({
   onSpeedChange,
   onRotationChange,
   onTriggerOncomingVehicle,
+  onCruiseComplete,
   children,
   isCruising = false,
   cruisePoints = [],
@@ -47,6 +49,7 @@ export function PlayerController({
   const currentLaneOffset = useRef(0)
   const lastTriggerTime = useRef(0)
   const nextTriggerDelay = useRef(Math.random() * 10 + 5) // 5-15秒隨機間隔
+  const cruiseCompletedRef = useRef(false)
 
   // 鍵盤狀態
   const [keys, setKeys] = useState({
@@ -238,7 +241,16 @@ export function PlayerController({
 
       if (isCloseEnough || (isPassed && isWithinCorridor)) {
         // 到達目標點，切換到下一個點
-        currentPointIndex.current = (currentPointIndex.current + 1) % cruisePoints.length
+        const nextIdx = currentPointIndex.current + 1
+        if (nextIdx >= cruisePoints.length) {
+          // 巡航結束
+          if (!cruiseCompletedRef.current) {
+            cruiseCompletedRef.current = true
+            onCruiseComplete?.()
+          }
+        } else {
+          currentPointIndex.current = nextIdx
+        }
       } else {
         // 移動向目標
         if (toOffsetTarget.lengthSq() > 0.0001) {
