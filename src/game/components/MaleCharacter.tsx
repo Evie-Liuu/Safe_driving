@@ -21,7 +21,7 @@ export function MaleCharacter({
     // const gltf = useGLTF('/src/assets/models/Scooter1_Rigged.glb')
     // const { animations } = useGLTF('/src/assets/animations/car/Scooter_Moving_Animation.glb')
     const gltf = useGLTF('/src/assets/models/Male1_Rigged.glb')
-    const { animations } = useGLTF('/src/assets/animations/character/Male_OpenCarLeftDoor_Inside_Animation.glb')
+    const { animations } = useGLTF('/src/assets/animations/character/Male_OpenCarRightDoor_Inside_Animation.glb')
 
     // Bind animations to the group
     const { actions } = useAnimations(animations, group)
@@ -31,7 +31,8 @@ export function MaleCharacter({
         console.log('Available animations:', animations);
 
         if (actions) {
-            const actionName = 'Car_Main|Take 001|BaseLayer';
+            // const actionName = 'Car_Main|Take 001|BaseLayer';
+            const actionName = 'Take 001.009';
             const action = actions[actionName];
 
             if (action) {
@@ -63,7 +64,7 @@ export function MaleCharacter({
 }
 
 useGLTF.preload('/src/assets/models/Male1_Rigged.glb')
-useGLTF.preload('/src/assets/animations/character/Male_OpenCarLeftDoor_Inside_Animation.glb')
+useGLTF.preload('/src/assets/animations/character/Male_OpenCarRightDoor_Inside_Animation.glb')
 
 // useGLTF.preload('/src/assets/models/Scooter1_Rigged.glb')
 // useGLTF.preload('/src/assets/animations/car/Scooter_Moving_Animation.glb')

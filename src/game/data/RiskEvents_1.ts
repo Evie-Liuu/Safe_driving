@@ -33,7 +33,7 @@ export const events: GameEvent[] = [
         trigger: {
             type: TriggerType.PROXIMITY,
             position: [11, 0, -60],
-            radius: 18,
+            radius: 18, //37,  //TODO 是否會和prepare衝突
             requiredSpeed: {
                 min: 10
             }
@@ -47,7 +47,7 @@ export const events: GameEvent[] = [
                 initialRotation: [0, -Math.PI, 0],
                 color: '#2E86AB', // Blue car
                 animationUrls: [
-                    '/src/assets/animations/car/Car_Main_RightDoor_Opening_Animation.glb'
+                    '/src/assets/animations/car/Car_Main_RightDoor_Opening_Animation_TEST.glb'
                 ]
             },
             {
@@ -55,7 +55,7 @@ export const events: GameEvent[] = [
                 type: ActorType.PEDESTRIAN,
                 model: '/src/assets/models/Male1_Rigged.glb',
                 initialPosition: [11, 0, -60],
-                initialRotation: [0, -Math.PI / 2, 0],
+                initialRotation: [0, Math.PI, 0],
                 scale: [1, 1, 1],
                 animationUrls: [
                     '/src/assets/animations/character/Male_OpenCarRightDoor_Inside_Animation.glb'
@@ -83,7 +83,7 @@ export const events: GameEvent[] = [
             {
                 actorId: 'driver_1',
                 type: ActionType.ANIMATION,
-                name: 'Take 001',
+                name: 'Take 001.009',
                 loop: false,
                 time: 0
             }
@@ -99,8 +99,8 @@ export const events: GameEvent[] = [
         prepareConfig: {
             radius: 25, // Start preparing 25m away (trigger is 18m)
             actions: [PrepareActionType.DECELERATE, PrepareActionType.LANE_SWITCH],
-            targetSpeedFactor: 0.5,
-            laneOffset: -6.5 // Shift left 1.5m to avoid door
+            targetSpeedFactor: 0.2,
+            laneOffset: -5.5 // Shift left 1.5m to avoid door
         },
         spawnRadius: 80 // Pre-spawn actors 50m away for smooth visual experience
     },
