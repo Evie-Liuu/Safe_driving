@@ -164,14 +164,12 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                 console.log(`Actor ${id} light ${config.type}: ${config.enabled}`)
 
                 if (!config.enabled) {
-                    // Turn off all lights
+                    // Turn off all lights - restore original materials
                     if (lightMaterialsRef.current) {
                         lightMaterialsRef.current.forEach(light => {
-                            if (light.material instanceof THREE.MeshStandardMaterial) {
-                                // let mat = light.material.clone()
-                                // mat.emissive.setHex(0x000000)
-                                // mat.emissiveIntensity = 0
-                                // light.material = mat
+                            const mesh = light as any
+                            if (mesh.material instanceof THREE.MeshStandardMaterial && mesh.original_material) {
+                                mesh.material = mesh.original_material.clone()
                             }
                         })
                     }
@@ -292,7 +290,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                 }
             }
 
-            // Handle light blinking
+            // Handle light blinking and material updates
             if (lightConfigRef.current && lightConfigRef.current.enabled) {
                 const config = lightConfigRef.current
                 lightBlinkTime.current += delta
@@ -300,19 +298,58 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                 const blinkInterval = 1 / (config.blinkRate || 2) // default 2Hz
                 const isOn = Math.floor(lightBlinkTime.current / blinkInterval) % 2 === 0
 
+                // Brake lights don't blink
+                const isBrakeActive = config.type === 'brake'
+                const isActive = isBrakeActive ? true : isOn
+
                 // Update light materials
                 lightMaterialsRef.current.forEach(light => {
-                    if (light.material instanceof THREE.MeshStandardMaterial) {
-                        let mat = light.material.clone()
-                        if (isOn) {
-                            // Orange/amber for hazard lights
-                            mat.emissive.setHex(0xff8800)
-                            mat.emissiveIntensity = 2
-                            light.material = mat
+                    const mesh = light as any
+                    if (mesh.material instanceof THREE.MeshStandardMaterial && mesh.original_material) {
+                        const name = mesh.name.toLowerCase()
+                        let isMatched = false
+                        let emissiveColor = 0xff8800 // Default orange/amber for signals
+
+                        switch (config.type) {
+                            case 'hazard':
+                                // All indicator/turn signal lights
+                                if (name.includes('left') || name.includes('right')) {
+                                    isMatched = true
+                                }
+                                break
+                            case 'turnLeft':
+                                if (name.includes('left')) {
+                                    isMatched = true
+                                }
+                                break
+                            case 'turnRight':
+                                if (name.includes('right')) {
+                                    isMatched = true
+                                }
+                                break
+                            case 'brake':
+                                isMatched = true
+                                emissiveColor = 0xff0000 // Red for brake
+                                break
+                        }
+
+                        if (isMatched) {
+                            if (isActive) {
+                                // Switch to a working material instance if needed
+                                // We use original_material.clone() once when turning on, then reuse it
+                                if (mesh.material === mesh.original_material) {
+                                    mesh.material = mesh.original_material.clone()
+                                }
+
+                                const mat = mesh.material as THREE.MeshStandardMaterial
+                                // mat.emissive.setHex(emissiveColor)
+                                mat.emissiveIntensity = 3
+                            } else {
+                                mesh.material = mesh.original_material.clone()
+                            }
                         } else {
-                            // mat.emissive.setHex(0x000000)
-                            // mat.emissiveIntensity = 0
-                            light.material = light.original_material
+                            // Restore if not matched by current light action
+                            mesh.material = mesh.original_material.clone()
                         }
                     }
                 })
@@ -425,14 +462,13 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                     // Look for light meshes
                     clonedScene.traverse((child) => {
                         if (child instanceof THREE.Mesh) {
-                            if (child.name.toLowerCase().includes('light') ||
-                                child.name.toLowerCase().includes('lamp') ||
-                                child.name.toLowerCase().includes('back_left') ||
-                                child.name.toLowerCase().includes('back_right') ||
-                                child.name.toLowerCase().includes('front_left') ||
-                                child.name.toLowerCase().includes('front_right')) {
+                            const name = child.name.toLowerCase()
+                            if (name.includes('light') ||
+                                name.includes('lamp') ||
+                                name.includes('right') ||
+                                name.includes('left')) {
                                 if (child.material instanceof THREE.MeshStandardMaterial) {
-                                    child.original_material = child.material.clone()
+                                    (child as any).original_material = child.material.clone()
                                     lightMaterialsRef.current.push(child)
                                 }
                             }

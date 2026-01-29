@@ -172,73 +172,140 @@ export const events: GameEvent[] = [
     //     spawnRadius: 80
     // },
     {
-        id: 'pedestrian_crossing',
-        name: '行人穿越道路',
-        description: '行人從路邊穿越道路，玩家需要減速或停車',
+        id: 'bus_roadside_stop',
+        name: '公車外拋後靠站',
+        description: '右前方公車準備靠站，會先向左外拋，再向右切入站位停靠',
         trigger: {
             type: TriggerType.PROXIMITY,
-            position: [8, 0, -65],
-            radius: 20,
+            position: [11, 0, -60],
+            radius: 30,
             requiredSpeed: {
-                min: 5
+                min: 10 // Only trigger if player is moving (36 km/h)
             }
         },
         actors: [
             {
-                id: 'pedestrian_1',
-                type: ActorType.PEDESTRIAN,
-                model: '/src/assets/models/Male1_Rigged.glb',
-                initialPosition: [13, 0, -65],
-                initialRotation: [0, -Math.PI / 2, 0],
-                scale: [1, 1, 1],
-                animationUrls: [
-                    '/src/assets/animations/character/Male_Walking_Remain_Animation.glb'
-                ]
+                id: 'bus_1',
+                type: ActorType.VEHICLE,
+                model: '/src/assets/models/Bus_Rigged.glb',
+                initialPosition: [8.5, 0, -35],
+                initialRotation: [0, Math.PI, 0],
+                // color: '#FFD700' // Gold color for taxi
             }
         ],
         actions: [
-            // Walk across the road
+            // Turn on hazard lights immediately
             {
-                actorId: 'pedestrian_1',
+                actorId: 'bus_1',
+                type: ActionType.LIGHT,
+                lightType: 'turnRight',
+                enabled: true,
+                blinkRate: 2,
+                time: 0,
+                duration: 10
+            },
+            // Move to roadside (slow pull-over)
+            {
+                actorId: 'bus_1',
                 type: ActionType.MOVEMENT,
                 path: [
-                    [13, 0, -65],
-                    [6, 0, -65],
-                    [0, 0, -65],
-                    [-6, 0, -65],
-                    [-13, 0, -65]
+                    [9.5, 0, -35],
+                    [9.7, 0, -40],
+                    [10, 0, -47],
+                    [11, 0, -60]
                 ],
-                speed: 2.5,
+                speed: 8,
                 time: 0,
-                duration: 8
-            },
-            // Add walking animation when animation system is integrated
-            {
-                actorId: 'pedestrian_1',
-                type: ActionType.ANIMATION,
-                // name: 'Male_Walking_Animation',
-                name: 'Take 001',
-                loop: true,
-                time: 0
+                duration: 3
             }
         ],
         requiredPlayerResponse: {
             type: PlayerResponseType.DECELERATE,
             targetSpeed: {
-                max: 30 // Must slow significantly
+                max: 50 // Must slow to under 50 km/h
             },
-            validationRadius: 20
+            validationRadius: 15
         },
         completionCriteria: {
             playerPassed: true,
-            maxSpeed: 40
+            maxSpeed: 60 // Player must pass at reasonable speed
         },
-        priority: 15, // Higher priority than taxi event
+        priority: 10,
         prepareConfig: {
-            radius: 25, // Start preparing 40m away (trigger is 25m)
+            radius: 35, // Start preparing 35m away (trigger is 20m)
             actions: [PrepareActionType.DECELERATE],
-            targetSpeedFactor: 0.3
+            targetSpeedFactor: 0.5
         },
         spawnRadius: 80
     },
+    // {
+    //     id: 'pedestrian_crossing',
+    //     name: '行人穿越道路',
+    //     description: '行人從路邊穿越道路，玩家需要減速或停車',
+    //     trigger: {
+    //         type: TriggerType.PROXIMITY,
+    //         position: [8, 0, -65],
+    //         radius: 20,
+    //         requiredSpeed: {
+    //             min: 5
+    //         }
+    //     },
+    //     actors: [
+    //         {
+    //             id: 'pedestrian_1',
+    //             type: ActorType.PEDESTRIAN,
+    //             model: '/src/assets/models/Male1_Rigged.glb',
+    //             initialPosition: [13, 0, -65],
+    //             initialRotation: [0, -Math.PI / 2, 0],
+    //             scale: [1, 1, 1],
+    //             animationUrls: [
+    //                 '/src/assets/animations/character/Male_Walking_Remain_Animation.glb'
+    //             ]
+    //         }
+    //     ],
+    //     actions: [
+    //         // Walk across the road
+    //         {
+    //             actorId: 'pedestrian_1',
+    //             type: ActionType.MOVEMENT,
+    //             path: [
+    //                 [13, 0, -65],
+    //                 [6, 0, -65],
+    //                 [0, 0, -65],
+    //                 [-6, 0, -65],
+    //                 [-13, 0, -65]
+    //             ],
+    //             speed: 2.5,
+    //             time: 0,
+    //             duration: 8
+    //         },
+    //         // Add walking animation when animation system is integrated
+    //         {
+    //             actorId: 'pedestrian_1',
+    //             type: ActionType.ANIMATION,
+    //             // name: 'Male_Walking_Animation',
+    //             name: 'Take 001',
+    //             loop: true,
+    //             time: 0
+    //         }
+    //     ],
+    //     requiredPlayerResponse: {
+    //         type: PlayerResponseType.DECELERATE,
+    //         targetSpeed: {
+    //             max: 30 // Must slow significantly
+    //         },
+    //         validationRadius: 20
+    //     },
+    //     completionCriteria: {
+    //         playerPassed: true,
+    //         maxSpeed: 40
+    //     },
+    //     priority: 15, // Higher priority than taxi event
+    //     prepareConfig: {
+    //         radius: 25, // Start preparing 40m away (trigger is 25m)
+    //         actions: [PrepareActionType.DECELERATE],
+    //         targetSpeedFactor: 0.3
+    //     },
+    //     spawnRadius: 80
+    // },
 ]
