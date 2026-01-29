@@ -220,7 +220,23 @@ export function PlayerController({
       )
       const distanceToOffsetTarget = toOffsetTarget.length()
 
-      if (distanceToOffsetTarget < 0.5) {
+      // Improved Waypoint Switching Logic
+      // Check 1: Close enough (Relaxed from 0.5 to 1.5)
+      const hitThreshold = 1.5
+      const isCloseEnough = distanceToOffsetTarget < hitThreshold
+
+      // Check 2: Passed the point (Dot product)
+      // pathDirection points to the target.
+      // toOffsetTarget points FROM player TO target.
+      // If dot product is negative, player has passed the target "plane".
+      const distanceAhead = toOffsetTarget.dot(pathDirection)
+      const isPassed = distanceAhead < 0
+
+      // Check 3: Corridor width (Rejection)
+      // Only switch if we passed AND we are relatively close to the path line (e.g. 5m)
+      const isWithinCorridor = distanceToOffsetTarget < 5.0
+
+      if (isCloseEnough || (isPassed && isWithinCorridor)) {
         // 到達目標點，切換到下一個點
         currentPointIndex.current = (currentPointIndex.current + 1) % cruisePoints.length
       } else {
@@ -236,10 +252,14 @@ export function PlayerController({
           while (rotationDiff > Math.PI) rotationDiff -= Math.PI * 2
           while (rotationDiff < -Math.PI) rotationDiff += Math.PI * 2
 
-          if (Math.abs(rotationDiff) > 0.05) {
-            groupRef.current.rotation.y += rotationDiff * turnSpeed * 2 // 轉向稍微快一點
-          } else {
+          // Use constant angular velocity for stable turning
+          // Prevents overshoot and provides consistent turning radius
+          const maxTurnStep = turnSpeed // defined as rotationSpeed * delta
+
+          if (Math.abs(rotationDiff) < maxTurnStep) {
             groupRef.current.rotation.y = targetRotation
+          } else {
+            groupRef.current.rotation.y += Math.sign(rotationDiff) * maxTurnStep
           }
         }
 
