@@ -177,29 +177,40 @@ export function PlayerController({
 
       // 巡航邏輯
       const targetPoint = new THREE.Vector3(...cruisePoints[currentPointIndex.current])
-      // Apply lane offset (perpendicular to forward direction on X axis)
-      if (Math.abs(currentLaneOffset.current) > 0.01) {
-        targetPoint.x += currentLaneOffset.current
-      }
       const currentPos = groupRef.current.position.clone()
 
-      const direction = targetPoint.clone().sub(currentPos)
+      // Calculate path direction (from current position to target, ignoring Y)
+      const pathDirection = new THREE.Vector3(
+        targetPoint.x - currentPos.x,
+        0,
+        targetPoint.z - currentPos.z
+      )
+      const distanceToTarget = pathDirection.length()
 
-      // Ignore Y axis for distance and rotation to prevent spiraling if height differs
-      const flatDirection = new THREE.Vector3(direction.x, 0, direction.z)
-      const distance = flatDirection.length()
-
-      if (distance < 0.5) {
+      if (distanceToTarget < 0.5) {
         // 到達目標點，切換到下一個點
         currentPointIndex.current = (currentPointIndex.current + 1) % cruisePoints.length
       } else {
-        // 移動向目標
-        // Avoid zero vector normalization
-        if (flatDirection.lengthSq() > 0.0001) {
-          flatDirection.normalize()
+        // Calculate perpendicular direction for lane offset (rotate path direction 90 degrees)
+        // Perpendicular on XZ plane: (x, z) -> (-z, x) for left offset
+        const perpendicular = new THREE.Vector3(-pathDirection.z, 0, pathDirection.x).normalize()
 
-          // 平滑轉向
-          const targetRotation = Math.atan2(flatDirection.x, flatDirection.z)
+        // Apply lane offset perpendicular to path direction
+        const offsetTargetPoint = targetPoint.clone()
+        if (Math.abs(currentLaneOffset.current) > 0.01) {
+          offsetTargetPoint.add(perpendicular.multiplyScalar(currentLaneOffset.current))
+        }
+
+        // Direction to offset target point (for actual movement)
+        const directionToOffset = offsetTargetPoint.clone().sub(currentPos)
+        const flatDirectionToOffset = new THREE.Vector3(directionToOffset.x, 0, directionToOffset.z)
+
+        // 移動向目標
+        if (flatDirectionToOffset.lengthSq() > 0.0001) {
+          flatDirectionToOffset.normalize()
+
+          // 平滑轉向 - use direction to offset target
+          const targetRotation = Math.atan2(flatDirectionToOffset.x, flatDirectionToOffset.z)
           let rotationDiff = targetRotation - groupRef.current.rotation.y
 
           // 確保旋轉角度在 -PI 到 PI 之間

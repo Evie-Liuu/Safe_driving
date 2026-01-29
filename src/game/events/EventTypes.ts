@@ -198,6 +198,7 @@ export interface EventContext {
     eventId: string
     state: EventState
     startTime: number
+    startPosition: THREE.Vector3 // Player position when event was activated
     activeActors: Map<string, any>
     completedActions: Set<string>
     playerState: PlayerState
@@ -220,6 +221,7 @@ export interface PrepareConfig {
     targetSpeedFactor?: number // Speed multiplier (0-1), e.g. 0.5 = half speed
     laneOffset?: number // Lateral offset in meters (positive = left, negative = right)
     clickDeadline?: number // Max seconds allowed to click the danger factor (default: 5)
+    offsetHoldDistance?: number // Distance past trigger to maintain lane offset before recovering (meters)
 }
 
 /**

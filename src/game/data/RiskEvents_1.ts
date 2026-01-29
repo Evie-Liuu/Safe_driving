@@ -100,7 +100,8 @@ export const events: GameEvent[] = [
             radius: 25, // Start preparing 25m away (trigger is 18m)
             actions: [PrepareActionType.DECELERATE, PrepareActionType.LANE_SWITCH],
             targetSpeedFactor: 0.3,
-            laneOffset: -5.5 // Shift left 1.5m to avoid door
+            laneOffset: -5.5, // Shift left to avoid door
+            // offsetHoldDistance: 15 // Maintain offset for 15m after passing trigger
         },
         spawnRadius: 80 // Pre-spawn actors 50m away for smooth visual experience
     },

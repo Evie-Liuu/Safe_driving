@@ -158,6 +158,7 @@ export class EventManager {
             eventId: event.id,
             state: EventState.ACTIVE,
             startTime: currentTime,
+            startPosition: playerState.position.clone(),
             activeActors: new Map(),
             completedActions: new Set(),
             playerState: { ...playerState }
@@ -254,7 +255,9 @@ export class EventManager {
             const dotProduct = eventToPlayer.dot(playerForward)
 
             // Player must be beyond threshold in the forward direction to be considered "passed"
-            const passedThreshold = 5
+            // Use trigger radius + buffer to ensure player has fully passed the event area
+            const triggerRadius = event.trigger.radius || 10
+            const passedThreshold = triggerRadius + 15 // Extra buffer after passing event target
 
             if (dotProduct > passedThreshold) {
                 // Player has passed the event (moved past it in their direction of travel)
@@ -440,6 +443,7 @@ export class EventManager {
     /**
      * Check prepare zones for pending events (cruise auto-response)
      * Returns the highest-priority prepare instruction if player is in a prepare zone
+     * Also checks active events for offset hold distance
      */
     checkPrepareZone(playerState: PlayerState): PrepareInstruction | null {
         if (!playerState.isCruising) return null
@@ -447,6 +451,7 @@ export class EventManager {
         let bestInstruction: PrepareInstruction | null = null
         let bestPriority = -1
 
+        // Check pending events (approaching)
         for (const [, event] of this.pendingEvents) {
             if (!event.prepareConfig || !event.trigger.position) continue
 
@@ -458,7 +463,6 @@ export class EventManager {
 
             if (priority <= bestPriority) continue
 
-            // TODO: Determine zone status
             let status: PrepareZoneStatus
             if (distance <= triggerRadius) {
                 status = PrepareZoneStatus.INSIDE_TRIGGER
@@ -483,6 +487,38 @@ export class EventManager {
                     : 0,
                 clickDeadline: config.clickDeadline ?? 5,
                 status
+            }
+        }
+
+        // Check active events for offset hold distance (player has passed but should maintain offset)
+        for (const [eventId, context] of this.activeEvents) {
+            const event = this.eventRegistry.get(eventId)
+            if (!event?.prepareConfig || !event.trigger.position) continue
+
+            const config = event.prepareConfig
+            const offsetHoldDistance = config.offsetHoldDistance ?? 0
+            if (offsetHoldDistance <= 0) continue
+            if (!config.actions.includes(PrepareActionType.LANE_SWITCH)) continue
+
+            const priority = event.priority || 0
+            if (priority <= bestPriority) continue
+
+            // Calculate distance traveled since event activation (more stable than rotation-based)
+            const distanceTraveled = playerState.position.distanceTo(context.startPosition)
+
+            // Player has moved since event activation, maintain offset until they've traveled offsetHoldDistance
+            if (distanceTraveled > 0 && distanceTraveled <= offsetHoldDistance) {
+                bestPriority = priority
+                bestInstruction = {
+                    eventId: event.id,
+                    eventName: event.name,
+                    triggerPosition: event.trigger.position!,
+                    shouldBrake: false, // No braking needed after passing
+                    targetSpeedFactor: 1, // Resume normal speed
+                    laneOffset: config.laneOffset ?? -1.5,
+                    clickDeadline: config.clickDeadline ?? 5,
+                    status: PrepareZoneStatus.INSIDE_TRIGGER
+                }
             }
         }
 
