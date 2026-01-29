@@ -228,22 +228,36 @@ export class EventManager {
 
         const criteria = event.completionCriteria
 
-        // Check if player has passed the event location (using distance calculation)
+        // Check if player has passed the event location (using vector dot product)
         if (criteria.playerPassed) {
             const eventPos = event.trigger.position
             if (!eventPos) return false
 
-            // Calculate distance from event position
             const eventVec = new THREE.Vector3(eventPos[0], eventPos[1], eventPos[2])
-            const distance = playerState.position.distanceTo(eventVec)
 
-            // Player must be beyond trigger radius + buffer to be considered "passed"
-            const triggerRadius = event.trigger.radius || 0
-            // TODO
-            const passedThreshold = triggerRadius + 10 // 10m buffer beyond trigger radius
+            // Calculate player's forward direction from rotation (Y-axis rotation)
+            // In THREE.js with typical driving setup: rotation 0 = facing -Z direction
+            const playerForward = new THREE.Vector3(
+                -Math.sin(playerState.rotation),
+                0,
+                -Math.cos(playerState.rotation)
+            )
 
-            if (distance > passedThreshold) {
-                // Player has passed (moved far enough from event)
+            // Vector from event to player (on XZ plane)
+            const eventToPlayer = new THREE.Vector3(
+                playerState.position.x - eventVec.x,
+                0,
+                playerState.position.z - eventVec.z
+            )
+
+            // Dot product: positive means player is "ahead" of event in their travel direction
+            const dotProduct = eventToPlayer.dot(playerForward)
+
+            // Player must be beyond threshold in the forward direction to be considered "passed"
+            const passedThreshold = 5
+
+            if (dotProduct > passedThreshold) {
+                // Player has passed the event (moved past it in their direction of travel)
 
                 // Check speed criteria if specified
                 const speedKmh = playerState.speed * 3.6
