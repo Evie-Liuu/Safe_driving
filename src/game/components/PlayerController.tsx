@@ -176,41 +176,60 @@ export function PlayerController({
       }
 
       // 巡航邏輯
-      const targetPoint = new THREE.Vector3(...cruisePoints[currentPointIndex.current])
+      const currentIdx = currentPointIndex.current
+      const targetPoint = new THREE.Vector3(...cruisePoints[currentIdx])
       const currentPos = groupRef.current.position.clone()
 
-      // Calculate path direction (from current position to target, ignoring Y)
+      // Calculate path direction from PREVIOUS cruise point to CURRENT target
+      // This gives a stable reference direction independent of player's offset position
+      const prevIdx = currentIdx > 0 ? currentIdx - 1 : cruisePoints.length - 1
+      const prevPoint = new THREE.Vector3(...cruisePoints[prevIdx])
       const pathDirection = new THREE.Vector3(
+        targetPoint.x - prevPoint.x,
+        0,
+        targetPoint.z - prevPoint.z
+      )
+
+      // If path direction is too short (same point), fall back to player-to-target direction
+      const toTarget = new THREE.Vector3(
         targetPoint.x - currentPos.x,
         0,
         targetPoint.z - currentPos.z
       )
-      const distanceToTarget = pathDirection.length()
+      if (pathDirection.lengthSq() < 0.01) {
+        pathDirection.copy(toTarget)
+      }
+      pathDirection.normalize()
 
-      if (distanceToTarget < 0.5) {
+      // Calculate perpendicular direction for lane offset (rotate 90 degrees on XZ plane)
+      // (x, z) -> (-z, x) gives left direction when facing forward
+      const perpendicular = new THREE.Vector3(-pathDirection.z, 0, pathDirection.x)
+
+      // Calculate offset target: target point + perpendicular offset
+      const offsetTargetPoint = targetPoint.clone()
+      if (Math.abs(currentLaneOffset.current) > 0.01) {
+        offsetTargetPoint.add(perpendicular.clone().multiplyScalar(currentLaneOffset.current))
+      }
+
+      // Check distance to OFFSET target for point switching (not original target)
+      // This prevents getting stuck when offset keeps player far from original target
+      const toOffsetTarget = new THREE.Vector3(
+        offsetTargetPoint.x - currentPos.x,
+        0,
+        offsetTargetPoint.z - currentPos.z
+      )
+      const distanceToOffsetTarget = toOffsetTarget.length()
+
+      if (distanceToOffsetTarget < 0.5) {
         // 到達目標點，切換到下一個點
         currentPointIndex.current = (currentPointIndex.current + 1) % cruisePoints.length
       } else {
-        // Calculate perpendicular direction for lane offset (rotate path direction 90 degrees)
-        // Perpendicular on XZ plane: (x, z) -> (-z, x) for left offset
-        const perpendicular = new THREE.Vector3(-pathDirection.z, 0, pathDirection.x).normalize()
-
-        // Apply lane offset perpendicular to path direction
-        const offsetTargetPoint = targetPoint.clone()
-        if (Math.abs(currentLaneOffset.current) > 0.01) {
-          offsetTargetPoint.add(perpendicular.multiplyScalar(currentLaneOffset.current))
-        }
-
-        // Direction to offset target point (for actual movement)
-        const directionToOffset = offsetTargetPoint.clone().sub(currentPos)
-        const flatDirectionToOffset = new THREE.Vector3(directionToOffset.x, 0, directionToOffset.z)
-
         // 移動向目標
-        if (flatDirectionToOffset.lengthSq() > 0.0001) {
-          flatDirectionToOffset.normalize()
+        if (toOffsetTarget.lengthSq() > 0.0001) {
+          toOffsetTarget.normalize()
 
-          // 平滑轉向 - use direction to offset target
-          const targetRotation = Math.atan2(flatDirectionToOffset.x, flatDirectionToOffset.z)
+          // 平滑轉向
+          const targetRotation = Math.atan2(toOffsetTarget.x, toOffsetTarget.z)
           let rotationDiff = targetRotation - groupRef.current.rotation.y
 
           // 確保旋轉角度在 -PI 到 PI 之間

@@ -101,7 +101,7 @@ export const events: GameEvent[] = [
             actions: [PrepareActionType.DECELERATE, PrepareActionType.LANE_SWITCH],
             targetSpeedFactor: 0.3,
             laneOffset: -5.5, // Shift left to avoid door
-            // offsetHoldDistance: 15 // Maintain offset for 15m after passing trigger
+            offsetHoldDistance: 15 // Maintain offset for 15m after passing trigger
         },
         spawnRadius: 80 // Pre-spawn actors 50m away for smooth visual experience
     },
