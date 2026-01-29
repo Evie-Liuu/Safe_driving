@@ -47,7 +47,7 @@ export const events: GameEvent[] = [
                 initialRotation: [0, -Math.PI, 0],
                 color: '#2E86AB', // Blue car
                 animationUrls: [
-                    '/src/assets/animations/car/Car_Main_RightDoor_Opening_Animation_TEST.glb'
+                    '/src/assets/animations/car/Car_Main_LeftDoor_Opening_Animation.glb'
                 ]
             },
             {
@@ -58,7 +58,7 @@ export const events: GameEvent[] = [
                 initialRotation: [0, Math.PI, 0],
                 scale: [1, 1, 1],
                 animationUrls: [
-                    '/src/assets/animations/character/Male_OpenCarRightDoor_Inside_Animation.glb'
+                    '/src/assets/animations/character/Male_OpenCarLeftDoor_Inside_Animation.glb'
                 ]
             }
         ],
@@ -76,7 +76,7 @@ export const events: GameEvent[] = [
             {
                 actorId: 'parked_car_1',
                 type: ActionType.ANIMATION,
-                name: 'Car_Main|Take 001|BaseLayer',
+                name: 'Car_Main_LeftDoor_Opening_Animation',
                 loop: false,
                 time: 0
             },
@@ -99,7 +99,7 @@ export const events: GameEvent[] = [
         prepareConfig: {
             radius: 25, // Start preparing 25m away (trigger is 18m)
             actions: [PrepareActionType.DECELERATE, PrepareActionType.LANE_SWITCH],
-            targetSpeedFactor: 0.2,
+            targetSpeedFactor: 0.3,
             laneOffset: -5.5 // Shift left 1.5m to avoid door
         },
         spawnRadius: 80 // Pre-spawn actors 50m away for smooth visual experience
