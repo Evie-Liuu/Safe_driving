@@ -342,7 +342,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                                 }
 
                                 const mat = mesh.material as THREE.MeshStandardMaterial
-                                // mat.emissive.setHex(emissiveColor)
+                                mat.emissive = new THREE.Color(emissiveColor)
                                 mat.emissiveIntensity = 3
                             } else {
                                 mesh.material = mesh.original_material.clone()
