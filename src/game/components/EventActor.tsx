@@ -63,6 +63,7 @@ interface EventActorProps extends EventActorType {
     animationUrls?: string[]
     onComplete?: () => void
     onReady?: (actorId: string) => void
+    initialLightAction?: LightConfig
     enableDebug?: boolean
 }
 
@@ -83,6 +84,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
             color,
             onComplete,
             onReady,
+            initialLightAction,
             enableDebug = false
         },
         ref
@@ -90,7 +92,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
         const groupRef = useRef<THREE.Group>(null)
         const movementConfigRef = useRef<MovementConfig | null>(null)
         const currentPathIndex = useRef(0)
-        const lightConfigRef = useRef<LightConfig | null>(null)
+        const lightConfigRef = useRef<LightConfig | null>(initialLightAction || null)
         const lightBlinkTime = useRef(0)
 
         // Light materials refs for blinking

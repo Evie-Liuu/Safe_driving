@@ -32,7 +32,7 @@ export const events: GameEvent[] = [
         description: '路邊停放的車輛突然打開車門',
         trigger: {
             type: TriggerType.PROXIMITY,
-            position: [10, 0, -60],
+            position: [11, 0, -60],
             radius: 18,
             requiredSpeed: {
                 min: 10
@@ -43,7 +43,7 @@ export const events: GameEvent[] = [
                 id: 'parked_car_1',
                 type: ActorType.VEHICLE,
                 model: '/src/assets/models/Car_Main_Rigged.glb',
-                initialPosition: [10, 0, -60],
+                initialPosition: [11, 0, -60],
                 initialRotation: [0, -Math.PI, 0],
                 color: '#2E86AB', // Blue car
                 animationUrls: [
@@ -54,7 +54,7 @@ export const events: GameEvent[] = [
                 id: 'driver_1',
                 type: ActorType.PEDESTRIAN,
                 model: '/src/assets/models/Male1_Rigged.glb',
-                initialPosition: [10, 0, -60],
+                initialPosition: [11, 0, -60],
                 initialRotation: [0, -Math.PI / 2, 0],
                 scale: [1, 1, 1],
                 animationUrls: [

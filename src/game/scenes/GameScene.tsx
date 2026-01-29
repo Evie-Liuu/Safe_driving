@@ -139,7 +139,6 @@ export function GameScene() {
           // Event is active - player successfully triggered it, clear without MISS
           // MISS judgment will be handled in onEventCompleted if player didn't click
           console.log(`[GameScene] ✅ Event ${activeDanger.eventId} was triggered, clearing danger marker`)
-          // MISS
           setActiveDanger(null)
         } else {
           // Event was NOT activated - check if player has moved far enough to be considered a miss
@@ -219,6 +218,7 @@ export function GameScene() {
       // Show wrong click feedback
       setJudgmentResult({ judgment: DangerClickJudgment.WRONG, eventName: `剩餘 ${MAX_WRONG_CLICKS - newWrongCount} 次` })
 
+      // TODO: 遊戲結束
       if (newWrongCount >= MAX_WRONG_CLICKS) {
         // Exceeded limit - disable clicks temporarily
         setIsClickDisabled(true)
@@ -434,7 +434,32 @@ export function GameScene() {
         const actorData = event.actors.map(actor => {
           const actorRef = React.createRef<EventActorHandle>()
           actorRefsMap.current.set(actor.id, actorRef)
-          return { ...actor, ref: actorRef, eventId: event.id, isPreSpawned: true }
+
+          // 檢查是否有初始燈光動作 (ActionType.LIGHT)
+          const lightAction = event.actions.find(a =>
+            a.type === ActionType.LIGHT &&
+            a.actorId === actor.id &&
+            a.time === 0
+          )
+
+          let initialLightAction = null
+          if (lightAction) {
+            const la = lightAction as any
+            initialLightAction = {
+              type: la.lightType,
+              enabled: la.enabled,
+              blinkRate: la.blinkRate
+            }
+            // console.log(`[GameScene] 💡 Found initial light action for ${actor.id}:`, initialLightAction)
+          }
+
+          return {
+            ...actor,
+            ref: actorRef,
+            eventId: event.id,
+            isPreSpawned: true,
+            initialLightAction
+          }
         })
 
         setActiveEventActors(prev => [...prev, ...actorData])
