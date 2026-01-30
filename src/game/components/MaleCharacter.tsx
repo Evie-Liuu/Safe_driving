@@ -36,10 +36,10 @@ export function MaleCharacter({
             const action = actions[actionName];
 
             if (action) {
-                // setTimeout(() => {
-                //     action.reset().fadeIn(0.5).play();
-                //     action.setLoop(THREE.LoopRepeat, Infinity);
-                // }, 1000)
+                setTimeout(() => {
+                    action.reset().fadeIn(0.5).play();
+                    action.setLoop(THREE.LoopRepeat, Infinity);
+                }, 1000)
             } else {
                 console.warn(`Animation "${actionName}" not found in`, Object.keys(actions));
                 // Fallback to first animation if specific one is missing

@@ -168,8 +168,8 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                     if (lightMaterialsRef.current) {
                         lightMaterialsRef.current.forEach(light => {
                             const mesh = light as any
-                            if (mesh.material instanceof THREE.MeshStandardMaterial && mesh.original_material) {
-                                mesh.material = mesh.original_material.clone()
+                            if (mesh.original_material) {
+                                mesh.material = mesh.original_material
                             }
                         })
                     }
@@ -305,7 +305,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                 // Update light materials
                 lightMaterialsRef.current.forEach(light => {
                     const mesh = light as any
-                    if (mesh.material instanceof THREE.MeshStandardMaterial && mesh.original_material) {
+                    if (mesh.original_material && mesh.active_material) {
                         const name = mesh.name.toLowerCase()
                         let isMatched = false
                         let emissiveColor = 0xff8800 // Default orange/amber for signals
@@ -333,23 +333,19 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                                 break
                         }
 
-                        if (isMatched) {
-                            if (isActive) {
-                                // Switch to a working material instance if needed
-                                // We use original_material.clone() once when turning on, then reuse it
-                                if (mesh.material === mesh.original_material) {
-                                    mesh.material = mesh.original_material.clone()
-                                }
-
-                                const mat = mesh.material as THREE.MeshStandardMaterial
-                                mat.emissive = new THREE.Color(emissiveColor)
-                                mat.emissiveIntensity = 3
-                            } else {
-                                mesh.material = mesh.original_material.clone()
+                        if (isMatched && isActive) {
+                            // Use the pre-cloned active material
+                            const mat = mesh.active_material as THREE.MeshStandardMaterial
+                            mat.emissive.set(emissiveColor)
+                            mat.emissiveIntensity = 3
+                            if (mesh.material !== mat) {
+                                mesh.material = mat
                             }
                         } else {
-                            // Restore if not matched by current light action
-                            mesh.material = mesh.original_material.clone()
+                            // Restore original (off) material
+                            if (mesh.material !== mesh.original_material) {
+                                mesh.material = mesh.original_material
+                            }
                         }
                     }
                 })
@@ -463,12 +459,20 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                     clonedScene.traverse((child) => {
                         if (child instanceof THREE.Mesh) {
                             const name = child.name.toLowerCase()
-                            if (name.includes('light') ||
-                                name.includes('lamp') ||
-                                name.includes('right') ||
+                            if (name.includes('right') ||
                                 name.includes('left')) {
                                 if (child.material instanceof THREE.MeshStandardMaterial) {
-                                    (child as any).original_material = child.material.clone()
+                                    // Pre-clone materials to avoid per-frame allocations and shared material issues
+                                    const originalMat = child.material.clone()
+                                    const activeMat = child.material.clone()
+
+                                        // Store on the mesh for easy access in useFrame
+                                        ; (child as any).original_material = originalMat
+                                        ; (child as any).active_material = activeMat
+
+                                    // Initialize with original (off) state
+                                    child.material = originalMat
+
                                     lightMaterialsRef.current.push(child)
                                 }
                             }
