@@ -627,7 +627,7 @@ export function GameScene() {
         {/* <DemoObjects /> */}
 
         {/* 行走的路人 */}
-        <MaleCharacter position={[5, 0, 5]} rotation={[0, Math.PI / 4, 0]} />
+        <MaleCharacter position={[5, 0, 5]} rotation={[0, 0, 0]} />
 
         {/* 對向車輛 */}
         {oncomingVehicles.map(vehicle => (

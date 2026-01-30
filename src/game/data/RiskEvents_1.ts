@@ -47,7 +47,7 @@ export const events: GameEvent[] = [
                 initialRotation: [0, -Math.PI, 0],
                 color: '#2E86AB', // Blue car
                 animationUrls: [
-                    '/src/assets/animations/car/Car_Main_LeftDoor_Opening_Animation.glb'
+                    '/src/assets/animations/car/Car_Main_LeftDoor_Opening_Animation_TEST2.glb'
                 ]
             },
             {
