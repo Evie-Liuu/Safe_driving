@@ -1,4 +1,5 @@
 import { useAnimations, useGLTF } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 
@@ -27,35 +28,70 @@ export function MaleCharacter({
     // Bind animations to the group
     const { actions } = useAnimations(animations, group)
 
+    useFrame(() => {
+        // 遍歷場景找出所有骨骼
+        gltf.scene.traverse((child) => {
+            if (child.type === 'Bone' ||
+                child.name.includes('Armature') ||
+                child.name.includes('Root')) {
+                const worldPos = new THREE.Vector3();
+
+                child.getWorldPosition(worldPos);
+                if (worldPos.y < -0.01) { // 
+                    //偵測下沉
+                    if (child.name.includes('Car_Main_1')) {
+                        child.position.y = 0;
+                        // child.updateWorldMatrix(true, true);
+                        child.updateMatrixWorld(true);
+                        console.log(`骨骼 ${child.name} 下沉至: ${worldPos.y}`);
+                    }
+                }
+            }
+        });
+    });
+
+    // useFrame(() => {
+    //     const target =
+    //         gltf.scene.getObjectByName('Car_Main_1');
+    //     if (target) {
+    //         target.position.y = 0; //        
+    //         // 或設定你需要的高度
+    //     }
+    // });
+
     useEffect(() => {
         console.log('Available actions:', actions);
         console.log('Available animations:', animations);
 
         if (actions) {
             const actionName = 'Car_Main_LeftDoor_Opening_Animation';
-            // const actionName = 'Take 001.002';
+            // const actionName = 'Take 001';
             const action = actions[actionName];
 
             if (action) {
-                setTimeout(() => {
-                    const clip = action.getClip();
-                    // 備份原始軌道
-                    const originalTracks = clip.tracks;
-                    // 過濾掉可能影響根位置的軌道 (例如包含 'position' 的軌道)
-                    clip.tracks = clip.tracks.filter(track => !track.name.includes('.position'));
+                const clip = action.getClip();
 
-                    action.reset().fadeIn(0.5).play();
-                    action.setLoop(THREE.LoopRepeat, Infinity);
+                // 更嚴格地過濾位置和位移軌道
+                clip.tracks = clip.tracks.filter(track => {
+                    //     const name = track.name.toLowerCase();
+                    //     const shouldKeep = name.includes('door') && name.includes('quaternion');
 
-                    // const fixRoot = (clip: THREE.AnimationClip) =>
-                    //     clip.tracks = clip.tracks.filter(t =>
-                    //         !t.name.endsWith('.position')
-                    //     )
-                    // setInterval(() => {
-                    //     console.log(gltf.scene.position.y);
-                    // }, 1000)
+                    //     if (!shouldKeep) {
+                    //         console.log('移除軌道:', track.name);
+                    //     }
+                    //     return shouldKeep;
+                    // });
+                    if (track.name.includes('Car_Main_1')
+                        && track.name.includes('position')) {
+                        console.log('移除:', track.name);
+                        return false;
+                    }
+                    return true;
+                });
 
-                }, 1000)
+                action.reset().fadeIn(0.5).play();
+                action.setLoop(THREE.LoopRepeat, Infinity);
+
             } else {
                 console.warn(`Animation "${actionName}" not found in`, Object.keys(actions));
                 // Fallback to first animation if specific one is missing
@@ -78,8 +114,16 @@ export function MaleCharacter({
                 console.log(`動畫名稱: ${clip.name}`);
                 clip.tracks.forEach(track => {
                     // 如果看到類似 "Armature.position" 或 "RootNode.position" 且包含 Y 軸變化，就是下沉來源
-                    if (track.name.endsWith('.position')) {
+                    if (track.name.includes('position')) {
                         console.log(`發現位移軌道: ${track.name}`, track.values);
+                    }
+                    // 檢查 scale
+                    if (track.name.includes('scale')) {
+                        console.log('縮放軌道值: ', track.values);
+                    }
+                    // 檢查 quaternion       
+                    if (track.name.includes('quaternion')) {
+                        console.log('旋轉軌道', track.values);
                     }
                 });
             });
