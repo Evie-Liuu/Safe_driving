@@ -6,8 +6,10 @@ import {
     LightAction,
     SoundAction,
     ScriptAction,
+    SceneObjectAction,
     EventContext
 } from './EventTypes'
+import { SceneObjectRegistry } from '../registry/SceneObjectRegistry'
 
 /**
  * Action runtime state
@@ -125,6 +127,10 @@ export class EventExecutor {
 
             case ActionType.PREPARE_ANIMATION:
                 this.executePrepareAnimation(action as any, actor)
+                break
+
+            case ActionType.SCENE_OBJECT:
+                this.executeSceneObject(action as SceneObjectAction)
                 break
 
             default:
@@ -251,10 +257,25 @@ export class EventExecutor {
             })
 
         // This action is considered "started" immediately, completion is handled by duration if specified,
-        // or effectively immediate if we don't block. 
+        // or effectively immediate if we don't block.
         // For now, we fire and forget the loading, but in a real scenario we might want to wait.
         // However, the action system is time-based.
         console.log(`Prepare animation started for actor ${action.actorId}`)
+    }
+
+    /**
+     * Execute scene object action (control traffic lights, signs, etc.)
+     */
+    private executeSceneObject(action: SceneObjectAction): void {
+        const sceneObject = SceneObjectRegistry.getObject(action.objectId)
+
+        if (!sceneObject) {
+            console.warn(`[EventExecutor] Scene object not found: ${action.objectId}`)
+            return
+        }
+
+        sceneObject.executeCommand(action.command, action.params)
+        console.log(`[EventExecutor] 🚦 Scene object ${action.objectId} executed command: ${action.command}`, action.params)
     }
 
     /**

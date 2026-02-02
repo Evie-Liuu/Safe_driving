@@ -19,6 +19,7 @@ import { EventSystemUpdater } from '../components/EventSystemUpdater'
 import { PlayerState, ActionType, ScriptAction, PrepareInstruction, DangerClickJudgment, PrepareZoneStatus, GameEvent, ActorType, AnimationAction } from '../events/EventTypes'
 import { AnimationManager } from '../animations/AnimationManager'
 import { getSharedLoader } from '../utils/SharedLoader'
+import { TrafficLight } from '../components/TrafficLight'
 
 /**
  * 主遊戲場景
@@ -683,6 +684,14 @@ export function GameScene() {
             enableDebug={true}
           />
         ))}
+
+        {/* 場景紅綠燈 */}
+        <TrafficLight
+          id="traffic_light_intersection_01"
+          position={[14, 0, -95]}
+          rotation={[0, -Math.PI / 2, 0]}
+          initialState="off"
+        />
 
         {/* 一些裝飾物 */}
         {/* <DemoObjects /> */}

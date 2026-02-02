@@ -383,21 +383,21 @@ export const events: GameEvent[] = [
     {
         id: 'pedestrian_crossing_intersection',
         name: '行人穿越路口斑馬線',
-        description: '雙黃燈號誌路口及行人穿越斑馬線，玩家需禮讓',
+        description: '雙黃燈號誌路口及行人穿越斑馬線，玩家需禮讓停等',
         trigger: {
             type: TriggerType.PROXIMITY,
-            position: [8, 0, -65],
-            radius: 20,
+            position: [8, 0, -95],
+            radius: 15,
             requiredSpeed: {
                 min: 5
             }
         },
         actors: [
             {
-                id: 'pedestrian_1',
+                id: 'intersection_pedestrian_1',
                 type: ActorType.PEDESTRIAN,
                 model: '/src/assets/models/Male1_Rigged.glb',
-                initialPosition: [13, 0, -65],
+                initialPosition: [13, 0, -95],
                 initialRotation: [0, -Math.PI / 2, 0],
                 scale: [1, 1, 1],
                 animationUrls: [
@@ -406,49 +406,67 @@ export const events: GameEvent[] = [
             }
         ],
         actions: [
-            // Walk across the road
+            // 事件觸發時：設定紅綠燈為雙黃閃爍
             {
-                actorId: 'pedestrian_1',
-                type: ActionType.MOVEMENT,
-                path: [
-                    [13, 0, -65],
-                    [6, 0, -65],
-                    [0, 0, -65],
-                    [-6, 0, -65],
-                    [-13, 0, -65]
-                ],
-                speed: 2.5,
-                time: 0,
-                duration: 8
-            },
-            // Add walking animation when animation system is integrated
+                actorId: '_scene',
+                type: ActionType.SCENE_OBJECT,
+                objectId: 'traffic_light_intersection_01',
+                command: 'setState',
+                params: { state: 'flashing_yellow' },
+                time: 0
+            } as any,
+            // 行人開始穿越（初始站立姿勢，觸發後開始走）
             {
-                actorId: 'pedestrian_1',
+                actorId: 'intersection_pedestrian_1',
                 type: ActionType.ANIMATION,
-                // name: 'Male_Walking_Animation',
                 name: 'Take 001',
                 loop: true,
                 time: 0
-            }
+            },
+            // 行人移動路徑
+            {
+                actorId: 'intersection_pedestrian_1',
+                type: ActionType.MOVEMENT,
+                path: [
+                    [13, 0, -95],
+                    [8, 0, -95],
+                    [3, 0, -95],
+                    [-2, 0, -95],
+                    [-7, 0, -95]
+                ],
+                speed: 1.8,
+                time: 0,
+                duration: 10
+            },
+            // 行人通過後：恢復紅綠燈為關閉
+            {
+                actorId: '_scene',
+                type: ActionType.SCENE_OBJECT,
+                objectId: 'traffic_light_intersection_01',
+                command: 'setState',
+                params: { state: 'off' },
+                time: 10
+            } as any
         ],
         requiredPlayerResponse: {
-            type: PlayerResponseType.DECELERATE,
+            type: PlayerResponseType.STOP,
             targetSpeed: {
-                max: 30 // Must slow significantly
+                max: 5 // 必須幾乎停止
             },
-            validationRadius: 20
+            validationRadius: 15
         },
         completionCriteria: {
             playerPassed: true,
-            maxSpeed: 40
+            maxSpeed: 30
         },
-        priority: 15, // Higher priority than taxi event
+        priority: 20, // 高優先級
         prepareConfig: {
-            radius: 25, // Start preparing 40m away (trigger is 25m)
-            actions: [PrepareActionType.DECELERATE],
-            targetSpeedFactor: 0.3
+            radius: 25,
+            actions: [PrepareActionType.DECELERATE, PrepareActionType.STOP],
+            targetSpeedFactor: 0.2,
+            stopDuration: 5 // 停等 5 秒讓行人通過
         },
-        spawnRadius: 80
+        spawnRadius: 60
     },
     // {
     //     id: 'oncoming_car_turn',

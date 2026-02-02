@@ -28,7 +28,8 @@ export enum ActionType {
     SOUND = 'sound',
     SCRIPT = 'script',
     LIGHT = 'light',
-    PREPARE_ANIMATION = 'prepare_animation'
+    PREPARE_ANIMATION = 'prepare_animation',
+    SCENE_OBJECT = 'scene_object'
 }
 
 /**
@@ -157,6 +158,16 @@ export interface PrepareAnimationAction extends BaseEventAction {
 }
 
 /**
+ * Scene object action (control scene objects like traffic lights)
+ */
+export interface SceneObjectAction extends BaseEventAction {
+    type: ActionType.SCENE_OBJECT
+    objectId: string
+    command: string
+    params?: Record<string, any>
+}
+
+/**
  * Union type for all event actions
  */
 export type EventAction =
@@ -166,6 +177,7 @@ export type EventAction =
     | LightAction
     | ScriptAction
     | PrepareAnimationAction
+    | SceneObjectAction
 
 /**
  * Required player response
