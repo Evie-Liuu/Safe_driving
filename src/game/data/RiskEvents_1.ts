@@ -29,7 +29,7 @@ export const events: GameEvent[] = [
     // {
     //     id: 'parked_car_door_opening',
     //     name: '路邊停車開門',
-    //     description: '路邊停放的車輛突然打開車門',
+    //     description: '路邊停放的車輛突然打開車門，玩家需準備略偏左避開',
     //     trigger: {
     //         type: TriggerType.PROXIMITY,
     //         position: [11, 0, -60],
@@ -175,7 +175,7 @@ export const events: GameEvent[] = [
     // {
     //     id: 'bus_roadside_stop',
     //     name: '公車外拋後靠站',
-    //     description: '右前方公車準備靠站，會先向左外拋，再向右切入站位停靠，玩家需要停等',
+    //     description: '右前方公車準備靠站，會先向左外拋，再向右切入站位停靠，玩家需要通過或跟隨減速',
     //     trigger: {
     //         type: TriggerType.PROXIMITY,
     //         position: [9.5, 0, -35],
@@ -310,12 +310,12 @@ export const events: GameEvent[] = [
     //     spawnRadius: 80
     // },
     {
-        id: 'bicycle_dodging_pothole',
-        name: '自行車突然偏移（閃坑洞靠向主角）',
-        description: '自行車突然偏移，玩家需要減速通過',
+        id: 'car_distracted_turning',
+        name: '前車左右晃（分心找路）及路口轉向',
+        description: '前車左右晃（分心找路）及路口轉向，玩家需要保持安全距離',
         trigger: {
             type: TriggerType.PROXIMITY,
-            position: [12, 0, -35],
+            position: [8.5, 0, -35],
             radius: 30,
             requiredSpeed: {
                 min: 10 // Only trigger if player is moving (36 km/h)
@@ -323,56 +323,36 @@ export const events: GameEvent[] = [
         },
         actors: [
             {
-                id: 'bicycle_1',
+                id: 'car_1',
                 type: ActorType.VEHICLE,
-                model: '/src/assets/models/Bicycle1_Rigged.glb',
-                initialPosition: [12, 0, -35],
+                model: '/src/assets/models/Car2_Rigged.glb',
+                initialPosition: [8.5, 0, -35],
                 initialRotation: [0, 0, 0],
-                // color: '#FFD700',
-                animationUrls: [
-                    '/src/assets/animations/car/Bicycle_Moving_Animation.glb'
-                ]
-            },
-            {
-                id: 'rider_1',
-                type: ActorType.PEDESTRIAN,
-                model: '/src/assets/models/Male1_Rigged.glb',
-                initialPosition: [12, 0, -35],
-                initialRotation: [0, Math.PI, 0],
-                scale: [1, 1, 1],
-                animationUrls: [
-                    '/src/assets/animations/character/Male_Riding_Bicycle_Animation.glb'
-                ]
+                color: '#FFD700' // Gold color for taxi
             }
         ],
         actions: [
-            // Move to roadside (slow pull-over)
             {
-                actorId: 'bicycle_1',
+                actorId: 'car_1',
+                type: ActionType.LIGHT,
+                lightType: 'turnLeft',
+                enabled: true,
+                blinkRate: 2,
+                time: 5,
+                duration: 10
+            },
+            {
+                actorId: 'car_1',
                 type: ActionType.MOVEMENT,
                 path: [
-                    [12, 0, -35],
-                    [12, 0, -40],
-                    [10.5, 0, -47],
-                    [12, 0, -60]
+                    [8.5, 0, -35],
+                    [9.9, 0, -45],
+                    [9.1, 0, -50],
+                    [8.3, 0, -100]
                 ],
-                speed: 5,
+                speed: 8,
                 time: 0,
                 duration: 3
-            },
-            {
-                actorId: 'bicycle_1',
-                type: ActionType.ANIMATION,
-                name: 'Bicycle_Moving_Animation',
-                loop: true,
-                time: 0
-            },
-            {
-                actorId: 'rider_1',
-                type: ActionType.ANIMATION,
-                name: 'Take 001',
-                loop: true,
-                time: 0
             }
         ],
         requiredPlayerResponse: {
@@ -390,8 +370,94 @@ export const events: GameEvent[] = [
         prepareConfig: {
             radius: 35, // Start preparing 35m away (trigger is 20m)
             actions: [PrepareActionType.DECELERATE],
-            targetSpeedFactor: 0.2
+            targetSpeedFactor: 0.5
+
         },
         spawnRadius: 80
     },
+    // {
+    //     id: 'bicycle_dodging_pothole',
+    //     name: '自行車突然偏移（閃坑洞靠向主角）',
+    //     description: '自行車突然偏移，玩家需要拉開側向距離，避免與自行車並行貼近',
+    //     trigger: {
+    //         type: TriggerType.PROXIMITY,
+    //         position: [12, 0, -35],
+    //         radius: 30,
+    //         requiredSpeed: {
+    //             min: 10 // Only trigger if player is moving (36 km/h)
+    //         }
+    //     },
+    //     actors: [
+    //         {
+    //             id: 'bicycle_1',
+    //             type: ActorType.VEHICLE,
+    //             model: '/src/assets/models/Bicycle1_Rigged.glb',
+    //             initialPosition: [12, 0, -35],
+    //             initialRotation: [0, 0, 0],
+    //             // color: '#FFD700',
+    //             animationUrls: [
+    //                 '/src/assets/animations/car/Bicycle_Moving_Animation.glb'
+    //             ]
+    //         },
+    //         {
+    //             id: 'rider_1',
+    //             type: ActorType.PEDESTRIAN,
+    //             model: '/src/assets/models/Male1_Rigged.glb',
+    //             initialPosition: [12, 0, -35],
+    //             initialRotation: [0, Math.PI, 0],
+    //             scale: [1, 1, 1],
+    //             animationUrls: [
+    //                 '/src/assets/animations/character/Male_Riding_Bicycle_Animation.glb'
+    //             ]
+    //         }
+    //     ],
+    //     actions: [
+    //         // Move to roadside (slow pull-over)
+    //         {
+    //             actorId: 'bicycle_1',
+    //             type: ActionType.MOVEMENT,
+    //             path: [
+    //                 [12, 0, -35],
+    //                 [12, 0, -40],
+    //                 [10.5, 0, -47],
+    //                 [12, 0, -60]
+    //             ],
+    //             speed: 5,
+    //             time: 0,
+    //             duration: 3
+    //         },
+    //         {
+    //             actorId: 'bicycle_1',
+    //             type: ActionType.ANIMATION,
+    //             name: 'Bicycle_Moving_Animation',
+    //             loop: true,
+    //             time: 0
+    //         },
+    //         {
+    //             actorId: 'rider_1',
+    //             type: ActionType.ANIMATION,
+    //             name: 'Take 001',
+    //             loop: true,
+    //             time: 0
+    //         }
+    //     ],
+    //     requiredPlayerResponse: {
+    //         type: PlayerResponseType.DECELERATE,
+    //         targetSpeed: {
+    //             max: 50 // Must slow to under 50 km/h
+    //         },
+    //         validationRadius: 15
+    //     },
+    //     completionCriteria: {
+    //         playerPassed: true,
+    //         maxSpeed: 60 // Player must pass at reasonable speed
+    //     },
+    //     priority: 10,
+    //     prepareConfig: {
+    //         radius: 35, // Start preparing 35m away (trigger is 20m)
+    //         actions: [PrepareActionType.DECELERATE],
+    //         targetSpeedFactor: 0.2
+    //     },
+    //     spawnRadius: 80
+    // },
 ]
