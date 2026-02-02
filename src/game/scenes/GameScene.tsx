@@ -600,7 +600,7 @@ export function GameScene() {
           onSpeedChange={handleSpeedChange}
           onTriggerOncomingVehicle={handleTriggerOncomingVehicle}
           onCruiseComplete={handleCruiseComplete}
-          enableCameraFollow={false}
+          enableCameraFollow={true}
           isCruising={isCruising && !gameEnded}
           isBraking={isBraking || autoBraking}
           cruisePoints={cruisePoints}

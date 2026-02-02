@@ -26,85 +26,85 @@ export const points = cruisePoints
  * Risk event scenarios for Route 1
  */
 export const events: GameEvent[] = [
-    {
-        id: 'parked_car_door_opening',
-        name: '路邊停車開門',
-        description: '路邊停放的車輛突然打開車門',
-        trigger: {
-            type: TriggerType.PROXIMITY,
-            position: [11, 0, -60],
-            radius: 18, //37,  //TODO 是否會和prepare衝突
-            requiredSpeed: {
-                min: 10
-            }
-        },
-        actors: [
-            {
-                id: 'parked_car_1',
-                type: ActorType.VEHICLE,
-                model: '/src/assets/models/Car_Main_Rigged.glb',
-                initialPosition: [11, 0, -60],
-                initialRotation: [0, -Math.PI, 0],
-                color: '#2E86AB', // Blue car
-                animationUrls: [
-                    '/src/assets/animations/car/Car_Main_LeftDoor_Opening_Animation_TEST2.glb'
-                ]
-            },
-            {
-                id: 'driver_1',
-                type: ActorType.PEDESTRIAN,
-                model: '/src/assets/models/Male1_Rigged.glb',
-                initialPosition: [11, 0, -60],
-                initialRotation: [0, Math.PI, 0],
-                scale: [1, 1, 1],
-                animationUrls: [
-                    '/src/assets/animations/character/Male_OpenCarLeftDoor_Inside_Animation.glb'
-                ]
-            }
-        ],
-        actions: [
-            // Just a stationary hazard - could add door opening animation later
-            {
-                actorId: 'parked_car_1',
-                type: ActionType.LIGHT,
-                lightType: 'hazard',
-                enabled: true,
-                blinkRate: 1.5,
-                time: 0,
-                duration: 8
-            },
-            {
-                actorId: 'parked_car_1',
-                type: ActionType.ANIMATION,
-                name: 'Car_Main_LeftDoor_Opening_Animation',
-                loop: false,
-                time: 0
-            },
-            {
-                actorId: 'driver_1',
-                type: ActionType.ANIMATION,
-                name: 'Take 001.009',
-                loop: false,
-                time: 0
-            }
-        ],
-        requiredPlayerResponse: {
-            type: PlayerResponseType.AVOID,
-            validationRadius: 12
-        },
-        completionCriteria: {
-            playerPassed: true
-        },
-        priority: 8,
-        prepareConfig: {
-            radius: 25, // Start preparing 25m away (trigger is 18m)
-            actions: [PrepareActionType.DECELERATE, PrepareActionType.LANE_SWITCH],
-            targetSpeedFactor: 0.3,
-            laneOffset: -5.5, // Shift left to avoid door
-            offsetHoldDistance: 15 // Maintain offset for 15m after passing trigger
-        },
-        spawnRadius: 80 // Pre-spawn actors 50m away for smooth visual experience
-    },
+    // {
+    //     id: 'parked_car_door_opening',
+    //     name: '路邊停車開門',
+    //     description: '路邊停放的車輛突然打開車門',
+    //     trigger: {
+    //         type: TriggerType.PROXIMITY,
+    //         position: [11, 0, -60],
+    //         radius: 18, //37,  //TODO 是否會和prepare衝突
+    //         requiredSpeed: {
+    //             min: 10
+    //         }
+    //     },
+    //     actors: [
+    //         {
+    //             id: 'parked_car_1',
+    //             type: ActorType.VEHICLE,
+    //             model: '/src/assets/models/Car_Main_Rigged.glb',
+    //             initialPosition: [11, 0, -60],
+    //             initialRotation: [0, -Math.PI, 0],
+    //             color: '#2E86AB', // Blue car
+    //             animationUrls: [
+    //                 '/src/assets/animations/car/Car_Main_LeftDoor_Opening_Animation_TEST2.glb'
+    //             ]
+    //         },
+    //         {
+    //             id: 'driver_1',
+    //             type: ActorType.PEDESTRIAN,
+    //             model: '/src/assets/models/Male1_Rigged.glb',
+    //             initialPosition: [11, 0, -60],
+    //             initialRotation: [0, Math.PI, 0],
+    //             scale: [1, 1, 1],
+    //             animationUrls: [
+    //                 '/src/assets/animations/character/Male_OpenCarLeftDoor_Inside_Animation.glb'
+    //             ]
+    //         }
+    //     ],
+    //     actions: [
+    //         // Just a stationary hazard - could add door opening animation later
+    //         {
+    //             actorId: 'parked_car_1',
+    //             type: ActionType.LIGHT,
+    //             lightType: 'hazard',
+    //             enabled: true,
+    //             blinkRate: 1.5,
+    //             time: 0,
+    //             duration: 8
+    //         },
+    //         {
+    //             actorId: 'parked_car_1',
+    //             type: ActionType.ANIMATION,
+    //             name: 'Car_Main_LeftDoor_Opening_Animation',
+    //             loop: false,
+    //             time: 0
+    //         },
+    //         {
+    //             actorId: 'driver_1',
+    //             type: ActionType.ANIMATION,
+    //             name: 'Take 001.009',
+    //             loop: false,
+    //             time: 0
+    //         }
+    //     ],
+    //     requiredPlayerResponse: {
+    //         type: PlayerResponseType.AVOID,
+    //         validationRadius: 12
+    //     },
+    //     completionCriteria: {
+    //         playerPassed: true
+    //     },
+    //     priority: 8,
+    //     prepareConfig: {
+    //         radius: 25, // Start preparing 25m away (trigger is 18m)
+    //         actions: [PrepareActionType.DECELERATE, PrepareActionType.LANE_SWITCH],
+    //         targetSpeedFactor: 0.3,
+    //         laneOffset: -5.5, // Shift left to avoid door
+    //         offsetHoldDistance: 15 // Maintain offset for 15m after passing trigger
+    //     },
+    //     spawnRadius: 80 // Pre-spawn actors 50m away for smooth visual experience
+    // },
     // {
     //     id: 'taxi_roadside_stop',
     //     name: '計程車路邊臨停',
@@ -175,10 +175,10 @@ export const events: GameEvent[] = [
     // {
     //     id: 'bus_roadside_stop',
     //     name: '公車外拋後靠站',
-    //     description: '右前方公車準備靠站，會先向左外拋，再向右切入站位停靠',
+    //     description: '右前方公車準備靠站，會先向左外拋，再向右切入站位停靠，玩家需要停等',
     //     trigger: {
     //         type: TriggerType.PROXIMITY,
-    //         position: [11, 0, -60],
+    //         position: [9.5, 0, -35],
     //         radius: 30,
     //         requiredSpeed: {
     //             min: 10 // Only trigger if player is moving (36 km/h)
@@ -189,7 +189,7 @@ export const events: GameEvent[] = [
     //             id: 'bus_1',
     //             type: ActorType.VEHICLE,
     //             model: '/src/assets/models/Bus_Rigged.glb',
-    //             initialPosition: [8.5, 0, -35],
+    //             initialPosition: [9.5, 0, -35],
     //             initialRotation: [0, Math.PI, 0],
     //             // color: '#FFD700' // Gold color for taxi
     //         }
@@ -309,4 +309,89 @@ export const events: GameEvent[] = [
     //     },
     //     spawnRadius: 80
     // },
+    {
+        id: 'bicycle_dodging_pothole',
+        name: '自行車突然偏移（閃坑洞靠向主角）',
+        description: '自行車突然偏移，玩家需要減速通過',
+        trigger: {
+            type: TriggerType.PROXIMITY,
+            position: [12, 0, -35],
+            radius: 30,
+            requiredSpeed: {
+                min: 10 // Only trigger if player is moving (36 km/h)
+            }
+        },
+        actors: [
+            {
+                id: 'bicycle_1',
+                type: ActorType.VEHICLE,
+                model: '/src/assets/models/Bicycle1_Rigged.glb',
+                initialPosition: [12, 0, -35],
+                initialRotation: [0, 0, 0],
+                // color: '#FFD700',
+                animationUrls: [
+                    '/src/assets/animations/car/Bicycle_Moving_Animation.glb'
+                ]
+            },
+            {
+                id: 'rider_1',
+                type: ActorType.PEDESTRIAN,
+                model: '/src/assets/models/Male1_Rigged.glb',
+                initialPosition: [12, 0, -35],
+                initialRotation: [0, Math.PI, 0],
+                scale: [1, 1, 1],
+                animationUrls: [
+                    '/src/assets/animations/character/Male_Riding_Bicycle_Animation.glb'
+                ]
+            }
+        ],
+        actions: [
+            // Move to roadside (slow pull-over)
+            {
+                actorId: 'bicycle_1',
+                type: ActionType.MOVEMENT,
+                path: [
+                    [12, 0, -35],
+                    [12, 0, -40],
+                    [10.5, 0, -47],
+                    [12, 0, -60]
+                ],
+                speed: 5,
+                time: 0,
+                duration: 3
+            },
+            {
+                actorId: 'bicycle_1',
+                type: ActionType.ANIMATION,
+                name: 'Bicycle_Moving_Animation',
+                loop: true,
+                time: 0
+            },
+            {
+                actorId: 'rider_1',
+                type: ActionType.ANIMATION,
+                name: 'Take 001',
+                loop: true,
+                time: 0
+            }
+        ],
+        requiredPlayerResponse: {
+            type: PlayerResponseType.DECELERATE,
+            targetSpeed: {
+                max: 50 // Must slow to under 50 km/h
+            },
+            validationRadius: 15
+        },
+        completionCriteria: {
+            playerPassed: true,
+            maxSpeed: 60 // Player must pass at reasonable speed
+        },
+        priority: 10,
+        prepareConfig: {
+            radius: 35, // Start preparing 35m away (trigger is 20m)
+            actions: [PrepareActionType.DECELERATE],
+            targetSpeedFactor: 0.2
+        },
+        spawnRadius: 80
+    },
 ]
