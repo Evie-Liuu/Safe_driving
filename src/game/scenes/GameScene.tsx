@@ -62,6 +62,9 @@ export function GameScene() {
   const dangerEnteredTimeRef = useRef<number>(0)
   const brakingStartTimeRef = useRef<number>(0)
   const dangerClickedRef = useRef(false)
+  // Stop action tracking
+  const stopStartTimeRef = useRef<number>(0)
+  const stopCompletedEventsRef = useRef<Set<string>>(new Set())
   const [judgmentResult, setJudgmentResult] = useState<{
     judgment: DangerClickJudgment
     eventName: string
@@ -170,6 +173,7 @@ export function GameScene() {
       if (!activeDanger || activeDanger.eventId !== instruction.eventId) {
         dangerEnteredTimeRef.current = performance.now()
         brakingStartTimeRef.current = 0
+        stopStartTimeRef.current = 0
         dangerClickedRef.current = false
         setActiveDanger({
           eventId: instruction.eventId,
@@ -190,9 +194,34 @@ export function GameScene() {
         setActiveDanger(null)
       }
 
-      setAutoBraking(instruction.shouldBrake)
+      // Handle STOP action
+      let effectiveSpeedFactor = instruction.targetSpeedFactor
+      if (instruction.shouldStop && !stopCompletedEventsRef.current.has(instruction.eventId)) {
+        // Force speed to 0 for stop action
+        effectiveSpeedFactor = 0
+
+        // Track stop start time when speed is near zero
+        if (currentSpeed < 1 && stopStartTimeRef.current === 0) {
+          stopStartTimeRef.current = performance.now()
+          console.log(`[GameScene] 🛑 Stop started for event: ${instruction.eventId}`)
+        }
+
+        // Check if stop duration has elapsed
+        if (stopStartTimeRef.current > 0) {
+          const stopElapsed = (performance.now() - stopStartTimeRef.current) / 1000
+          if (stopElapsed >= instruction.stopDuration) {
+            console.log(`[GameScene] ✅ Stop completed for event: ${instruction.eventId} (${stopElapsed.toFixed(1)}s)`)
+            stopCompletedEventsRef.current.add(instruction.eventId)
+            stopStartTimeRef.current = 0
+            // Resume with original speed factor
+            effectiveSpeedFactor = instruction.targetSpeedFactor > 0 ? instruction.targetSpeedFactor : 1
+          }
+        }
+      }
+
+      setAutoBraking(instruction.shouldBrake || instruction.shouldStop)
       setAutoLaneOffset(instruction.laneOffset)
-      setAutoSpeedFactor(instruction.targetSpeedFactor)
+      setAutoSpeedFactor(effectiveSpeedFactor)
     } else {
       // instruction is null → player is outside all prepare zones
       if (activeDanger && !dangerClickedRef.current) {

@@ -481,6 +481,8 @@ export class EventManager {
                 eventName: event.name,
                 triggerPosition: event.trigger.position!,
                 shouldBrake: config.actions.includes(PrepareActionType.DECELERATE),
+                shouldStop: config.actions.includes(PrepareActionType.STOP),
+                stopDuration: config.stopDuration ?? 3,
                 targetSpeedFactor: config.targetSpeedFactor ?? 0.5,
                 laneOffset: config.actions.includes(PrepareActionType.LANE_SWITCH)
                     ? (config.laneOffset ?? -1.5)
@@ -514,6 +516,8 @@ export class EventManager {
                     eventName: event.name,
                     triggerPosition: event.trigger.position!,
                     shouldBrake: false, // No braking needed after passing
+                    shouldStop: false, // No stopping needed after passing
+                    stopDuration: 0,
                     targetSpeedFactor: 1, // Resume normal speed
                     laneOffset: config.laneOffset ?? -1.5,
                     clickDeadline: config.clickDeadline ?? 5,

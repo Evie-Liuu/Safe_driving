@@ -209,7 +209,8 @@ export interface EventContext {
  */
 export enum PrepareActionType {
     DECELERATE = 'decelerate',
-    LANE_SWITCH = 'lane_switch'
+    LANE_SWITCH = 'lane_switch',
+    STOP = 'stop'
 }
 
 /**
@@ -222,6 +223,7 @@ export interface PrepareConfig {
     laneOffset?: number // Lateral offset in meters (positive = left, negative = right)
     clickDeadline?: number // Max seconds allowed to click the danger factor (default: 5)
     offsetHoldDistance?: number // Distance past trigger to maintain lane offset before recovering (meters)
+    stopDuration?: number // Duration to stop in seconds (used with STOP action)
 }
 
 /**
@@ -251,6 +253,8 @@ export interface PrepareInstruction {
     eventName: string
     triggerPosition: [number, number, number]
     shouldBrake: boolean
+    shouldStop: boolean
+    stopDuration: number
     targetSpeedFactor: number
     laneOffset: number
     clickDeadline: number
