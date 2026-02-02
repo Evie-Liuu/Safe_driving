@@ -568,6 +568,19 @@ export const events: GameEvent[] = [
                 duration: 3
             },
             {
+                actorId: 'rider_1',
+                type: ActionType.MOVEMENT,
+                path: [
+                    [12, 0, -35],
+                    [12, 0, -40],
+                    [10.5, 0, -47],
+                    [12, 0, -60]
+                ],
+                speed: 5,
+                time: 0,
+                duration: 3
+            },
+            {
                 actorId: 'bicycle_1',
                 type: ActionType.ANIMATION,
                 name: 'Bicycle_Moving_Animation',

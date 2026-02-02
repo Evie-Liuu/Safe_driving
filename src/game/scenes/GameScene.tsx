@@ -865,7 +865,7 @@ function UIOverlay({
   onBrakeEnd?: () => void;
 }) {
   if (currentClick) {
-    console.log(`${currentClick.x.toFixed(2)},${currentClick.y.toFixed(2)},${currentClick.z.toFixed(2)}`);
+    // console.log(`${currentClick.x.toFixed(2)},${currentClick.y.toFixed(2)},${currentClick.z.toFixed(2)}`);
   }
 
   return (
