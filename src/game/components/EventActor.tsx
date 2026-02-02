@@ -128,11 +128,11 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
         }, [])
 
         // Debug: Monitor debugPath changes
-        useEffect(() => {
-            if (enableDebug) {
-                console.log(`[EventActor] 🔍 debugPath changed for actor ${id}:`, debugPath ? `${debugPath.length} points` : 'null')
-            }
-        }, [debugPath, id, enableDebug])
+        // useEffect(() => {
+        //     if (enableDebug) {
+        //         console.log(`[EventActor] 🔍 debugPath changed for actor ${id}:`, debugPath ? `${debugPath.length} points` : 'null')
+        //     }
+        // }, [debugPath, id, enableDebug])
 
         // Expose imperative handle for action execution
         useImperativeHandle(ref, () => ({
@@ -149,10 +149,10 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
 
                 // Update debug path visualization
                 if (enableDebug) {
-                    console.log(`[EventActor] 🎨 Setting debugPath for actor ${id}, path length: ${config.path.length}`, config.path)
+                    // console.log(`[EventActor] 🎨 Setting debugPath for actor ${id}, path length: ${config.path.length}`, config.path)
                     setDebugPath(config.path)
                 } else {
-                    console.log(`[EventActor] ⚠️ enableDebug is false for actor ${id}`)
+                    // console.log(`[EventActor] ⚠️ enableDebug is false for actor ${id}`)
                 }
 
                 console.log(`[EventActor] ✅ Movement started for actor ${id}`)
@@ -356,7 +356,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                             // Use the pre-cloned active material
                             const mat = mesh.active_material as THREE.MeshStandardMaterial
                             mat.emissive.set(emissiveColor)
-                            mat.emissiveIntensity = 3
+                            mat.emissiveIntensity = 5
                             if (mesh.material !== mat) {
                                 mesh.material = mat
                             }
@@ -475,6 +475,16 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                     }
 
                     // Look for light meshes
+                    let activeLight = null;
+                    clonedScene.traverse((child) => {
+                        if (child instanceof THREE.Mesh) {
+                            const name = child.name.toLowerCase()
+                            if (name.includes('light')) {
+                                activeLight = child.material.clone()
+                            }
+                        }
+                    })
+                    // console.log(activeLight);
                     clonedScene.traverse((child) => {
                         if (child instanceof THREE.Mesh) {
                             const name = child.name.toLowerCase()
@@ -487,7 +497,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
 
                                         // Store on the mesh for easy access in useFrame
                                         ; (child as any).original_material = originalMat
-                                        ; (child as any).active_material = activeMat
+                                        ; (child as any).active_material = activeLight ? activeLight : activeMat
 
                                     // Initialize with original (off) state
                                     child.material = originalMat
