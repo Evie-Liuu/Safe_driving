@@ -373,7 +373,7 @@ export const events: GameEvent[] = [
         },
         priority: 15, // Higher priority than taxi event
         prepareConfig: {
-            radius: 20, // Start preparing 25m away (trigger is 20m)
+            radius: 25, // Start preparing 25m away (trigger is 20m)
             actions: [PrepareActionType.DECELERATE, PrepareActionType.STOP],
             targetSpeedFactor: 0.3,
             stopDuration: 3 // 停等 3 秒後繼續

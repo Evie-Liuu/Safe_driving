@@ -194,9 +194,19 @@ export function GameScene() {
         setActiveDanger(null)
       }
 
-      // Handle STOP action
+      // Handle STOP action - only activate when inside trigger radius
       let effectiveSpeedFactor = instruction.targetSpeedFactor
-      if (instruction.shouldStop && !stopCompletedEventsRef.current.has(instruction.eventId)) {
+
+      // Debug: log STOP conditions
+      if (instruction.shouldStop) {
+        console.log(`[GameScene] 🔍 STOP check - shouldStop: ${instruction.shouldStop}, status: ${instruction.status}, completed: ${stopCompletedEventsRef.current.has(instruction.eventId)}`)
+      }
+
+      const shouldActivateStop = instruction.shouldStop &&
+        instruction.status === PrepareZoneStatus.INSIDE_TRIGGER &&
+        !stopCompletedEventsRef.current.has(instruction.eventId)
+
+      if (shouldActivateStop) {
         // Force speed to 0 for stop action
         effectiveSpeedFactor = 0
 
@@ -219,7 +229,7 @@ export function GameScene() {
         }
       }
 
-      setAutoBraking(instruction.shouldBrake || instruction.shouldStop)
+      setAutoBraking(instruction.shouldBrake || shouldActivateStop)
       setAutoLaneOffset(instruction.laneOffset)
       setAutoSpeedFactor(effectiveSpeedFactor)
     } else {
