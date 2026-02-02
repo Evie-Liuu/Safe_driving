@@ -240,6 +240,72 @@ export const events: GameEvent[] = [
     //     spawnRadius: 80
     // },
     // {
+    //     id: 'car_distracted_turning',
+    //     name: '前車左右晃（分心找路）及路口轉向',
+    //     description: '前車左右晃（分心找路）及路口轉向，玩家需要保持安全距離',
+    //     trigger: {
+    //         type: TriggerType.PROXIMITY,
+    //         position: [8.5, 0, -35],
+    //         radius: 30,
+    //         requiredSpeed: {
+    //             min: 10 // Only trigger if player is moving (36 km/h)
+    //         }
+    //     },
+    //     actors: [
+    //         {
+    //             id: 'car_1',
+    //             type: ActorType.VEHICLE,
+    //             model: '/src/assets/models/Car2_Rigged.glb',
+    //             initialPosition: [8.5, 0, -35],
+    //             initialRotation: [0, 0, 0],
+    //             color: '#FFD700' // Gold color for taxi
+    //         }
+    //     ],
+    //     actions: [
+    //         {
+    //             actorId: 'car_1',
+    //             type: ActionType.LIGHT,
+    //             lightType: 'turnLeft',
+    //             enabled: true,
+    //             blinkRate: 2,
+    //             time: 5,
+    //             duration: 10
+    //         },
+    //         {
+    //             actorId: 'car_1',
+    //             type: ActionType.MOVEMENT,
+    //             path: [
+    //                 [8.5, 0, -35],
+    //                 [9.9, 0, -45],
+    //                 [9.1, 0, -50],
+    //                 [8.3, 0, -100]
+    //             ],
+    //             speed: 8,
+    //             time: 0,
+    //             duration: 3
+    //         }
+    //     ],
+    //     requiredPlayerResponse: {
+    //         type: PlayerResponseType.DECELERATE,
+    //         targetSpeed: {
+    //             max: 50 // Must slow to under 50 km/h
+    //         },
+    //         validationRadius: 15
+    //     },
+    //     completionCriteria: {
+    //         playerPassed: true,
+    //         maxSpeed: 60 // Player must pass at reasonable speed
+    //     },
+    //     priority: 10,
+    //     prepareConfig: {
+    //         radius: 35, // Start preparing 35m away (trigger is 20m)
+    //         actions: [PrepareActionType.DECELERATE],
+    //         targetSpeedFactor: 0.5
+
+    //     },
+    //     spawnRadius: 80
+    // },
+    // {
     //     id: 'pedestrian_crossing',
     //     name: '行人穿越道路',
     //     description: '行人從路邊穿越道路，玩家需要減速或停車',
@@ -310,68 +376,72 @@ export const events: GameEvent[] = [
     //     spawnRadius: 80
     // },
     {
-        id: 'car_distracted_turning',
-        name: '前車左右晃（分心找路）及路口轉向',
-        description: '前車左右晃（分心找路）及路口轉向，玩家需要保持安全距離',
+        id: 'pedestrian_crossing_intersection',
+        name: '行人穿越路口斑馬線',
+        description: '雙黃燈號誌路口及行人穿越斑馬線，玩家需禮讓',
         trigger: {
             type: TriggerType.PROXIMITY,
-            position: [8.5, 0, -35],
-            radius: 30,
+            position: [8, 0, -65],
+            radius: 20,
             requiredSpeed: {
-                min: 10 // Only trigger if player is moving (36 km/h)
+                min: 5
             }
         },
         actors: [
             {
-                id: 'car_1',
-                type: ActorType.VEHICLE,
-                model: '/src/assets/models/Car2_Rigged.glb',
-                initialPosition: [8.5, 0, -35],
-                initialRotation: [0, 0, 0],
-                color: '#FFD700' // Gold color for taxi
+                id: 'pedestrian_1',
+                type: ActorType.PEDESTRIAN,
+                model: '/src/assets/models/Male1_Rigged.glb',
+                initialPosition: [13, 0, -65],
+                initialRotation: [0, -Math.PI / 2, 0],
+                scale: [1, 1, 1],
+                animationUrls: [
+                    '/src/assets/animations/character/Male_Walking_Remain_Animation.glb'
+                ]
             }
         ],
         actions: [
+            // Walk across the road
             {
-                actorId: 'car_1',
-                type: ActionType.LIGHT,
-                lightType: 'turnLeft',
-                enabled: true,
-                blinkRate: 2,
-                time: 5,
-                duration: 10
-            },
-            {
-                actorId: 'car_1',
+                actorId: 'pedestrian_1',
                 type: ActionType.MOVEMENT,
                 path: [
-                    [8.5, 0, -35],
-                    [9.9, 0, -45],
-                    [9.1, 0, -50],
-                    [8.3, 0, -100]
+                    [13, 0, -65],
+                    [6, 0, -65],
+                    [0, 0, -65],
+                    [-6, 0, -65],
+                    [-13, 0, -65]
                 ],
-                speed: 8,
+                speed: 2.5,
                 time: 0,
-                duration: 3
+                duration: 8
+            },
+            // Add walking animation when animation system is integrated
+            {
+                actorId: 'pedestrian_1',
+                type: ActionType.ANIMATION,
+                // name: 'Male_Walking_Animation',
+                name: 'Take 001',
+                loop: true,
+                time: 0
             }
         ],
         requiredPlayerResponse: {
             type: PlayerResponseType.DECELERATE,
             targetSpeed: {
-                max: 50 // Must slow to under 50 km/h
+                max: 30 // Must slow significantly
             },
-            validationRadius: 15
+            validationRadius: 20
         },
         completionCriteria: {
             playerPassed: true,
-            maxSpeed: 60 // Player must pass at reasonable speed
+            maxSpeed: 40
         },
-        priority: 10,
+        priority: 15, // Higher priority than taxi event
         prepareConfig: {
-            radius: 35, // Start preparing 35m away (trigger is 20m)
+            radius: 25, // Start preparing 40m away (trigger is 25m)
             actions: [PrepareActionType.DECELERATE],
-            targetSpeedFactor: 0.5
-
+            targetSpeedFactor: 0.3
         },
         spawnRadius: 80
     },
