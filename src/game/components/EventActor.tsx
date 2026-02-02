@@ -108,6 +108,9 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
         const pendingAnimationRef = useRef<AnimationConfig | null>(null)
         const pendingMovementRef = useRef<MovementConfig | null>(null)
 
+        // Debug path visualization state
+        const [debugPath, setDebugPath] = useState<[number, number, number][] | null>(null)
+
         useEffect(() => {
             if (groupRef.current) {
                 console.log(`EventActor ${id} (${type}) initialized at`, initialPosition)
@@ -124,6 +127,13 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
             }
         }, [])
 
+        // Debug: Monitor debugPath changes
+        useEffect(() => {
+            if (enableDebug) {
+                console.log(`[EventActor] 🔍 debugPath changed for actor ${id}:`, debugPath ? `${debugPath.length} points` : 'null')
+            }
+        }, [debugPath, id, enableDebug])
+
         // Expose imperative handle for action execution
         useImperativeHandle(ref, () => ({
             startMovement: (config: MovementConfig) => {
@@ -136,6 +146,15 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
 
                 movementConfigRef.current = config
                 currentPathIndex.current = 0
+
+                // Update debug path visualization
+                if (enableDebug) {
+                    console.log(`[EventActor] 🎨 Setting debugPath for actor ${id}, path length: ${config.path.length}`, config.path)
+                    setDebugPath(config.path)
+                } else {
+                    console.log(`[EventActor] ⚠️ enableDebug is false for actor ${id}`)
+                }
+
                 console.log(`[EventActor] ✅ Movement started for actor ${id}`)
             },
 
@@ -226,7 +245,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                     }
                 }
             }
-        }), [id, isLoading, onComplete])
+        }), [id, isLoading, onComplete, enableDebug])
 
         // Update movement and lights
         useFrame((state, delta) => {
@@ -487,6 +506,12 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                         console.log(`[EventActor] ▶️ Starting queued movement for ${id}`)
                         movementConfigRef.current = pendingMovementRef.current
                         currentPathIndex.current = 0
+
+                        // Update debug path visualization
+                        if (enableDebug) {
+                            setDebugPath(pendingMovementRef.current.path)
+                        }
+
                         pendingMovementRef.current = null
                     }
 
@@ -517,30 +542,32 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
         // Always render the group so ref is available
         // Model is added to group in useEffect, not rendered here
         return (
-            <group ref={groupRef} position={initialPosition} rotation={rotationEuler} scale={scale}>
-                {/* Debug visualization */}
-                {enableDebug && (
-                    <>
-                        {/* Actor position marker - show even during loading */}
-                        <mesh position={[0, 2, 0]}>
-                            <sphereGeometry args={[0.3, 16, 16]} />
-                            <meshBasicMaterial
-                                color={isLoading ? 'orange' : 'red'}
-                                transparent
-                                opacity={0.5}
-                            />
-                        </mesh>
-
-                        {/* Path visualization */}
-                        {movementConfigRef.current && movementConfigRef.current.path.map((point, idx) => (
-                            <mesh key={idx} position={point}>
-                                <sphereGeometry args={[0.2, 8, 8]} />
-                                <meshBasicMaterial color="yellow" />
+            <>
+                <group ref={groupRef} position={initialPosition} rotation={rotationEuler} scale={scale}>
+                    {/* Debug visualization */}
+                    {enableDebug && (
+                        <>
+                            {/* Actor position marker - show even during loading */}
+                            <mesh position={[0, 2, 0]}>
+                                <sphereGeometry args={[0.3, 16, 16]} />
+                                <meshBasicMaterial
+                                    color={isLoading ? 'orange' : 'red'}
+                                    transparent
+                                    opacity={0.5}
+                                />
                             </mesh>
-                        ))}
-                    </>
-                )}
-            </group>
+                        </>
+                    )}
+                </group>
+
+                {/* Path visualization - rendered in world space (outside group) */}
+                {enableDebug && debugPath && debugPath.map((point, idx) => (
+                    <mesh key={`path-${id}-${idx}`} position={point}>
+                        <sphereGeometry args={[0.2, 16, 16]} />
+                        <meshBasicMaterial color="yellow" />
+                    </mesh>
+                ))}
+            </>
         )
     }
 )
