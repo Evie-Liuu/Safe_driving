@@ -309,81 +309,10 @@ export const events: GameEvent[] = [
     //     },
     //     spawnRadius: 80
     // },
-    {
-        id: 'pedestrian_crossing',
-        name: '行人穿越道路',
-        description: '行人從路邊穿越道路，玩家需要減速或停車',
-        trigger: {
-            type: TriggerType.PROXIMITY,
-            position: [8, 0, -65],
-            radius: 20,
-            requiredSpeed: {
-                min: 5
-            }
-        },
-        actors: [
-            {
-                id: 'pedestrian_1',
-                type: ActorType.PEDESTRIAN,
-                model: '/src/assets/models/Male1_Rigged.glb',
-                initialPosition: [13, 0, -65],
-                initialRotation: [0, -Math.PI / 2, 0],
-                scale: [1, 1, 1],
-                animationUrls: [
-                    '/src/assets/animations/character/Male_Walking_Remain_Animation.glb'
-                ]
-            }
-        ],
-        actions: [
-            // Walk across the road
-            {
-                actorId: 'pedestrian_1',
-                type: ActionType.MOVEMENT,
-                path: [
-                    [13, 0, -65],
-                    [6, 0, -65],
-                    [0, 0, -65],
-                    [-6, 0, -65],
-                    [-13, 0, -65]
-                ],
-                speed: 2.5,
-                time: 0,
-                duration: 8
-            },
-            // Add walking animation when animation system is integrated
-            {
-                actorId: 'pedestrian_1',
-                type: ActionType.ANIMATION,
-                // name: 'Male_Walking_Animation',
-                name: 'Take 001',
-                loop: true,
-                time: 0
-            }
-        ],
-        requiredPlayerResponse: {
-            type: PlayerResponseType.DECELERATE,
-            targetSpeed: {
-                max: 30 // Must slow significantly
-            },
-            validationRadius: 20
-        },
-        completionCriteria: {
-            playerPassed: true,
-            maxSpeed: 40
-        },
-        priority: 15, // Higher priority than taxi event
-        prepareConfig: {
-            radius: 25, // Start preparing 25m away (trigger is 20m)
-            actions: [PrepareActionType.DECELERATE, PrepareActionType.STOP],
-            targetSpeedFactor: 0.3,
-            stopDuration: 3 // 停等 3 秒後繼續
-        },
-        spawnRadius: 80
-    },
     // {
-    //     id: 'pedestrian_crossing_intersection',
-    //     name: '行人穿越路口斑馬線',
-    //     description: '雙黃燈號誌路口及行人穿越斑馬線，玩家需禮讓',
+    //     id: 'pedestrian_crossing',
+    //     name: '行人穿越道路',
+    //     description: '行人從路邊穿越道路，玩家需要減速或停車',
     //     trigger: {
     //         type: TriggerType.PROXIMITY,
     //         position: [8, 0, -65],
@@ -444,12 +373,83 @@ export const events: GameEvent[] = [
     //     },
     //     priority: 15, // Higher priority than taxi event
     //     prepareConfig: {
-    //         radius: 25, // Start preparing 40m away (trigger is 25m)
-    //         actions: [PrepareActionType.DECELERATE],
-    //         targetSpeedFactor: 0.3
+    //         radius: 25, // Start preparing 25m away (trigger is 20m)
+    //         actions: [PrepareActionType.DECELERATE, PrepareActionType.STOP],
+    //         targetSpeedFactor: 0.3,
+    //         stopDuration: 3 // 停等 3 秒後繼續
     //     },
     //     spawnRadius: 80
     // },
+    {
+        id: 'pedestrian_crossing_intersection',
+        name: '行人穿越路口斑馬線',
+        description: '雙黃燈號誌路口及行人穿越斑馬線，玩家需禮讓',
+        trigger: {
+            type: TriggerType.PROXIMITY,
+            position: [8, 0, -65],
+            radius: 20,
+            requiredSpeed: {
+                min: 5
+            }
+        },
+        actors: [
+            {
+                id: 'pedestrian_1',
+                type: ActorType.PEDESTRIAN,
+                model: '/src/assets/models/Male1_Rigged.glb',
+                initialPosition: [13, 0, -65],
+                initialRotation: [0, -Math.PI / 2, 0],
+                scale: [1, 1, 1],
+                animationUrls: [
+                    '/src/assets/animations/character/Male_Walking_Remain_Animation.glb'
+                ]
+            }
+        ],
+        actions: [
+            // Walk across the road
+            {
+                actorId: 'pedestrian_1',
+                type: ActionType.MOVEMENT,
+                path: [
+                    [13, 0, -65],
+                    [6, 0, -65],
+                    [0, 0, -65],
+                    [-6, 0, -65],
+                    [-13, 0, -65]
+                ],
+                speed: 2.5,
+                time: 0,
+                duration: 8
+            },
+            // Add walking animation when animation system is integrated
+            {
+                actorId: 'pedestrian_1',
+                type: ActionType.ANIMATION,
+                // name: 'Male_Walking_Animation',
+                name: 'Take 001',
+                loop: true,
+                time: 0
+            }
+        ],
+        requiredPlayerResponse: {
+            type: PlayerResponseType.DECELERATE,
+            targetSpeed: {
+                max: 30 // Must slow significantly
+            },
+            validationRadius: 20
+        },
+        completionCriteria: {
+            playerPassed: true,
+            maxSpeed: 40
+        },
+        priority: 15, // Higher priority than taxi event
+        prepareConfig: {
+            radius: 25, // Start preparing 40m away (trigger is 25m)
+            actions: [PrepareActionType.DECELERATE],
+            targetSpeedFactor: 0.3
+        },
+        spawnRadius: 80
+    },
     // {
     //     id: 'oncoming_car_turn',
     //     name: '對向來車打燈準備迴轉',
