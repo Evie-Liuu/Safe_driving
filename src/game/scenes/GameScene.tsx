@@ -16,7 +16,7 @@ import { EventExecutor } from '../events/EventExecutor'
 import { EventActor } from '../components/EventActor'
 import { EventActorHandle } from '../components/EventActor'
 import { EventSystemUpdater } from '../components/EventSystemUpdater'
-import { PlayerState, ActionType, ScriptAction, PrepareInstruction, DangerClickJudgment, PrepareZoneStatus, GameEvent } from '../events/EventTypes'
+import { PlayerState, ActionType, ScriptAction, PrepareInstruction, DangerClickJudgment, PrepareZoneStatus, GameEvent, ActorType, AnimationAction } from '../events/EventTypes'
 import { AnimationManager } from '../animations/AnimationManager'
 import { getSharedLoader } from '../utils/SharedLoader'
 
@@ -520,12 +520,34 @@ export function GameScene() {
             // console.log(`[GameScene] 💡 Found initial light action for ${actor.id}:`, initialLightAction)
           }
 
+          // 檢查 PEDESTRIAN 是否有初始動畫動作 (ActionType.ANIMATION at time: 0)
+          let initialAnimationAction = null
+          if (actor.type === ActorType.PEDESTRIAN) {
+            const animAction = event.actions.find(a =>
+              a.type === ActionType.ANIMATION &&
+              a.actorId === actor.id &&
+              a.time === 0
+            )
+
+            if (animAction) {
+              const aa = animAction as AnimationAction
+              initialAnimationAction = {
+                name: aa.name,
+                loop: aa.loop ?? true,
+                fadeIn: aa.fadeIn ?? 0.3,
+                fadeOut: aa.fadeOut ?? 0.3
+              }
+              console.log(`[GameScene] 🎭 Found initial animation action for ${actor.id}:`, initialAnimationAction)
+            }
+          }
+
           return {
             ...actor,
             ref: actorRef,
             eventId: event.id,
             isPreSpawned: true,
-            initialLightAction
+            initialLightAction,
+            initialAnimationAction
           }
         })
 

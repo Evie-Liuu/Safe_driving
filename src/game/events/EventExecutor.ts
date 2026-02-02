@@ -162,6 +162,14 @@ export class EventExecutor {
      * Execute animation action
      */
     private executeAnimation(action: AnimationAction, actor: any): void {
+        // 檢查是否為預載的 time:0 動畫（已暫停在第一幀）
+        if (action.time === 0 && actor.resumeAnimation) {
+            // 恢復播放，不重新載入
+            actor.resumeAnimation()
+            console.log(`Animation ${action.name} resumed for actor ${action.actorId}`)
+            return
+        }
+
         if (!actor.playAnimation) {
             console.warn('Actor does not support animations')
             return

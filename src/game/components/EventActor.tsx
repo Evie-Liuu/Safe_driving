@@ -57,6 +57,7 @@ export interface EventActorHandle {
     getPosition: () => THREE.Vector3
     getRotation: () => number
     loadAnimations: (urls: string[]) => Promise<void>
+    resumeAnimation: () => void
 }
 
 interface EventActorProps extends EventActorType {
@@ -64,6 +65,7 @@ interface EventActorProps extends EventActorType {
     onComplete?: () => void
     onReady?: (actorId: string) => void
     initialLightAction?: LightConfig
+    initialAnimationAction?: AnimationConfig
     enableDebug?: boolean
 }
 
@@ -85,6 +87,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
             onComplete,
             onReady,
             initialLightAction,
+            initialAnimationAction,
             enableDebug = false
         },
         ref
@@ -243,6 +246,13 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                     } catch (error) {
                         console.error(`[EventActor] ❌ Actor ${id} failed to load animation from ${animUrl}:`, error)
                     }
+                }
+            },
+
+            resumeAnimation: () => {
+                if (animationControllerRef.current) {
+                    animationControllerRef.current.mixer.timeScale = 1
+                    console.log(`[EventActor] ▶️ Actor ${id} resumed animation`)
                 }
             }
         }), [id, isLoading, onComplete, enableDebug])
@@ -474,6 +484,27 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                         pendingAnimationRef.current = null
                     }
 
+                    // Handle initial animation for PEDESTRIAN (pause at initial pose)
+                    if (initialAnimationAction && type === ActorType.PEDESTRIAN) {
+                        const availableAnims = animController.getAnimationNames()
+                        console.log(`[EventActor] 🎭 Setting initial animation pose for ${id}: ${initialAnimationAction.name}`)
+                        console.log(`[EventActor] 📋 Available animations:`, availableAnims)
+
+                        if (availableAnims.includes(initialAnimationAction.name)) {
+                            animController.play(initialAnimationAction.name, {
+                                loop: THREE.LoopRepeat,
+                                clampWhenFinished: true
+                            })
+                            // Advance to a visible pose (0.1 seconds into animation)
+                            animController.mixer.update(0.1)
+                            // Then pause
+                            animController.mixer.timeScale = 0
+                            console.log(`[EventActor] ✅ Initial animation pose applied for ${id}`)
+                        } else {
+                            console.warn(`[EventActor] ⚠️ Animation '${initialAnimationAction.name}' not found for ${id}`)
+                        }
+                    }
+
                     // Look for light meshes
                     let activeLight = null;
                     clonedScene.traverse((child) => {
@@ -541,7 +572,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
             return () => {
                 isMounted = false
             }
-        }, [id, model, color, animationUrls, onReady])
+        }, [id, model, color, animationUrls, onReady, initialAnimationAction, type])
 
         const rotationEuler: [number, number, number] = [
             initialRotation[0],
