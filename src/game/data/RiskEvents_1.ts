@@ -87,7 +87,7 @@ export const events: GameEvent[] = [
     //         {
     //             actorId: 'driver_1',
     //             type: ActionType.ANIMATION,
-    //             name: 'Take 001.009',
+    //             name: 'Take 001.008',
     //             loop: false,
     //             time: 0
     //         }
@@ -380,94 +380,94 @@ export const events: GameEvent[] = [
     //     },
     //     spawnRadius: 80
     // },
-    // {
-    //     id: 'pedestrian_crossing_intersection',
-    //     name: '行人穿越路口斑馬線',
-    //     description: '雙黃燈號誌路口及行人穿越斑馬線，玩家需禮讓停等',
-    //     trigger: {
-    //         type: TriggerType.PROXIMITY,
-    //         position: [8, 0, -95],
-    //         radius: 15,
-    //         requiredSpeed: {
-    //             min: 5
-    //         }
-    //     },
-    //     actors: [
-    //         {
-    //             id: 'intersection_pedestrian_1',
-    //             type: ActorType.PEDESTRIAN,
-    //             model: '/src/assets/models/Male1_Rigged.glb',
-    //             initialPosition: [13, 0, -95],
-    //             initialRotation: [0, -Math.PI / 2, 0],
-    //             scale: [1, 1, 1],
-    //             animationUrls: [
-    //                 '/src/assets/animations/character/Male_Walking_Remain_Animation.glb'
-    //             ]
-    //         }
-    //     ],
-    //     actions: [
-    //         // 事件觸發時：設定紅綠燈為雙黃閃爍
-    //         {
-    //             actorId: '_scene',
-    //             type: ActionType.SCENE_OBJECT,
-    //             objectId: 'traffic_light_intersection_01',
-    //             command: 'setState',
-    //             params: { state: 'flashing_yellow' },
-    //             time: 0
-    //         } as any,
-    //         // 行人開始穿越（初始站立姿勢，觸發後開始走）
-    //         {
-    //             actorId: 'intersection_pedestrian_1',
-    //             type: ActionType.ANIMATION,
-    //             name: 'Take 001',
-    //             loop: true,
-    //             time: 0
-    //         },
-    //         // 行人移動路徑
-    //         {
-    //             actorId: 'intersection_pedestrian_1',
-    //             type: ActionType.MOVEMENT,
-    //             path: [
-    //                 [13, 0, -95],
-    //                 [8, 0, -95],
-    //                 [3, 0, -95],
-    //                 [-2, 0, -95],
-    //                 [-7, 0, -95]
-    //             ],
-    //             speed: 1.8,
-    //             time: 0,
-    //             duration: 10
-    //         },
-    //         // 行人通過後：恢復紅綠燈為關閉
-    //         {
-    //             actorId: '_scene',
-    //             type: ActionType.SCENE_OBJECT,
-    //             objectId: 'traffic_light_intersection_01',
-    //             command: 'setState',
-    //             params: { state: 'off' },
-    //             time: 10
-    //         } as any
-    //     ],
-    //     requiredPlayerResponse: {
-    //         type: PlayerResponseType.STOP,
-    //         targetSpeed: {
-    //             max: 5 // 必須幾乎停止
-    //         },
-    //         validationRadius: 15
-    //     },
-    //     completionCriteria: {
-    //         playerPassed: true,
-    //         maxSpeed: 30
-    //     },
-    //     priority: 20, // 高優先級
-    //     prepareConfig: {
-    //         radius: 25,
-    //         actions: [PrepareActionType.DECELERATE, PrepareActionType.STOP],
-    //         targetSpeedFactor: 0.2,
-    //         stopDuration: 5 // 停等 5 秒讓行人通過
-    //     },
-    //     spawnRadius: 60
-    // },
+    {
+        id: 'pedestrian_crossing_intersection',
+        name: '行人穿越路口斑馬線',
+        description: '雙黃燈號誌路口及行人穿越斑馬線，玩家需禮讓停等',
+        trigger: {
+            type: TriggerType.PROXIMITY,
+            position: [8, 0, -65],
+            radius: 15,
+            requiredSpeed: {
+                min: 5
+            }
+        },
+        actors: [
+            {
+                id: 'intersection_pedestrian_1',
+                type: ActorType.PEDESTRIAN,
+                model: '/src/assets/models/Male1_Rigged.glb',
+                initialPosition: [13, 0, -65],
+                initialRotation: [0, -Math.PI / 2, 0],
+                scale: [1, 1, 1],
+                animationUrls: [
+                    '/src/assets/animations/character/Male_Walking_Remain_Animation.glb'
+                ]
+            }
+        ],
+        actions: [
+            // 事件觸發時：設定紅綠燈為雙黃閃爍
+            {
+                actorId: '_scene',
+                type: ActionType.SCENE_OBJECT,
+                objectId: 'traffic_light_intersection_01',
+                command: 'setState',
+                params: { state: 'flashing_yellow' },
+                time: 0
+            } as any,
+            // 行人開始穿越（初始站立姿勢，觸發後開始走）
+            {
+                actorId: 'intersection_pedestrian_1',
+                type: ActionType.ANIMATION,
+                name: 'Take 001',
+                loop: true,
+                time: 0
+            },
+            // 行人移動路徑
+            {
+                actorId: 'intersection_pedestrian_1',
+                type: ActionType.MOVEMENT,
+                path: [
+                    [13, 0, -65],
+                    [8, 0, -65],
+                    [3, 0, -65],
+                    [-2, 0, -65],
+                    [-7, 0, -65]
+                ],
+                speed: 1.8,
+                time: 0,
+                duration: 10
+            },
+            // 行人通過後：恢復紅綠燈為關閉
+            {
+                actorId: '_scene',
+                type: ActionType.SCENE_OBJECT,
+                objectId: 'traffic_light_intersection_01',
+                command: 'setState',
+                params: { state: 'off' },
+                time: 10
+            } as any
+        ],
+        requiredPlayerResponse: {
+            type: PlayerResponseType.STOP,
+            targetSpeed: {
+                max: 5 // 必須幾乎停止
+            },
+            validationRadius: 15
+        },
+        completionCriteria: {
+            playerPassed: true,
+            maxSpeed: 30
+        },
+        priority: 20, // 高優先級
+        prepareConfig: {
+            radius: 25,
+            actions: [PrepareActionType.DECELERATE, PrepareActionType.STOP],
+            targetSpeedFactor: 0.2,
+            stopDuration: 5 // 停等 5 秒讓行人通過
+        },
+        spawnRadius: 80
+    },
     // {
     //     id: 'oncoming_car_turn',
     //     name: '對向來車打燈準備迴轉',
@@ -535,102 +535,102 @@ export const events: GameEvent[] = [
     //     },
     //     spawnRadius: 90
     // },
-    {
-        id: 'bicycle_dodging_pothole',
-        name: '自行車突然偏移（閃坑洞靠向主角）',
-        description: '自行車突然偏移，玩家需要拉開側向距離，避免與自行車並行貼近',
-        trigger: {
-            type: TriggerType.PROXIMITY,
-            position: [12, 0, -35],
-            radius: 30,
-            requiredSpeed: {
-                min: 10 // Only trigger if player is moving (36 km/h)
-            }
-        },
-        actors: [
-            {
-                id: 'bicycle_1',
-                type: ActorType.VEHICLE,
-                model: '/src/assets/models/Bicycle1_Rigged.glb',
-                initialPosition: [12, 0, -35],
-                initialRotation: [0, 0, 0],
-                // color: '#FFD700',
-                animationUrls: [
-                    '/src/assets/animations/car/Bicycle_Moving_Animation.glb'
-                ]
-            },
-            {
-                id: 'rider_1',
-                type: ActorType.PEDESTRIAN,
-                model: '/src/assets/models/Male1_Rigged.glb',
-                initialPosition: [12, 0, -35],
-                initialRotation: [0, Math.PI, 0],
-                scale: [1, 1, 1],
-                animationUrls: [
-                    '/src/assets/animations/character/Male_Riding_Bicycle_Animation.glb'
-                ]
-            }
-        ],
-        actions: [
-            // Move to roadside (slow pull-over)
-            {
-                actorId: 'bicycle_1',
-                type: ActionType.MOVEMENT,
-                path: [
-                    [12, 0, -35],
-                    [12, 0, -40],
-                    [10.5, 0, -47],
-                    [12, 0, -60]
-                ],
-                speed: 5,
-                time: 0,
-                duration: 3
-            },
-            {
-                actorId: 'rider_1',
-                type: ActionType.MOVEMENT,
-                path: [
-                    [12, 0, -35],
-                    [12, 0, -40],
-                    [10.5, 0, -47],
-                    [12, 0, -60]
-                ],
-                speed: 5,
-                time: 0,
-                duration: 3
-            },
-            {
-                actorId: 'bicycle_1',
-                type: ActionType.ANIMATION,
-                name: 'Bicycle_Moving_Animation',
-                loop: true,
-                time: 0
-            },
-            {
-                actorId: 'rider_1',
-                type: ActionType.ANIMATION,
-                name: 'Take 001',
-                loop: true,
-                time: 0
-            }
-        ],
-        requiredPlayerResponse: {
-            type: PlayerResponseType.DECELERATE,
-            targetSpeed: {
-                max: 50 // Must slow to under 50 km/h
-            },
-            validationRadius: 15
-        },
-        completionCriteria: {
-            playerPassed: true,
-            maxSpeed: 60 // Player must pass at reasonable speed
-        },
-        priority: 10,
-        prepareConfig: {
-            radius: 35, // Start preparing 35m away (trigger is 20m)
-            actions: [PrepareActionType.DECELERATE],
-            targetSpeedFactor: 0.2
-        },
-        spawnRadius: 80
-    },
+    // {
+    //     id: 'bicycle_dodging_pothole',
+    //     name: '自行車突然偏移（閃坑洞靠向主角）',
+    //     description: '自行車突然偏移，玩家需要拉開側向距離，避免與自行車並行貼近',
+    //     trigger: {
+    //         type: TriggerType.PROXIMITY,
+    //         position: [12, 0, -35],
+    //         radius: 30,
+    //         requiredSpeed: {
+    //             min: 10 // Only trigger if player is moving (36 km/h)
+    //         }
+    //     },
+    //     actors: [
+    //         {
+    //             id: 'bicycle_1',
+    //             type: ActorType.VEHICLE,
+    //             model: '/src/assets/models/Bicycle1_Rigged.glb',
+    //             initialPosition: [12, 0, -35],
+    //             initialRotation: [0, 0, 0],
+    //             // color: '#FFD700',
+    //             animationUrls: [
+    //                 '/src/assets/animations/car/Bicycle_Moving_Animation.glb'
+    //             ]
+    //         },
+    //         {
+    //             id: 'rider_1',
+    //             type: ActorType.PEDESTRIAN,
+    //             model: '/src/assets/models/Male1_Rigged.glb',
+    //             initialPosition: [12, 0, -35],
+    //             initialRotation: [0, Math.PI, 0],
+    //             scale: [1, 1, 1],
+    //             animationUrls: [
+    //                 '/src/assets/animations/character/Male_Riding_Bicycle_Animation.glb'
+    //             ]
+    //         }
+    //     ],
+    //     actions: [
+    //         // Move to roadside (slow pull-over)
+    //         {
+    //             actorId: 'bicycle_1',
+    //             type: ActionType.MOVEMENT,
+    //             path: [
+    //                 [12, 0, -35],
+    //                 [12, 0, -40],
+    //                 [10.5, 0, -47],
+    //                 [12, 0, -60]
+    //             ],
+    //             speed: 5,
+    //             time: 0,
+    //             duration: 3
+    //         },
+    //         {
+    //             actorId: 'rider_1',
+    //             type: ActionType.MOVEMENT,
+    //             path: [
+    //                 [12, 0, -35],
+    //                 [12, 0, -40],
+    //                 [10.5, 0, -47],
+    //                 [12, 0, -60]
+    //             ],
+    //             speed: 5,
+    //             time: 0,
+    //             duration: 3
+    //         },
+    //         {
+    //             actorId: 'bicycle_1',
+    //             type: ActionType.ANIMATION,
+    //             name: 'Bicycle_Moving_Animation',
+    //             loop: true,
+    //             time: 0
+    //         },
+    //         {
+    //             actorId: 'rider_1',
+    //             type: ActionType.ANIMATION,
+    //             name: 'Take 001',
+    //             loop: true,
+    //             time: 0
+    //         }
+    //     ],
+    //     requiredPlayerResponse: {
+    //         type: PlayerResponseType.DECELERATE,
+    //         targetSpeed: {
+    //             max: 50 // Must slow to under 50 km/h
+    //         },
+    //         validationRadius: 15
+    //     },
+    //     completionCriteria: {
+    //         playerPassed: true,
+    //         maxSpeed: 60 // Player must pass at reasonable speed
+    //     },
+    //     priority: 10,
+    //     prepareConfig: {
+    //         radius: 35, // Start preparing 35m away (trigger is 20m)
+    //         actions: [PrepareActionType.DECELERATE],
+    //         targetSpeedFactor: 0.2
+    //     },
+    //     spawnRadius: 80
+    // },
 ]

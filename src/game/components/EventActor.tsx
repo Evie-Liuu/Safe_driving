@@ -487,8 +487,8 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                     // Handle initial animation for PEDESTRIAN (pause at initial pose)
                     if (initialAnimationAction && type === ActorType.PEDESTRIAN) {
                         const availableAnims = animController.getAnimationNames()
-                        // console.log(`[EventActor] 🎭 Setting initial animation pose for ${id}: ${initialAnimationAction.name}`)
-                        // console.log(`[EventActor] 📋 Available animations:`, availableAnims)
+                        console.log(`[EventActor] 🎭 Setting initial animation pose for ${id}: ${initialAnimationAction.name}`)
+                        console.log(`[EventActor] 📋 Available animations:`, availableAnims)
 
                         if (availableAnims.includes(initialAnimationAction.name)) {
                             animController.play(initialAnimationAction.name, {
