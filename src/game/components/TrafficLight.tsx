@@ -1,34 +1,84 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import { SceneObjectRegistry, TrafficLightHandle, TrafficLightState } from '../registry/SceneObjectRegistry'
 
 interface TrafficLightProps {
     id: string
+    url?: string
     position: [number, number, number]
     rotation?: [number, number, number]
+    scale?: [number, number, number]
     initialState?: TrafficLightState
+    nodeNames?: {
+        red: string
+        yellow: string
+        green: string
+    }
 }
 
 /**
  * Traffic Light Component
  * Registers itself to SceneObjectRegistry and can be controlled by events
+ * Uses GLB model from /src/assets/models/TrafficLight.glb
  */
 export function TrafficLight({
     id,
+    url = '/src/assets/models/TrafficLight.glb',
     position,
     rotation = [0, 0, 0],
-    initialState = 'off'
+    scale = [1, 1, 1],
+    initialState = 'off',
+    nodeNames = {
+        red: 'Red',
+        yellow: 'Yellow',
+        green: 'Green'
+    }
 }: TrafficLightProps) {
-    const groupRef = useRef<THREE.Group>(null)
+    const { scene } = useGLTF(url)
     const [currentState, setCurrentState] = useState<TrafficLightState>(initialState)
     const blinkTimeRef = useRef(0)
     const [isBlinkOn, setIsBlinkOn] = useState(true)
 
-    // Light material refs
-    const redLightRef = useRef<THREE.Mesh>(null)
-    const yellowLightRef = useRef<THREE.Mesh>(null)
-    const greenLightRef = useRef<THREE.Mesh>(null)
+    // Refs for light materials
+    const redMatRef = useRef<THREE.MeshStandardMaterial | null>(null)
+    const yellowMatRef = useRef<THREE.MeshStandardMaterial | null>(null)
+    const greenMatRef = useRef<THREE.MeshStandardMaterial | null>(null)
+
+    // Clone scene for each instance and setup materials
+    const clone = useMemo(() => {
+        const clonedScene = scene.clone()
+
+        // Find lights and setup materials
+        clonedScene.traverse((child) => {
+            if ((child as THREE.Mesh).isMesh) {
+                const mesh = child as THREE.Mesh
+                // Clone material to ensure independent control per instance
+                const material = (mesh.material as THREE.Material).clone() as THREE.MeshStandardMaterial
+                mesh.material = material
+
+                // Identify lights by name (case-insensitive check)
+                const name = child.name.toLowerCase()
+
+                // Debug log to help identify node names if needed
+                // console.log(`[TrafficLight] Node found: ${child.name}`)
+
+                if (name.includes(nodeNames.red.toLowerCase())) {
+                    redMatRef.current = material
+                    // console.log(`[TrafficLight] Linked Red light to ${child.name}`)
+                } else if (name.includes(nodeNames.yellow.toLowerCase())) {
+                    yellowMatRef.current = material
+                    // console.log(`[TrafficLight] Linked Yellow light to ${child.name}`)
+                } else if (name.includes(nodeNames.green.toLowerCase())) {
+                    greenMatRef.current = material
+                    // console.log(`[TrafficLight] Linked Green light to ${child.name}`)
+                }
+            }
+        })
+
+        return clonedScene
+    }, [scene, nodeNames])
 
     // Register to SceneObjectRegistry
     useEffect(() => {
@@ -77,80 +127,57 @@ export function TrafficLight({
         }
     })
 
-    // Determine light colors based on state
-    const getLightColors = () => {
-        const offColor = '#333333'
-        const redOn = '#ff0000'
-        const yellowOn = '#ffcc00'
-        const greenOn = '#00ff00'
+    // Update material properties based on state
+    useEffect(() => {
+        const offColor = new THREE.Color('#333333')
+        const redOn = new THREE.Color('#ff0000')
+        const yellowOn = new THREE.Color('#ffcc00')
+        const greenOn = new THREE.Color('#00ff00')
+
+        const updateMaterial = (mat: THREE.MeshStandardMaterial | null, color: THREE.Color, isOn: boolean) => {
+            if (mat) {
+                mat.color = color
+                mat.emissive = color
+                mat.emissiveIntensity = isOn ? 3 : 0
+            }
+        }
 
         switch (currentState) {
             case 'red':
-                return { red: redOn, yellow: offColor, green: offColor }
+                updateMaterial(redMatRef.current, redOn, true)
+                updateMaterial(yellowMatRef.current, offColor, false)
+                updateMaterial(greenMatRef.current, offColor, false)
+                break
             case 'yellow':
-                return { red: offColor, yellow: yellowOn, green: offColor }
+                updateMaterial(redMatRef.current, offColor, false)
+                updateMaterial(yellowMatRef.current, yellowOn, true)
+                updateMaterial(greenMatRef.current, offColor, false)
+                break
             case 'green':
-                return { red: offColor, yellow: offColor, green: greenOn }
+                updateMaterial(redMatRef.current, offColor, false)
+                updateMaterial(yellowMatRef.current, offColor, false)
+                updateMaterial(greenMatRef.current, greenOn, true)
+                break
             case 'flashing_yellow':
-                return {
-                    red: offColor,
-                    yellow: isBlinkOn ? yellowOn : offColor,
-                    green: offColor
-                }
+                updateMaterial(redMatRef.current, offColor, false)
+                updateMaterial(yellowMatRef.current, isBlinkOn ? yellowOn : offColor, isBlinkOn)
+                updateMaterial(greenMatRef.current, offColor, false)
+                break
             case 'off':
             default:
-                return { red: offColor, yellow: offColor, green: offColor }
+                updateMaterial(redMatRef.current, offColor, false)
+                updateMaterial(yellowMatRef.current, offColor, false)
+                updateMaterial(greenMatRef.current, offColor, false)
+                break
         }
-    }
-
-    const colors = getLightColors()
-
-    // Emissive intensity for lit lights
-    const getEmissive = (isOn: boolean) => isOn ? 2 : 0
+    }, [currentState, isBlinkOn])
 
     return (
-        <group ref={groupRef} position={position} rotation={rotation}>
-            {/* Traffic light housing */}
-            <mesh position={[0, 2, 0]}>
-                <boxGeometry args={[0.4, 1.2, 0.3]} />
-                <meshStandardMaterial color="#222222" />
-            </mesh>
-
-            {/* Pole */}
-            <mesh position={[0, 0.7, 0]}>
-                <cylinderGeometry args={[0.05, 0.05, 1.4, 8]} />
-                <meshStandardMaterial color="#444444" />
-            </mesh>
-
-            {/* Red light (top) */}
-            <mesh ref={redLightRef} position={[0, 2.35, 0.16]}>
-                <sphereGeometry args={[0.12, 16, 16]} />
-                <meshStandardMaterial
-                    color={colors.red}
-                    emissive={colors.red}
-                    emissiveIntensity={getEmissive(colors.red !== '#333333')}
-                />
-            </mesh>
-
-            {/* Yellow light (middle) */}
-            <mesh ref={yellowLightRef} position={[0, 2, 0.16]}>
-                <sphereGeometry args={[0.12, 16, 16]} />
-                <meshStandardMaterial
-                    color={colors.yellow}
-                    emissive={colors.yellow}
-                    emissiveIntensity={getEmissive(colors.yellow !== '#333333')}
-                />
-            </mesh>
-
-            {/* Green light (bottom) */}
-            <mesh ref={greenLightRef} position={[0, 1.65, 0.16]}>
-                <sphereGeometry args={[0.12, 16, 16]} />
-                <meshStandardMaterial
-                    color={colors.green}
-                    emissive={colors.green}
-                    emissiveIntensity={getEmissive(colors.green !== '#333333')}
-                />
-            </mesh>
-        </group>
+        <primitive
+            object={clone}
+            position={position}
+            rotation={rotation}
+            scale={scale}
+        />
     )
 }

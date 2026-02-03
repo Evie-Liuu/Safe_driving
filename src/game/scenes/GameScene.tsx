@@ -20,6 +20,7 @@ import { PlayerState, ActionType, ScriptAction, PrepareInstruction, DangerClickJ
 import { AnimationManager } from '../animations/AnimationManager'
 import { getSharedLoader } from '../utils/SharedLoader'
 import { TrafficLight } from '../components/TrafficLight'
+import { trafficLights } from '../data/TrafficLights'
 
 /**
  * 主遊戲場景
@@ -666,7 +667,7 @@ export function GameScene() {
           onSpeedChange={handleSpeedChange}
           onTriggerOncomingVehicle={handleTriggerOncomingVehicle}
           onCruiseComplete={handleCruiseComplete}
-          enableCameraFollow={true}
+          enableCameraFollow={false}
           isCruising={isCruising && !gameEnded}
           isBraking={isBraking || autoBraking}
           cruisePoints={cruisePoints}
@@ -690,12 +691,12 @@ export function GameScene() {
         ))}
 
         {/* 場景紅綠燈 */}
-        <TrafficLight
-          id="traffic_light_intersection_01"
-          position={[14, 0, -95]}
-          rotation={[0, -Math.PI / 2, 0]}
-          initialState="off"
-        />
+        {trafficLights.map((light) => (
+          <TrafficLight
+            key={light.id}
+            {...light}
+          />
+        ))}
 
         {/* 一些裝飾物 */}
         {/* <DemoObjects /> */}
