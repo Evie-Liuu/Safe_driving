@@ -2,9 +2,14 @@ import { GameEvent, TriggerType, ActionType, ActorType, PlayerResponseType, Prep
 
 /**
  * Cruise points for the route
+ * H--F--I
+ * |  |  |
+ * E--C--G
+ * |  |  |
+ * B--A--D
  */
 export const cruisePoints: [number, number, number][] = [
-    // [10, 0, 120], //起點
+    // [10, 0, 120], //起點 
     // [10, 0, 80],
     // [10, 0, 49],
     // [10, 0, 12],
@@ -30,85 +35,85 @@ export const points = cruisePoints
  * Risk event scenarios for Route 1
  */
 export const events: GameEvent[] = [
-    // {
-    //     id: 'parked_car_door_opening',
-    //     name: '路邊停車開門',
-    //     description: '路邊停放的車輛突然打開車門，玩家需準備略偏左避開',
-    //     trigger: {
-    //         type: TriggerType.PROXIMITY,
-    //         position: [11, 0, -60],
-    //         radius: 18, //37,  //TODO 是否會和prepare衝突
-    //         requiredSpeed: {
-    //             min: 10
-    //         }
-    //     },
-    //     actors: [
-    //         {
-    //             id: 'parked_car_1',
-    //             type: ActorType.VEHICLE,
-    //             model: '/src/assets/models/Car_Main_Rigged.glb',
-    //             initialPosition: [11, 0, -60],
-    //             initialRotation: [0, -Math.PI, 0],
-    //             color: '#2E86AB', // Blue car
-    //             animationUrls: [
-    //                 '/src/assets/animations/car/Car_Main_LeftDoor_Opening_Animation_TEST2.glb'
-    //             ]
-    //         },
-    //         {
-    //             id: 'driver_1',
-    //             type: ActorType.PEDESTRIAN,
-    //             model: '/src/assets/models/Male1_Rigged.glb',
-    //             initialPosition: [11, 0, -60],
-    //             initialRotation: [0, Math.PI, 0],
-    //             scale: [1, 1, 1],
-    //             animationUrls: [
-    //                 '/src/assets/animations/character/Male_OpenCarLeftDoor_Inside_Animation.glb'
-    //             ]
-    //         }
-    //     ],
-    //     actions: [
-    //         // Just a stationary hazard - could add door opening animation later
-    //         {
-    //             actorId: 'parked_car_1',
-    //             type: ActionType.LIGHT,
-    //             lightType: 'hazard',
-    //             enabled: true,
-    //             blinkRate: 1.5,
-    //             time: 0,
-    //             duration: 8
-    //         },
-    //         {
-    //             actorId: 'parked_car_1',
-    //             type: ActionType.ANIMATION,
-    //             name: 'Car_Main_LeftDoor_Opening_Animation',
-    //             loop: false,
-    //             time: 0
-    //         },
-    //         {
-    //             actorId: 'driver_1',
-    //             type: ActionType.ANIMATION,
-    //             name: 'Take 001.008',
-    //             loop: false,
-    //             time: 0
-    //         }
-    //     ],
-    //     requiredPlayerResponse: {
-    //         type: PlayerResponseType.AVOID,
-    //         validationRadius: 12
-    //     },
-    //     completionCriteria: {
-    //         playerPassed: true
-    //     },
-    //     priority: 8,
-    //     prepareConfig: {
-    //         radius: 25, // Start preparing 25m away (trigger is 18m)
-    //         actions: [PrepareActionType.DECELERATE, PrepareActionType.LANE_SWITCH],
-    //         targetSpeedFactor: 0.3,
-    //         laneOffset: -5.5, // Shift left to avoid door
-    //         offsetHoldDistance: 15 // Maintain offset for 15m after passing trigger
-    //     },
-    //     spawnRadius: 80 // Pre-spawn actors 50m away for smooth visual experience
-    // },
+    {
+        id: 'parked_car_door_opening',
+        name: '路邊停車開門',
+        description: '路邊停放的車輛突然打開車門，玩家需準備略偏左避開',
+        trigger: {
+            type: TriggerType.PROXIMITY,
+            position: [11, 0, -60],
+            radius: 18, //37,  //TODO 是否會和prepare衝突
+            requiredSpeed: {
+                min: 10
+            }
+        },
+        actors: [
+            {
+                id: 'parked_car_1',
+                type: ActorType.VEHICLE,
+                model: '/src/assets/models/Car_Main_Rigged.glb',
+                initialPosition: [11, 0, -60],
+                initialRotation: [0, -Math.PI, 0],
+                color: '#2E86AB', // Blue car
+                animationUrls: [
+                    '/src/assets/animations/car/Car_Main_LeftDoor_Opening_Animation_TEST2.glb'
+                ]
+            },
+            {
+                id: 'driver_1',
+                type: ActorType.PEDESTRIAN,
+                model: '/src/assets/models/Male1_Rigged.glb',
+                initialPosition: [11, 0, -60],
+                initialRotation: [0, Math.PI, 0],
+                scale: [1, 1, 1],
+                animationUrls: [
+                    '/src/assets/animations/character/Male_OpenCarLeftDoor_Inside_Animation.glb'
+                ]
+            }
+        ],
+        actions: [
+            // Just a stationary hazard - could add door opening animation later
+            {
+                actorId: 'parked_car_1',
+                type: ActionType.LIGHT,
+                lightType: 'hazard',
+                enabled: true,
+                blinkRate: 1.5,
+                time: 0,
+                duration: 8
+            },
+            {
+                actorId: 'parked_car_1',
+                type: ActionType.ANIMATION,
+                name: 'Car_Main_LeftDoor_Opening_Animation',
+                loop: false,
+                time: 0
+            },
+            {
+                actorId: 'driver_1',
+                type: ActionType.ANIMATION,
+                name: 'Take 001.008',
+                loop: false,
+                time: 0
+            }
+        ],
+        requiredPlayerResponse: {
+            type: PlayerResponseType.AVOID,
+            validationRadius: 12
+        },
+        completionCriteria: {
+            playerPassed: true
+        },
+        priority: 8,
+        prepareConfig: {
+            radius: 25, // Start preparing 25m away (trigger is 18m)
+            actions: [PrepareActionType.DECELERATE, PrepareActionType.LANE_SWITCH],
+            targetSpeedFactor: 0.3,
+            laneOffset: -5.5, // Shift left to avoid door
+            offsetHoldDistance: 15 // Maintain offset for 15m after passing trigger
+        },
+        spawnRadius: 80 // Pre-spawn actors 50m away for smooth visual experience
+    },
     // {
     //     id: 'taxi_roadside_stop',
     //     name: '計程車路邊臨停',
@@ -380,94 +385,94 @@ export const events: GameEvent[] = [
     //     },
     //     spawnRadius: 80
     // },
-    {
-        id: 'pedestrian_crossing_intersection',
-        name: '行人穿越路口斑馬線',
-        description: '雙黃燈號誌路口及行人穿越斑馬線，玩家需禮讓停等',
-        trigger: {
-            type: TriggerType.PROXIMITY,
-            position: [8, 0, -65],
-            radius: 15,
-            // requiredSpeed: {
-            //     min: 5
-            // }
-        },
-        actors: [
-            {
-                id: 'intersection_pedestrian_1',
-                type: ActorType.PEDESTRIAN,
-                model: '/src/assets/models/Male1_Rigged.glb',
-                initialPosition: [13, 0, -65],
-                initialRotation: [0, -Math.PI / 2, 0],
-                scale: [1, 1, 1],
-                animationUrls: [
-                    '/src/assets/animations/character/Male_Walking_Remain_Animation.glb'
-                ]
-            }
-        ],
-        actions: [
-            // 事件觸發時：設定紅綠燈為雙黃閃爍
-            {
-                actorId: '_scene',
-                type: ActionType.SCENE_OBJECT,
-                objectId: 'traffic_light_intersection_01',
-                command: 'setState',
-                params: { state: 'flashing_yellow' },
-                time: 0
-            } as any,
-            // 行人開始穿越（初始站立姿勢，觸發後開始走）
-            {
-                actorId: 'intersection_pedestrian_1',
-                type: ActionType.ANIMATION,
-                name: 'Take 001',
-                loop: true,
-                time: 0
-            },
-            // 行人移動路徑
-            {
-                actorId: 'intersection_pedestrian_1',
-                type: ActionType.MOVEMENT,
-                path: [
-                    [13, 0, -65],
-                    [8, 0, -65],
-                    [3, 0, -65],
-                    [-2, 0, -65],
-                    [-7, 0, -65]
-                ],
-                speed: 1.8,
-                time: 0,
-                duration: 10
-            },
-            // 行人通過後：恢復紅綠燈為關閉
-            {
-                actorId: '_scene',
-                type: ActionType.SCENE_OBJECT,
-                objectId: 'traffic_light_intersection_01',
-                command: 'setState',
-                params: { state: 'off' },
-                time: 10
-            } as any
-        ],
-        requiredPlayerResponse: {
-            type: PlayerResponseType.STOP,
-            targetSpeed: {
-                max: 5 // 必須幾乎停止
-            },
-            validationRadius: 15
-        },
-        completionCriteria: {
-            playerPassed: true,
-            maxSpeed: 30
-        },
-        priority: 20, // 高優先級
-        prepareConfig: {
-            radius: 25,
-            actions: [PrepareActionType.DECELERATE, PrepareActionType.STOP],
-            targetSpeedFactor: 0.5,
-            stopDuration: 2 // 停等 2 秒讓行人通過
-        },
-        spawnRadius: 80
-    },
+    // {
+    //     id: 'pedestrian_crossing_intersection',
+    //     name: '行人穿越路口斑馬線',
+    //     description: '雙黃燈號誌路口及行人穿越斑馬線，玩家需禮讓停等',
+    //     trigger: {
+    //         type: TriggerType.PROXIMITY,
+    //         position: [8, 0, -65],
+    //         radius: 15,
+    //         // requiredSpeed: {
+    //         //     min: 5
+    //         // }
+    //     },
+    //     actors: [
+    //         {
+    //             id: 'intersection_pedestrian_1',
+    //             type: ActorType.PEDESTRIAN,
+    //             model: '/src/assets/models/Male1_Rigged.glb',
+    //             initialPosition: [13, 0, -65],
+    //             initialRotation: [0, -Math.PI / 2, 0],
+    //             scale: [1, 1, 1],
+    //             animationUrls: [
+    //                 '/src/assets/animations/character/Male_Walking_Remain_Animation.glb'
+    //             ]
+    //         }
+    //     ],
+    //     actions: [
+    //         // 事件觸發時：設定紅綠燈為雙黃閃爍
+    //         {
+    //             actorId: '_scene',
+    //             type: ActionType.SCENE_OBJECT,
+    //             objectId: 'traffic_light_intersection_01',
+    //             command: 'setState',
+    //             params: { state: 'flashing_yellow' },
+    //             time: 0
+    //         } as any,
+    //         // 行人開始穿越（初始站立姿勢，觸發後開始走）
+    //         {
+    //             actorId: 'intersection_pedestrian_1',
+    //             type: ActionType.ANIMATION,
+    //             name: 'Take 001',
+    //             loop: true,
+    //             time: 0
+    //         },
+    //         // 行人移動路徑
+    //         {
+    //             actorId: 'intersection_pedestrian_1',
+    //             type: ActionType.MOVEMENT,
+    //             path: [
+    //                 [13, 0, -65],
+    //                 [8, 0, -65],
+    //                 [3, 0, -65],
+    //                 [-2, 0, -65],
+    //                 [-7, 0, -65]
+    //             ],
+    //             speed: 1.8,
+    //             time: 0,
+    //             duration: 10
+    //         },
+    //         // 行人通過後：恢復紅綠燈為關閉
+    //         {
+    //             actorId: '_scene',
+    //             type: ActionType.SCENE_OBJECT,
+    //             objectId: 'traffic_light_intersection_01',
+    //             command: 'setState',
+    //             params: { state: 'off' },
+    //             time: 10
+    //         } as any
+    //     ],
+    //     requiredPlayerResponse: {
+    //         type: PlayerResponseType.STOP,
+    //         targetSpeed: {
+    //             max: 5 // 必須幾乎停止
+    //         },
+    //         validationRadius: 15
+    //     },
+    //     completionCriteria: {
+    //         playerPassed: true,
+    //         maxSpeed: 30
+    //     },
+    //     priority: 20, // 高優先級
+    //     prepareConfig: {
+    //         radius: 25,
+    //         actions: [PrepareActionType.DECELERATE, PrepareActionType.STOP],
+    //         targetSpeedFactor: 0.5,
+    //         stopDuration: 2 // 停等 2 秒讓行人通過
+    //     },
+    //     spawnRadius: 80
+    // },
     // {
     //     id: 'oncoming_car_turn',
     //     name: '對向來車打燈準備迴轉',
@@ -475,7 +480,7 @@ export const events: GameEvent[] = [
     //     trigger: {
     //         type: TriggerType.PROXIMITY,
     //         position: [117.6, 0, -71],
-    //         radius: 30,
+    //         radius: 15,
     //         requiredSpeed: {
     //             min: 10 // Only trigger if player is moving (36 km/h)
     //         }
@@ -498,7 +503,7 @@ export const events: GameEvent[] = [
     //             enabled: true,
     //             blinkRate: 2,
     //             time: 0,
-    //             duration: 15
+    //             duration: 1
     //         },
     //         // Move to roadside (slow pull-over)
     //         {
@@ -509,9 +514,14 @@ export const events: GameEvent[] = [
     //                 [116.06, 0, -72.05],
     //                 [113.45, 0, -72],
     //                 [110.69, 0, -67],
-    //                 [109.16, 0, -59.25]
+    //                 [109.16, 0, -59.25],
+    //                 [109.7, 0, -48.5],
+    //                 [110.91, 0, -13.91], //準備右轉離場
+    //                 [110.18, 0, -9.87],
+    //                 [106.79, 0, -7.91],
+    //                 [43.26, 0, -8.3]
     //             ],
-    //             speed: 8,
+    //             speed: 15,
     //             time: 0,
     //             duration: 3
     //         }
@@ -531,7 +541,8 @@ export const events: GameEvent[] = [
     //     prepareConfig: {
     //         radius: 35, // Start preparing 35m away (trigger is 20m)
     //         actions: [PrepareActionType.DECELERATE],
-    //         targetSpeedFactor: 0.5
+    //         targetSpeedFactor: 0.5,
+    //         stopDuration: 3
     //     },
     //     spawnRadius: 90
     // },

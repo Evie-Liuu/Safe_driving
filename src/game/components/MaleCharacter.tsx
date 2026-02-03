@@ -9,6 +9,8 @@ interface MaleCharacterProps {
     scale?: [number, number, number]
 }
 
+const test_name = 'Car_Main_LeftDoor_Opening_Animation_N.glb'
+
 export function MaleCharacter({
     position = [0, 0, 0],
     rotation = [0, 0, 0],
@@ -18,7 +20,7 @@ export function MaleCharacter({
 
     // Load model and animation
     const gltf = useGLTF('/src/assets/models/Car_Main_Rigged.glb')
-    const { animations } = useGLTF('/src/assets/animations/car/Car_Main_LeftDoor_Opening_Animation_TEST2.glb')
+    const { animations } = useGLTF(`/src/assets/animations/car/${test_name}`)
     // const { animations } = useGLTF('/src/assets/animations/car/Car_Main_RightDoor_Opening_Anim/ation.glb')
     // const gltf = useGLTF('/src/assets/models/Scooter1_Rigged.glb')
     // const { animations } = useGLTF('/src/assets/animations/car/Scooter_Moving_Animation.glb')
@@ -28,27 +30,30 @@ export function MaleCharacter({
     // Bind animations to the group
     const { actions } = useAnimations(animations, group)
 
-    // useFrame(() => {
-    //     // 遍歷場景找出所有骨骼
-    //     gltf.scene.traverse((child) => {
-    //         if (child.type === 'Bone' ||
-    //             child.name.includes('Armature') ||
-    //             child.name.includes('Root')) {
-    //             const worldPos = new THREE.Vector3();
+    useFrame(() => {
+        // 遍歷場景找出所有骨骼
+        gltf.scene.traverse((child) => {
+            if (child.type === 'Bone' ||
+                child.name.includes('Armature') ||
+                child.name.includes('Root')) {
+                const worldPos = new THREE.Vector3();
 
-    //             child.getWorldPosition(worldPos);
-    //             if (worldPos.y < -0.01) { // 
-    //                 //偵測下沉
-    //                 if (child.name.includes('Car_Main_1')) {
-    //                     child.position.y = 0;
-    //                     // child.updateWorldMatrix(true, true);
-    //                     child.updateMatrixWorld(true);
-    //                     console.log(`骨骼 ${child.name} 下沉至: ${worldPos.y}`);
-    //                 }
-    //             }
-    //         }
-    //     });
-    // });
+                child.getWorldPosition(worldPos);
+                if (worldPos.y < -0.01) { // 
+                    //偵測下沉
+                    // console.log(`骨骼 ${child.name} 下沉至: ${worldPos.y}`);
+
+
+                    // if (child.name.includes('Car_Main_1')) {
+                    //     child.position.y = 0;
+                    //     // child.updateWorldMatrix(true, true);
+                    //     // child.updateMatrixWorld(true);
+                    //     console.log(`骨骼 ${child.name} 下沉至: ${worldPos.y}`);
+                    // }
+                }
+            }
+        });
+    });
 
     // useFrame(() => {
     //     const target =
@@ -64,30 +69,30 @@ export function MaleCharacter({
         console.log('Available animations:', animations);
 
         if (actions) {
-            // const actionName = 'Car_Main_LeftDoor_Opening_Animation';
-            const actionName = 'Take 001';
+            const actionName = 'Car_Main_LeftDoor_Opening_Animation_N';
+            // const actionName = 'Take 001';
             const action = actions[actionName];
 
             if (action) {
                 const clip = action.getClip();
 
                 // 更嚴格地過濾位置和位移軌道
-                clip.tracks = clip.tracks.filter(track => {
-                    //     const name = track.name.toLowerCase();
-                    //     const shouldKeep = name.includes('door') && name.includes('quaternion');
+                // clip.tracks = clip.tracks.filter(track => {
+                //     //     const name = track.name.toLowerCase();
+                //     //     const shouldKeep = name.includes('door') && name.includes('quaternion');
 
-                    //     if (!shouldKeep) {
-                    //         console.log('移除軌道:', track.name);
-                    //     }
-                    //     return shouldKeep;
-                    // });
-                    if (track.name.includes('Car_Main_1')
-                        && track.name.includes('position')) {
-                        console.log('移除:', track.name);
-                        return false;
-                    }
-                    return true;
-                });
+                //     //     if (!shouldKeep) {
+                //     //         console.log('移除軌道:', track.name);
+                //     //     }
+                //     //     return shouldKeep;
+                //     // });
+                //     if (track.name.includes('Car_Main_1')
+                //         && (track.name.includes('position') || track.name.includes('scale') || track.name.includes('quaternion'))) {
+                //         console.log('移除:', track.name);
+                //         return false;
+                //     }
+                //     return true;
+                // });
 
                 action.reset().fadeIn(0.5).play();
                 action.setLoop(THREE.LoopRepeat, Infinity);
@@ -144,5 +149,5 @@ export function MaleCharacter({
 // useGLTF.preload('/src/assets/animations/car/Scooter_Moving_Animation.glb')
 
 useGLTF.preload('/src/assets/models/Car_Main_Rigged.glb')
-useGLTF.preload('/src/assets/animations/car/Car_Main_LeftDoor_Opening_Animation_TEST2.glb')
+useGLTF.preload(`/src/assets/animations/car/${test_name}`)
 // useGLTF.preload('/src/assets/animations/car/Car_Main_RightDoor_Opening_Animation.glb')
