@@ -388,9 +388,9 @@ export const events: GameEvent[] = [
             type: TriggerType.PROXIMITY,
             position: [8, 0, -65],
             radius: 15,
-            requiredSpeed: {
-                min: 5
-            }
+            // requiredSpeed: {
+            //     min: 5
+            // }
         },
         actors: [
             {
@@ -463,8 +463,8 @@ export const events: GameEvent[] = [
         prepareConfig: {
             radius: 25,
             actions: [PrepareActionType.DECELERATE, PrepareActionType.STOP],
-            targetSpeedFactor: 0.2,
-            stopDuration: 5 // 停等 5 秒讓行人通過
+            targetSpeedFactor: 0.5,
+            stopDuration: 2 // 停等 2 秒讓行人通過
         },
         spawnRadius: 80
     },

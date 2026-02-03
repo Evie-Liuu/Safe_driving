@@ -498,31 +498,65 @@ export class EventManager {
             if (!event?.prepareConfig || !event.trigger.position) continue
 
             const config = event.prepareConfig
-            const offsetHoldDistance = config.offsetHoldDistance ?? 0
-            if (offsetHoldDistance <= 0) continue
-            if (!config.actions.includes(PrepareActionType.LANE_SWITCH)) continue
-
             const priority = event.priority || 0
             if (priority <= bestPriority) continue
 
-            // Calculate distance traveled since event activation (more stable than rotation-based)
-            const distanceTraveled = playerState.position.distanceTo(context.startPosition)
+            // Determine if we should send instruction for this active event
+            let instruction: PrepareInstruction | null = null
 
-            // Player has moved since event activation, maintain offset until they've traveled offsetHoldDistance
-            if (distanceTraveled > 0 && distanceTraveled <= offsetHoldDistance) {
-                bestPriority = priority
-                bestInstruction = {
+            // Check for Active Hazard (Stop/Decel)
+            // If the event requires stopping or decelerating, we continue to enforce this 
+            // while within the active range (trigger radius + buffer)
+            const isStopOrDecel = config.actions.includes(PrepareActionType.STOP) || config.actions.includes(PrepareActionType.DECELERATE)
+            const isLaneSwitch = config.actions.includes(PrepareActionType.LANE_SWITCH)
+
+            const eventPos = new THREE.Vector3(...event.trigger.position)
+            const distToTrigger = playerState.position.distanceTo(eventPos)
+            const activeRadius = (event.trigger.radius || 0) + 5 // 5m buffer to prevent state flickering
+
+            if (isStopOrDecel && distToTrigger <= activeRadius) {
+                instruction = {
                     eventId: event.id,
                     eventName: event.name,
                     triggerPosition: event.trigger.position!,
-                    shouldBrake: false, // No braking needed after passing
-                    shouldStop: false, // No stopping needed after passing
-                    stopDuration: 0,
-                    targetSpeedFactor: 1, // Resume normal speed
-                    laneOffset: config.laneOffset ?? -1.5,
+                    shouldBrake: config.actions.includes(PrepareActionType.DECELERATE),
+                    shouldStop: config.actions.includes(PrepareActionType.STOP),
+                    stopDuration: config.stopDuration ?? 3,
+                    targetSpeedFactor: config.targetSpeedFactor ?? 0.5,
+                    laneOffset: isLaneSwitch ? (config.laneOffset ?? -1.5) : 0,
                     clickDeadline: config.clickDeadline ?? 5,
                     status: PrepareZoneStatus.INSIDE_TRIGGER
                 }
+            }
+            // Check for Offset Hold (Recovery Phase)
+            // Only applies if we aren't in the critical Stop/Decel phase (or if not applicable)
+            else if (isLaneSwitch) {
+                const offsetHoldDistance = config.offsetHoldDistance ?? 0
+                if (offsetHoldDistance > 0) {
+                    // Calculate traveled distance since activation
+                    const distanceTraveled = playerState.position.distanceTo(context.startPosition)
+
+                    if (distanceTraveled <= offsetHoldDistance) {
+                        // Recovery Mode: Maintain lane offset but resume speed
+                        instruction = {
+                            eventId: event.id,
+                            eventName: event.name,
+                            triggerPosition: event.trigger.position!,
+                            shouldBrake: false,
+                            shouldStop: false,
+                            stopDuration: 0,
+                            targetSpeedFactor: 1, // Resume normal speed
+                            laneOffset: config.laneOffset ?? -1.5,
+                            clickDeadline: config.clickDeadline ?? 5,
+                            status: PrepareZoneStatus.INSIDE_TRIGGER
+                        }
+                    }
+                }
+            }
+
+            if (instruction) {
+                bestPriority = priority
+                bestInstruction = instruction
             }
         }
 

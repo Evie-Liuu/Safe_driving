@@ -66,6 +66,8 @@ export function GameScene() {
   // Stop action tracking
   const stopStartTimeRef = useRef<number>(0)
   const stopCompletedEventsRef = useRef<Set<string>>(new Set())
+  // Track current processing event to prevent timer resets when activeDanger is cleared
+  const currentProcessingEventIdRef = useRef<string | null>(null)
   const [judgmentResult, setJudgmentResult] = useState<{
     judgment: DangerClickJudgment
     eventName: string
@@ -171,7 +173,8 @@ export function GameScene() {
   const handlePrepareInstruction = useCallback((instruction: PrepareInstruction | null) => {
     if (instruction) {
       // Track when we first enter prepare zone for this event
-      if (!activeDanger || activeDanger.eventId !== instruction.eventId) {
+      if (currentProcessingEventIdRef.current !== instruction.eventId) {
+        currentProcessingEventIdRef.current = instruction.eventId
         dangerEnteredTimeRef.current = performance.now()
         brakingStartTimeRef.current = 0
         stopStartTimeRef.current = 0
@@ -234,6 +237,7 @@ export function GameScene() {
       setAutoLaneOffset(instruction.laneOffset)
       setAutoSpeedFactor(effectiveSpeedFactor)
     } else {
+      currentProcessingEventIdRef.current = null
       // instruction is null → player is outside all prepare zones
       if (activeDanger && !dangerClickedRef.current) {
         // Check if the event was activated (player entered trigger radius)
@@ -662,7 +666,7 @@ export function GameScene() {
           onSpeedChange={handleSpeedChange}
           onTriggerOncomingVehicle={handleTriggerOncomingVehicle}
           onCruiseComplete={handleCruiseComplete}
-          enableCameraFollow={false}
+          enableCameraFollow={true}
           isCruising={isCruising && !gameEnded}
           isBraking={isBraking || autoBraking}
           cruisePoints={cruisePoints}
