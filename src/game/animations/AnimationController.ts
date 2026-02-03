@@ -7,6 +7,8 @@ interface AnimationConfig {
   timeScale?: number
   weight?: number
   clampWhenFinished?: boolean
+  fadeIn?: number
+  fadeOut?: number
 }
 
 /**
@@ -101,7 +103,6 @@ export class AnimationController {
     const action = this.mixer.clipAction(clip)
     this.actions.set(clip.name, action)
   }
-
   /**
    * 播放動畫
    * @param name 動畫名稱
@@ -123,14 +124,21 @@ export class AnimationController {
         action.clampWhenFinished = config.clampWhenFinished
     }
 
+    const fadeInDuration = config?.fadeIn !== undefined ? config.fadeIn : 0.5
+    const fadeOutDuration = config?.fadeOut !== undefined ? config.fadeOut : 0.5
+
     // 淡出當前動畫
     if (this.currentAction && this.currentAction !== action) {
-      this.currentAction.fadeOut(0.5)
+      this.currentAction.fadeOut(fadeOutDuration)
     }
 
     // 淡入新動畫
     action.reset()
-    action.fadeIn(0.5)
+    if (fadeInDuration > 0) {
+      action.fadeIn(fadeInDuration)
+    } else {
+      action.setEffectiveWeight(1) // Ensure full weight immediately if no fade
+    }
     action.play()
 
     this.currentAction = action

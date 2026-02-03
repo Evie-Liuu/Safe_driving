@@ -487,21 +487,22 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                     // Handle initial animation for PEDESTRIAN (pause at initial pose)
                     if (initialAnimationAction && type === ActorType.PEDESTRIAN) {
                         const availableAnims = animController.getAnimationNames()
-                        console.log(`[EventActor] 🎭 Setting initial animation pose for ${id}: ${initialAnimationAction.name}`)
-                        console.log(`[EventActor] 📋 Available animations:`, availableAnims)
+                        // console.log(`[EventActor] 🎭 Setting initial animation pose for ${id}: ${initialAnimationAction.name}`)
+                        // console.log(`[EventActor] 📋 Available animations:`, availableAnims)
 
                         if (availableAnims.includes(initialAnimationAction.name)) {
                             animController.play(initialAnimationAction.name, {
                                 loop: THREE.LoopRepeat,
-                                clampWhenFinished: true
+                                clampWhenFinished: true,
+                                fadeIn: 0
                             })
                             // Advance to a visible pose (0.1 seconds into animation)
                             animController.mixer.update(0.1)
                             // Then pause
                             animController.mixer.timeScale = 0
-                            console.log(`[EventActor] ✅ Initial animation pose applied for ${id}`)
+                            // console.log(`[EventActor] ✅ Initial animation pose applied for ${id}`)
                         } else {
-                            console.warn(`[EventActor] ⚠️ Animation '${initialAnimationAction.name}' not found for ${id}`)
+                            // console.warn(`[EventActor] ⚠️ Animation '${initialAnimationAction.name}' not found for ${id}`)
                         }
                     }
 
