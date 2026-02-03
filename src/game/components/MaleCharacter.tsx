@@ -9,7 +9,7 @@ interface MaleCharacterProps {
     scale?: [number, number, number]
 }
 
-const test_name = 'Car_Main_LeftDoor_Opening_Animation_N.glb'
+const test_name = 'Car_Main_LeftDoor_Opening_Animation_TEST2.glb'
 
 export function MaleCharacter({
     position = [0, 0, 0],
@@ -69,7 +69,7 @@ export function MaleCharacter({
         console.log('Available animations:', animations);
 
         if (actions) {
-            const actionName = 'Car_Main_LeftDoor_Opening_Animation_N';
+            const actionName = 'Car_Main_LeftDoor_Opening_Animation_TEST2';
             // const actionName = 'Take 001';
             const action = actions[actionName];
 

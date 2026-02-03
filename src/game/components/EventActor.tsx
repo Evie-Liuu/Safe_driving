@@ -114,6 +114,16 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
         // Debug path visualization state
         const [debugPath, setDebugPath] = useState<[number, number, number][] | null>(null)
 
+        // Refs to store latest props to avoid useEffect dependency issues
+        const animationUrlsRef = useRef(animationUrls)
+        const onReadyRef = useRef(onReady)
+        const initialAnimationActionRef = useRef(initialAnimationAction)
+
+        // Keep refs updated
+        animationUrlsRef.current = animationUrls
+        onReadyRef.current = onReady
+        initialAnimationActionRef.current = initialAnimationAction
+
         useEffect(() => {
             if (groupRef.current) {
                 console.log(`EventActor ${id} (${type}) initialized at`, initialPosition)
@@ -387,6 +397,29 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
 
             const loadModelAndAnimations = async () => {
                 try {
+                    // Clean up existing model before loading new one to prevent duplicates
+                    if (groupRef.current) {
+                        const childrenToRemove: THREE.Object3D[] = []
+                        groupRef.current.children.forEach((child) => {
+                            // Keep debug sphere, remove loaded models
+                            if (!(child instanceof THREE.Mesh && child.geometry instanceof THREE.SphereGeometry)) {
+                                childrenToRemove.push(child)
+                            }
+                        })
+                        childrenToRemove.forEach((child) => {
+                            groupRef.current?.remove(child)
+                        })
+                    }
+
+                    // Dispose existing animation controller
+                    if (animationControllerRef.current) {
+                        animationControllerRef.current.dispose()
+                        animationControllerRef.current = null
+                    }
+
+                    // Clear light materials
+                    lightMaterialsRef.current = []
+
                     // Load main model using shared loader
                     const gltf = await new Promise<GLTF>((resolve, reject) => {
                         getSharedLoader().load(
@@ -433,11 +466,12 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                     animController.loadAnimationsFromGLTF(gltf)
 
                     // Load external animations if provided
-                    if (animationUrls.length > 0) {
+                    const currentAnimationUrls = animationUrlsRef.current
+                    if (currentAnimationUrls.length > 0) {
                         // Reuse the logic we just implemented in the imperative handle, but we can't call it directly from here easily without refactoring more.
                         // So we'll validly duplicate the logic slightly or better yet, we can't access the ref current handle easily.
                         // Let's just keep the loop here for distinct initial loading.
-                        for (const animUrl of animationUrls) {
+                        for (const animUrl of currentAnimationUrls) {
                             try {
                                 const animManager = AnimationManager.getInstance()
                                 let animGltf = animManager.getAnimation(animUrl)
@@ -485,13 +519,14 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                     }
 
                     // Handle initial animation for PEDESTRIAN (pause at initial pose)
-                    if (initialAnimationAction && type === ActorType.PEDESTRIAN) {
+                    const currentInitialAnimationAction = initialAnimationActionRef.current
+                    if (currentInitialAnimationAction && type === ActorType.PEDESTRIAN) {
                         const availableAnims = animController.getAnimationNames()
-                        console.log(`[EventActor] 🎭 Setting initial animation pose for ${id}: ${initialAnimationAction.name}`)
+                        console.log(`[EventActor] 🎭 Setting initial animation pose for ${id}: ${currentInitialAnimationAction.name}`)
                         console.log(`[EventActor] 📋 Available animations:`, availableAnims)
 
-                        if (availableAnims.includes(initialAnimationAction.name)) {
-                            animController.play(initialAnimationAction.name, {
+                        if (availableAnims.includes(currentInitialAnimationAction.name)) {
+                            animController.play(currentInitialAnimationAction.name, {
                                 loop: THREE.LoopRepeat,
                                 clampWhenFinished: true,
                                 fadeIn: 0
@@ -558,8 +593,8 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                     }
 
                     // Notify parent that this actor is ready
-                    if (onReady) {
-                        onReady(id)
+                    if (onReadyRef.current) {
+                        onReadyRef.current(id)
                     }
 
                 } catch (error) {
@@ -573,7 +608,8 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
             return () => {
                 isMounted = false
             }
-        }, [id, model, color, animationUrls, onReady, initialAnimationAction, type])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [id, model, color, type])
 
         const rotationEuler: [number, number, number] = [
             initialRotation[0],
