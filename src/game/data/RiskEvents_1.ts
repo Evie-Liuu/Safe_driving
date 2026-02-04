@@ -18,9 +18,9 @@ export const cruisePoints: [number, number, number][] = [
     // [10, 0, -106],
     // [17, 0, -110], //B點右轉
     // [52, 0, -110],
-    // [100.46, 0, -109],
-    // [108.76, 0, -108.6], //C點右轉
-    // [110.3, 0, -101.1],
+    [100.46, 0, -109],
+    [108.76, 0, -108.6], //C點右轉
+    [110.3, 0, -101.1],
     [109.1, 0, -66.4],
     [109.1, 0, 8],
     [109.1, 0, 85]  //終點
@@ -498,7 +498,7 @@ export const events: GameEvent[] = [
             }
         ],
         actions: [
-            // Turn on hazard lights immediately
+            // 左轉燈：迴轉階段
             {
                 actorId: 'oncoming_car_1',
                 type: ActionType.LIGHT,
@@ -506,7 +506,17 @@ export const events: GameEvent[] = [
                 enabled: true,
                 blinkRate: 2,
                 time: 0,
-                duration: 0.1
+                duration: 2.5  // 左轉燈持續 2.5 秒（迴轉期間）
+            },
+            // 右轉燈：準備右轉離場
+            {
+                actorId: 'oncoming_car_1',
+                type: ActionType.LIGHT,
+                lightType: 'turnRight',
+                enabled: true,
+                blinkRate: 2,
+                time: 3,      // 在左轉燈結束後開始
+                duration: 6   // 右轉燈持續到離場
             },
             // Move to roadside (slow pull-over)
             {
