@@ -58,6 +58,7 @@ export interface EventActorHandle {
     getRotation: () => number
     loadAnimations: (urls: string[]) => Promise<void>
     resumeAnimation: () => void
+    isPaused: () => boolean
 }
 
 interface EventActorProps extends EventActorType {
@@ -264,6 +265,15 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                     animationControllerRef.current.mixer.timeScale = 1
                     console.log(`[EventActor] ▶️ Actor ${id} resumed animation`)
                 }
+            },
+
+            isPaused: () => {
+                // 檢查動畫是否處於暫停狀態（timeScale === 0 且有動畫在播放）
+                if (animationControllerRef.current) {
+                    const mixer = animationControllerRef.current.mixer
+                    return mixer.timeScale === 0
+                }
+                return false
             }
         }), [id, isLoading, onComplete, enableDebug])
 

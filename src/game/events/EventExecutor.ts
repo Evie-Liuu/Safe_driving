@@ -169,7 +169,8 @@ export class EventExecutor {
      */
     private executeAnimation(action: AnimationAction, actor: any): void {
         // 檢查是否為預載的 time:0 動畫（已暫停在第一幀）
-        if (action.time === 0 && actor.resumeAnimation) {
+        // 只有當 actor 有 isPaused 標記時才使用 resumeAnimation
+        if (action.time === 0 && actor.resumeAnimation && actor.isPaused?.()) {
             // 恢復播放，不重新載入
             actor.resumeAnimation()
             console.log(`Animation ${action.name} resumed for actor ${action.actorId}`)
