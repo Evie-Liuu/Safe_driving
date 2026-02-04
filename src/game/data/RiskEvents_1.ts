@@ -9,10 +9,10 @@ import { GameEvent, TriggerType, ActionType, ActorType, PlayerResponseType, Prep
  * B--A--D
  */
 export const cruisePoints: [number, number, number][] = [
-    [10, 0, 120], //起點 
-    [10, 0, 80],
-    [10, 0, 49],
-    [10, 0, 12],
+    // [10, 0, 120], //起點 
+    // [10, 0, 80],
+    // [10, 0, 49],
+    // [10, 0, 12],
     [10, 0, 0],
     [10, 0, -60],
     [10, 0, -106],
@@ -182,73 +182,74 @@ export const events: GameEvent[] = [
         },
         spawnRadius: 80 // Pre-spawn actors 50m away for smooth visual experience
     },
-    // {
-    //     id: 'bus_roadside_stop',
-    //     name: '公車外拋後靠站',
-    //     description: '右前方公車準備靠站，會先向左外拋，再向右切入站位停靠，玩家需要通過或跟隨減速',
-    //     trigger: {
-    //         type: TriggerType.PROXIMITY,
-    //         position: [9.5, 0, -35],
-    //         radius: 30,
-    //         requiredSpeed: {
-    //             min: 10 // Only trigger if player is moving (36 km/h)
-    //         }
-    //     },
-    //     actors: [
-    //         {
-    //             id: 'bus_1',
-    //             type: ActorType.VEHICLE,
-    //             model: '/src/assets/models/Bus_Rigged.glb',
-    //             initialPosition: [9.5, 0, -35],
-    //             initialRotation: [0, Math.PI, 0],
-    //             // color: '#FFD700' // Gold color for taxi
-    //         }
-    //     ],
-    //     actions: [
-    //         // Turn on hazard lights immediately
-    //         {
-    //             actorId: 'bus_1',
-    //             type: ActionType.LIGHT,
-    //             lightType: 'turnRight',
-    //             enabled: true,
-    //             blinkRate: 2,
-    //             time: 0,
-    //             duration: 10
-    //         },
-    //         // Move to roadside (slow pull-over)
-    //         {
-    //             actorId: 'bus_1',
-    //             type: ActionType.MOVEMENT,
-    //             path: [
-    //                 [9.5, 0, -35],
-    //                 [9.7, 0, -40],
-    //                 [10, 0, -47],
-    //                 [11, 0, -60]
-    //             ],
-    //             speed: 8,
-    //             time: 0,
-    //             duration: 3
-    //         }
-    //     ],
-    //     requiredPlayerResponse: {
-    //         type: PlayerResponseType.DECELERATE,
-    //         targetSpeed: {
-    //             max: 50 // Must slow to under 50 km/h
-    //         },
-    //         validationRadius: 15
-    //     },
-    //     completionCriteria: {
-    //         playerPassed: true,
-    //         maxSpeed: 60 // Player must pass at reasonable speed
-    //     },
-    //     priority: 10,
-    //     prepareConfig: {
-    //         radius: 35, // Start preparing 35m away (trigger is 20m)
-    //         actions: [PrepareActionType.DECELERATE],
-    //         targetSpeedFactor: 0.5
-    //     },
-    //     spawnRadius: 80
-    // },
+    {
+        id: 'bus_roadside_stop',
+        name: '公車外拋後靠站',
+        description: '右前方公車準備靠站，會先向左外拋，再向右切入站位停靠，玩家需要通過或跟隨減速',
+        trigger: {
+            type: TriggerType.PROXIMITY,
+            position: [9.5, 0, 20],
+            radius: 30,
+            requiredSpeed: {
+                min: 10 // Only trigger if player is moving (36 km/h)
+            }
+        },
+        actors: [
+            {
+                id: 'bus_1',
+                type: ActorType.VEHICLE,
+                model: '/src/assets/models/Bus_Rigged.glb',
+                initialPosition: [9.5, 0, 20],
+                initialRotation: [0, Math.PI, 0],
+                // color: '#FFD700' // Gold color for taxi
+            }
+        ],
+        actions: [
+            // Turn on hazard lights immediately
+            {
+                actorId: 'bus_1',
+                type: ActionType.LIGHT,
+                lightType: 'turnRight',
+                enabled: true,
+                blinkRate: 2,
+                time: 0,
+                duration: 10
+            },
+            // Move to roadside (slow pull-over)
+            {
+                actorId: 'bus_1',
+                type: ActionType.MOVEMENT,
+                path: [
+                    [9.5, 0, 20],
+                    [8.14, 0, 14.25],
+                    [9.35, 0, 9.4],
+                    [18.34, 0, 7.8],
+                    [48.2, 0, 8.35]
+                ],
+                speed: 8,
+                time: 0,
+                duration: 3
+            }
+        ],
+        requiredPlayerResponse: {
+            type: PlayerResponseType.DECELERATE,
+            targetSpeed: {
+                max: 50 // Must slow to under 50 km/h
+            },
+            validationRadius: 15
+        },
+        completionCriteria: {
+            playerPassed: true,
+            maxSpeed: 60 // Player must pass at reasonable speed
+        },
+        priority: 10,
+        prepareConfig: {
+            radius: 35, // Start preparing 35m away (trigger is 20m)
+            actions: [PrepareActionType.DECELERATE],
+            targetSpeedFactor: 0.5
+        },
+        spawnRadius: 100
+    },
     // {
     //     id: 'car_distracted_turning',
     //     name: '前車左右晃（分心找路）及路口轉向',

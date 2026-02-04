@@ -9,7 +9,7 @@ interface MaleCharacterProps {
     scale?: [number, number, number]
 }
 
-const test_name = 'Car_Main_LeftDoor_Opening_Animation_TEST3.glb'
+const test_name = 'Car_Main2_LeftDoor_Opening_Animation.glb'
 
 export function MaleCharacter({
     position = [0, 0, 0],
@@ -19,7 +19,7 @@ export function MaleCharacter({
     const group = useRef<THREE.Group>(null)
 
     // Load model and animation
-    const gltf = useGLTF('/src/assets/models/Car_Main_Rigged.glb')
+    const gltf = useGLTF('/src/assets/models/Car_Main2_Rigged.glb')
     const { animations } = useGLTF(`/src/assets/animations/car/${test_name}`)
 
     // 使用 useMemo 預先處理動畫，這是解決下沉的關鍵
@@ -89,7 +89,7 @@ export function MaleCharacter({
         console.log('Available animations:', animations);
 
         if (actions) {
-            const actionName = 'Car_Main_LeftDoor_Opening_Animation_TEST3';
+            const actionName = 'Car_Main2_LeftDoor_Opening_Animation';
             const action = actions[actionName];
 
             if (action) {
