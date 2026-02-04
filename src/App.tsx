@@ -1,13 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { MainMenu } from './components/MainMenu';
 import { gameRegistry } from './games';
 
 function App(): React.ReactElement | null {
   const [currentGameId, setCurrentGameId] = useState<string | null>(null);
-
-  useEffect(() => {
-    setCurrentGameId('safe-driving')
-  }, [])
 
   // 主選單
   if (!currentGameId) {
