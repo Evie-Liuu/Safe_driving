@@ -193,10 +193,16 @@ export function GameScene() {
         brakingStartTimeRef.current = performance.now()
       }
 
-      // Player entered trigger radius — clear danger marker (event was triggered successfully)
+      // Player entered trigger radius — only clear danger marker if event was actually triggered
       if (instruction.status === PrepareZoneStatus.INSIDE_TRIGGER && activeDanger && !dangerClickedRef.current) {
-        // Event activated = player acknowledged the danger by approaching, not a miss
-        setActiveDanger(null)
+        // Check if event was actually triggered (has active context)
+        const eventContext = eventManagerRef.current?.getEventContext(activeDanger.eventId)
+        if (eventContext) {
+          // Event is active - MISS will be handled in onEventCompleted if player didn't click
+          console.log(`[GameScene] ✅ Event ${activeDanger.eventId} was triggered, clearing danger marker (MISS handled by onEventCompleted)`)
+          setActiveDanger(null)
+        }
+        // If event not triggered yet (e.g., speed requirement not met), keep activeDanger for MISS judgment
       }
 
       // Handle STOP action - only activate when inside trigger radius
