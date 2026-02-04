@@ -119,12 +119,12 @@ export const events: GameEvent[] = [
             {
                 id: 'parked_car_1',
                 type: ActorType.VEHICLE,
-                model: '/src/assets/models/Car_Main_Rigged.glb',
+                model: '/src/assets/models/Car_Main2_Rigged.glb',
                 initialPosition: [11, 0, 43.5],
-                initialRotation: [0, -Math.PI, 0],
+                initialRotation: [0, Math.PI, 0],
                 color: '#2E86AB', // Blue car
                 animationUrls: [
-                    '/src/assets/animations/car/Car_Main_LeftDoor_Opening_Animation.glb'
+                    '/src/assets/animations/car/Car_Main2_LeftDoor_Opening_Animation.glb'
                 ]
             },
             {
@@ -153,7 +153,7 @@ export const events: GameEvent[] = [
             {
                 actorId: 'parked_car_1',
                 type: ActionType.ANIMATION,
-                name: 'Car_Main_LeftDoor_Opening_Animation',
+                name: 'Car_Main2_LeftDoor_Opening_Animation',
                 loop: false,
                 time: 0
             },
@@ -189,7 +189,7 @@ export const events: GameEvent[] = [
         trigger: {
             type: TriggerType.PROXIMITY,
             position: [9.5, 0, 20],
-            radius: 30,
+            radius: 15,
             requiredSpeed: {
                 min: 10 // Only trigger if player is moving (36 km/h)
             }
@@ -222,7 +222,9 @@ export const events: GameEvent[] = [
                 path: [
                     [9.5, 0, 20],
                     [8.14, 0, 14.25],
+                    [7.89, 0, 12.06],
                     [9.35, 0, 9.4],
+                    [11.92, 0, 8.5],
                     [18.34, 0, 7.8],
                     [48.2, 0, 8.35]
                 ],
@@ -244,78 +246,81 @@ export const events: GameEvent[] = [
         },
         priority: 10,
         prepareConfig: {
-            radius: 35, // Start preparing 35m away (trigger is 20m)
+            radius: 18, // Start preparing 35m away (trigger is 20m)
             actions: [PrepareActionType.DECELERATE],
-            targetSpeedFactor: 0.5
+            targetSpeedFactor: 0.3
         },
         spawnRadius: 100
     },
-    // {
-    //     id: 'car_distracted_turning',
-    //     name: '前車左右晃（分心找路）及路口轉向',
-    //     description: '前車左右晃（分心找路）及路口轉向，玩家需要保持安全距離',
-    //     trigger: {
-    //         type: TriggerType.PROXIMITY,
-    //         position: [8.5, 0, -35],
-    //         radius: 30,
-    //         requiredSpeed: {
-    //             min: 10 // Only trigger if player is moving (36 km/h)
-    //         }
-    //     },
-    //     actors: [
-    //         {
-    //             id: 'car_1',
-    //             type: ActorType.VEHICLE,
-    //             model: '/src/assets/models/Car2_Rigged.glb',
-    //             initialPosition: [8.5, 0, -35],
-    //             initialRotation: [0, 0, 0],
-    //             color: '#FFD700' // Gold color for taxi
-    //         }
-    //     ],
-    //     actions: [
-    //         {
-    //             actorId: 'car_1',
-    //             type: ActionType.LIGHT,
-    //             lightType: 'turnLeft',
-    //             enabled: true,
-    //             blinkRate: 2,
-    //             time: 5,
-    //             duration: 10
-    //         },
-    //         {
-    //             actorId: 'car_1',
-    //             type: ActionType.MOVEMENT,
-    //             path: [
-    //                 [8.5, 0, -35],
-    //                 [9.9, 0, -45],
-    //                 [9.1, 0, -50],
-    //                 [8.3, 0, -100]
-    //             ],
-    //             speed: 8,
-    //             time: 0,
-    //             duration: 3
-    //         }
-    //     ],
-    //     requiredPlayerResponse: {
-    //         type: PlayerResponseType.DECELERATE,
-    //         targetSpeed: {
-    //             max: 50 // Must slow to under 50 km/h
-    //         },
-    //         validationRadius: 15
-    //     },
-    //     completionCriteria: {
-    //         playerPassed: true,
-    //         maxSpeed: 60 // Player must pass at reasonable speed
-    //     },
-    //     priority: 10,
-    //     prepareConfig: {
-    //         radius: 35, // Start preparing 35m away (trigger is 20m)
-    //         actions: [PrepareActionType.DECELERATE],
-    //         targetSpeedFactor: 0.5
-
-    //     },
-    //     spawnRadius: 80
-    // },
+    {
+        id: 'car_distracted_turning',
+        name: '前車左右晃（分心找路）及路口轉向',
+        description: '前車左右晃（分心找路）及路口轉向，玩家需要保持安全距離',
+        trigger: {
+            type: TriggerType.PROXIMITY,
+            position: [8.5, 0, -35],
+            radius: 20,
+            requiredSpeed: {
+                min: 10 // Only trigger if player is moving (36 km/h)
+            }
+        },
+        actors: [
+            {
+                id: 'car_1',
+                type: ActorType.VEHICLE,
+                model: '/src/assets/models/Car2_Rigged.glb',
+                initialPosition: [8.5, 0, -35],
+                initialRotation: [0, Math.PI, 0],
+                color: '#FFD700' // Gold color for taxi
+            }
+        ],
+        actions: [
+            {
+                actorId: 'car_1',
+                type: ActionType.LIGHT,
+                lightType: 'turnLeft',
+                enabled: true,
+                blinkRate: 2,
+                time: 4,
+                duration: 10
+            },
+            {
+                actorId: 'car_1',
+                type: ActionType.MOVEMENT,
+                path: [
+                    [8.5, 0, -35],
+                    [9.9, 0, -45],
+                    [9.1, 0, -50],
+                    [8.3, 0, -75],
+                    [5.07, 0, -86],
+                    [2.72, 0, -106],
+                    [-2.55, 0, -110.9],
+                    [-19.8, 0, -111.9]
+                ],
+                speed: 8,
+                time: 0,
+                duration: 3
+            }
+        ],
+        requiredPlayerResponse: {
+            type: PlayerResponseType.DECELERATE,
+            targetSpeed: {
+                max: 50 // Must slow to under 50 km/h
+            },
+            validationRadius: 15
+        },
+        completionCriteria: {
+            playerPassed: true,
+            maxSpeed: 60 // Player must pass at reasonable speed
+        },
+        priority: 10,
+        prepareConfig: {
+            radius: 25, // Start preparing 35m away (trigger is 20m)
+            actions: [PrepareActionType.DECELERATE],
+            targetSpeedFactor: 0.5
+        },
+        spawnRadius: 80
+    },
     // {
     //     id: 'pedestrian_crossing',
     //     name: '行人穿越道路',
