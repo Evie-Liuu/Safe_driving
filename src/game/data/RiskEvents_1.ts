@@ -89,7 +89,7 @@ export const events: GameEvent[] = [
         },
         completionCriteria: {
             playerPassed: true,
-            maxSpeed: 60 // Player must pass at reasonable speed
+            // maxSpeed: 60 // Player must pass at reasonable speed
         },
         priority: 10,
         prepareConfig: {
@@ -109,9 +109,9 @@ export const events: GameEvent[] = [
             type: TriggerType.PROXIMITY,
             position: [11, 0, 43.5],
             radius: 12,  //TODO 是否會和prepare衝突
-            requiredSpeed: {
-                min: 10
-            }
+            // requiredSpeed: {
+            //     min: 10
+            // }
         },
         actors: [
             {
@@ -188,9 +188,9 @@ export const events: GameEvent[] = [
             type: TriggerType.PROXIMITY,
             position: [9.5, 0, 20],
             radius: 15,
-            requiredSpeed: {
-                min: 10 // Only trigger if player is moving (36 km/h)
-            }
+            // requiredSpeed: {
+            //     min: 10 // Only trigger if player is moving (36 km/h)
+            // }
         },
         actors: [
             {
@@ -240,7 +240,7 @@ export const events: GameEvent[] = [
         },
         completionCriteria: {
             playerPassed: true,
-            maxSpeed: 60 // Player must pass at reasonable speed
+            // maxSpeed: 60 // Player must pass at reasonable speed
         },
         priority: 10,
         prepareConfig: {
@@ -258,9 +258,9 @@ export const events: GameEvent[] = [
             type: TriggerType.PROXIMITY,
             position: [8.5, 0, -35],
             radius: 20,
-            requiredSpeed: {
-                min: 10 // Only trigger if player is moving (36 km/h)
-            }
+            // requiredSpeed: {
+            //     min: 10 // Only trigger if player is moving (36 km/h)
+            // }
         },
         actors: [
             {
@@ -309,7 +309,7 @@ export const events: GameEvent[] = [
         },
         completionCriteria: {
             playerPassed: true,
-            maxSpeed: 60 // Player must pass at reasonable speed
+            // maxSpeed: 60 // Player must pass at reasonable speed
         },
         priority: 10,
         prepareConfig: {
@@ -328,9 +328,9 @@ export const events: GameEvent[] = [
             // position: [50, 0, -106.8],
             position: [41.62, 0, -106.4],
             radius: 15,
-            requiredSpeed: {
-                min: 5
-            }
+            // requiredSpeed: {
+            //     min: 5
+            // }
         },
         actors: [
             {
@@ -379,7 +379,7 @@ export const events: GameEvent[] = [
         },
         completionCriteria: {
             playerPassed: true,
-            maxSpeed: 40
+            // maxSpeed: 40
         },
         priority: 13, // Higher priority than taxi event
         prepareConfig: {
@@ -398,9 +398,9 @@ export const events: GameEvent[] = [
             type: TriggerType.PROXIMITY,
             position: [105.9, 0, -104.9],
             radius: 8,
-            requiredSpeed: {
-                min: 5
-            }
+            // requiredSpeed: {
+            //     min: 5
+            // }
         },
         actors: [
             {
@@ -465,7 +465,7 @@ export const events: GameEvent[] = [
         },
         completionCriteria: {
             playerPassed: true,
-            maxSpeed: 30
+            // maxSpeed: 30
         },
         priority: 20, // 高優先級
         prepareConfig: {
@@ -484,9 +484,9 @@ export const events: GameEvent[] = [
             type: TriggerType.PROXIMITY,
             position: [117.6, 0, -71],
             radius: 22,
-            requiredSpeed: {
-                min: 10 // Only trigger if player is moving (36 km/h)
-            }
+            // requiredSpeed: {
+            //     min: 10 // Only trigger if player is moving (36 km/h)
+            // }
         },
         actors: [
             {
@@ -548,7 +548,7 @@ export const events: GameEvent[] = [
         },
         completionCriteria: {
             playerPassed: true,
-            maxSpeed: 60 // Player must pass at reasonable speed
+            // maxSpeed: 60 // Player must pass at reasonable speed
         },
         priority: 10,
         prepareConfig: {
@@ -567,9 +567,9 @@ export const events: GameEvent[] = [
             type: TriggerType.PROXIMITY,
             position: [107.5, 0, 28],
             radius: 5,
-            requiredSpeed: {
-                min: 10 // Only trigger if player is moving (36 km/h)
-            }
+            // requiredSpeed: {
+            //     min: 10 // Only trigger if player is moving (36 km/h)
+            // }
         },
         actors: [
             {
@@ -659,7 +659,7 @@ export const events: GameEvent[] = [
         },
         completionCriteria: {
             playerPassed: true,
-            maxSpeed: 60 // Player must pass at reasonable speed
+            // maxSpeed: 60 // Player must pass at reasonable speed
         },
         priority: 10,
         prepareConfig: {
