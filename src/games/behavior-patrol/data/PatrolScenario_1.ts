@@ -16,7 +16,7 @@ export const patrolScenario1: PatrolScenario = {
   dangers: [
     {
       id: 'danger-1',
-      name: '闯红灯行人',
+      name: '闖紅燈行人',
       position: [8, 0, 5],
       rotation: [0, -Math.PI / 2, 0],
       model: '/src/assets/models/Male1_Rigged.glb',
@@ -45,7 +45,7 @@ export const patrolScenario1: PatrolScenario = {
       name: '未打方向燈變換車道',
       position: [-15, 0, 3],
       rotation: [0, 0, 0],
-      model: '/src/assets/models/Car_2.glb',
+      model: '/src/assets/models/Car2_Rigged.glb',
       behaviors: [
         { type: 'movement', path: [[-15, 0, 3], [15, 0, -1]], speed: 6, loop: true },
       ],
@@ -70,7 +70,7 @@ export const patrolScenario1: PatrolScenario = {
       position: [5, 0, -10],
       rotation: [0, Math.PI, 0],
       scale: [0.8, 0.8, 0.8],
-      model: '/src/assets/models/Car_1.glb',
+      model: '/src/assets/models/Car1_Rigged.glb',
       behaviors: [
         { type: 'movement', path: [[5, 0, -10], [-5, 0, -8], [5, 0, -6], [-5, 0, -4]], speed: 8, loop: true },
       ],
@@ -94,7 +94,7 @@ export const patrolScenario1: PatrolScenario = {
       name: '路邊違停車輛',
       position: [-8, 0, 8],
       rotation: [0, Math.PI / 2, 0],
-      model: '/src/assets/models/Car_3.glb',
+      model: '/src/assets/models/Car2_Rigged.glb',
       behaviors: [],
       questions: {
         q1: {
@@ -146,7 +146,7 @@ export const patrolScenario1: PatrolScenario = {
       name: '正常行駛車輛',
       position: [-20, 0, 0],
       rotation: [0, 0, 0],
-      model: '/src/assets/models/Car_1.glb',
+      model: '/src/assets/models/Car1_Rigged.glb',
       behaviors: [
         { type: 'movement', path: [[-20, 0, 0], [20, 0, 0]], speed: 5, loop: true },
       ],
