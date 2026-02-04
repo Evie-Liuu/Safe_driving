@@ -9,7 +9,7 @@ interface MaleCharacterProps {
     scale?: [number, number, number]
 }
 
-const test_name = 'Car_Main_LeftDoor_Opening_Animation.glb'
+const test_name = 'Car_Main_LeftDoor_Opening_Animation_TEST3.glb'
 
 export function MaleCharacter({
     position = [0, 0, 0],
@@ -34,7 +34,7 @@ export function MaleCharacter({
                 const name = track.name.toLowerCase();
                 // 移除所有位移 (position) 軌道以防止下沉
                 // 保留旋轉 (quaternion) 以便動畫能正常播放 (如開門動作)
-                if (name.includes('car_main_1.position')) return false;
+                // if (name.includes('car_main_1.position')) return false;
                 // if (name.includes('position')) return false;
                 return true;
             });
@@ -89,7 +89,7 @@ export function MaleCharacter({
         console.log('Available animations:', animations);
 
         if (actions) {
-            const actionName = 'Car_Main_LeftDoor_Opening_Animation';
+            const actionName = 'Car_Main_LeftDoor_Opening_Animation_TEST3';
             const action = actions[actionName];
 
             if (action) {
