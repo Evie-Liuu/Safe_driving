@@ -1,6 +1,6 @@
 import { useAnimations, useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
 import * as THREE from 'three'
 
 interface MaleCharacterProps {
@@ -9,7 +9,7 @@ interface MaleCharacterProps {
     scale?: [number, number, number]
 }
 
-const test_name = 'Car_Main_LeftDoor_Opening_Animation_TEST2.glb'
+const test_name = 'Car_Main_LeftDoor_Opening_Animation.glb'
 
 export function MaleCharacter({
     position = [0, 0, 0],
@@ -21,14 +21,29 @@ export function MaleCharacter({
     // Load model and animation
     const gltf = useGLTF('/src/assets/models/Car_Main_Rigged.glb')
     const { animations } = useGLTF(`/src/assets/animations/car/${test_name}`)
-    // const { animations } = useGLTF('/src/assets/animations/car/Car_Main_RightDoor_Opening_Anim/ation.glb')
-    // const gltf = useGLTF('/src/assets/models/Scooter1_Rigged.glb')
-    // const { animations } = useGLTF('/src/assets/animations/car/Scooter_Moving_Animation.glb')
-    // const gltf = useGLTF('/src/assets/models/Male1_Rigged.glb')
-    // const { animations } = useGLTF('/src/assets/animations/character/Male_Riding_Bicycle_Animation.glb')
+
+    // 使用 useMemo 預先處理動畫，這是解決下沉的關鍵
+    // 原因：useAnimations 會在組件掛載時就建立 Action，如果在 useEffect 中才修改 clip.tracks，
+    // Action 已經建立完成，內部的 PropertyMixer 不會更新，所以修改無效。
+    // 必須在傳入 useAnimations 之前就先處理好 clip。
+    const filteredAnimations = useMemo(() => {
+        if (!animations) return [];
+        return animations.map(clip => {
+            const newClip = clip.clone();
+            newClip.tracks = newClip.tracks.filter(track => {
+                const name = track.name.toLowerCase();
+                // 移除所有位移 (position) 軌道以防止下沉
+                // 保留旋轉 (quaternion) 以便動畫能正常播放 (如開門動作)
+                if (name.includes('car_main_1.position')) return false;
+                // if (name.includes('position')) return false;
+                return true;
+            });
+            return newClip;
+        });
+    }, [animations]);
 
     // Bind animations to the group
-    const { actions } = useAnimations(animations, group)
+    const { actions } = useAnimations(filteredAnimations, group)
 
     useFrame(() => {
         // 遍歷場景找出所有骨骼
@@ -37,6 +52,11 @@ export function MaleCharacter({
                 child.name.includes('Armature') ||
                 child.name.includes('Root')) {
                 const worldPos = new THREE.Vector3();
+
+                if (child.name.toLowerCase().includes('root')) {
+                    console.log(child.position, child.rotation, child.scale)
+                }
+
 
                 child.getWorldPosition(worldPos);
                 if (worldPos.y < -0.01) { // 
@@ -69,30 +89,12 @@ export function MaleCharacter({
         console.log('Available animations:', animations);
 
         if (actions) {
-            const actionName = 'Car_Main_LeftDoor_Opening_Animation_TEST2';
-            // const actionName = 'Take 001';
+            const actionName = 'Car_Main_LeftDoor_Opening_Animation';
             const action = actions[actionName];
 
             if (action) {
-                const clip = action.getClip();
-
-                // 更嚴格地過濾位置和位移軌道
-                // clip.tracks = clip.tracks.filter(track => {
-                //     //     const name = track.name.toLowerCase();
-                //     //     const shouldKeep = name.includes('door') && name.includes('quaternion');
-
-                //     //     if (!shouldKeep) {
-                //     //         console.log('移除軌道:', track.name);
-                //     //     }
-                //     //     return shouldKeep;
-                //     // });
-                //     if (track.name.includes('Car_Main_1')
-                //         && (track.name.includes('position') || track.name.includes('scale') || track.name.includes('quaternion'))) {
-                //         console.log('移除:', track.name);
-                //         return false;
-                //     }
-                //     return true;
-                // });
+                console.log('action');
+                console.log(action.getClip());
 
                 action.reset().fadeIn(0.5).play();
                 action.setLoop(THREE.LoopRepeat, Infinity);
