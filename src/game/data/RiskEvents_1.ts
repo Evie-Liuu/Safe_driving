@@ -2,30 +2,28 @@ import { GameEvent, TriggerType, ActionType, ActorType, PlayerResponseType, Prep
 
 /**
  * Cruise points for the route
- * H--F--I
+ * A--B--C
  * |  |  |
- * E--C--G
+ * D--E--F
  * |  |  |
- * B--A--D
+ * G--H--I
  */
 export const cruisePoints: [number, number, number][] = [
     // [10, 0, 120], //起點 
     // [10, 0, 80],
     // [10, 0, 49],
     // [10, 0, 12],
-    // [10, 0, 0],
+    // [10, 0, 0],  //E點
     // [10, 0, -60],
     // [10, 0, -106],
-    // [17, 0, -110], //右轉彎
-    [52, 0, -110],
-    [100.46, 0, -109],
-    [108.76, 0, -108.6], //右轉點
-    [110.3, 0, -101.1],
+    // [17, 0, -110], //B點右轉
+    // [52, 0, -110],
+    // [100.46, 0, -109],
+    // [108.76, 0, -108.6], //C點右轉
+    // [110.3, 0, -101.1],
     [109.1, 0, -66.4],
-    [109.1, 0, 8]
-
-    // [1, 0, -49],
-    // [2, 0, -125],
+    [109.1, 0, 8],
+    [109.1, 0, 85]  //終點
 ]
 
 // Maintain backwards compatibility
@@ -478,175 +476,177 @@ export const events: GameEvent[] = [
         },
         spawnRadius: 80
     },
-    // {
-    //     id: 'oncoming_car_turn',
-    //     name: '對向來車打燈準備迴轉',
-    //     description: '對向來車打燈準備迴轉（跨入主角車道），玩家需要通過或跟隨減速',
-    //     trigger: {
-    //         type: TriggerType.PROXIMITY,
-    //         position: [117.6, 0, -71],
-    //         radius: 15,
-    //         requiredSpeed: {
-    //             min: 10 // Only trigger if player is moving (36 km/h)
-    //         }
-    //     },
-    //     actors: [
-    //         {
-    //             id: 'oncoming_car_1',
-    //             type: ActorType.VEHICLE,
-    //             model: '/src/assets/models/Car1_Rigged.glb',
-    //             initialPosition: [117.6, 0, -71],
-    //             initialRotation: [0, Math.PI, 0],
-    //         }
-    //     ],
-    //     actions: [
-    //         // Turn on hazard lights immediately
-    //         {
-    //             actorId: 'oncoming_car_1',
-    //             type: ActionType.LIGHT,
-    //             lightType: 'turnLeft',
-    //             enabled: true,
-    //             blinkRate: 2,
-    //             time: 0,
-    //             duration: 1
-    //         },
-    //         // Move to roadside (slow pull-over)
-    //         {
-    //             actorId: 'oncoming_car_1',
-    //             type: ActionType.MOVEMENT,
-    //             path: [
-    //                 [117.6, 0, -71],
-    //                 [116.06, 0, -72.05],
-    //                 [113.45, 0, -72],
-    //                 [110.69, 0, -67],
-    //                 [109.16, 0, -59.25],
-    //                 [109.7, 0, -48.5],
-    //                 [110.91, 0, -13.91], //準備右轉離場
-    //                 [110.18, 0, -9.87],
-    //                 [106.79, 0, -7.91],
-    //                 [43.26, 0, -8.3]
-    //             ],
-    //             speed: 15,
-    //             time: 0,
-    //             duration: 3
-    //         }
-    //     ],
-    //     requiredPlayerResponse: {
-    //         type: PlayerResponseType.DECELERATE,
-    //         targetSpeed: {
-    //             max: 50 // Must slow to under 50 km/h
-    //         },
-    //         validationRadius: 15
-    //     },
-    //     completionCriteria: {
-    //         playerPassed: true,
-    //         maxSpeed: 60 // Player must pass at reasonable speed
-    //     },
-    //     priority: 10,
-    //     prepareConfig: {
-    //         radius: 35, // Start preparing 35m away (trigger is 20m)
-    //         actions: [PrepareActionType.DECELERATE],
-    //         targetSpeedFactor: 0.5,
-    //         stopDuration: 3
-    //     },
-    //     spawnRadius: 90
-    // },
-    // {
-    //     id: 'bicycle_dodging_pothole',
-    //     name: '自行車突然偏移（閃坑洞靠向主角）',
-    //     description: '自行車突然偏移，玩家需要拉開側向距離，避免與自行車並行貼近',
-    //     trigger: {
-    //         type: TriggerType.PROXIMITY,
-    //         position: [12, 0, -35],
-    //         radius: 30,
-    //         requiredSpeed: {
-    //             min: 10 // Only trigger if player is moving (36 km/h)
-    //         }
-    //     },
-    //     actors: [
-    //         {
-    //             id: 'bicycle_1',
-    //             type: ActorType.VEHICLE,
-    //             model: '/src/assets/models/Bicycle1_Rigged.glb',
-    //             initialPosition: [12, 0, -35],
-    //             initialRotation: [0, 0, 0],
-    //             // color: '#FFD700',
-    //             animationUrls: [
-    //                 '/src/assets/animations/car/Bicycle_Moving_Animation.glb'
-    //             ]
-    //         },
-    //         {
-    //             id: 'rider_1',
-    //             type: ActorType.PEDESTRIAN,
-    //             model: '/src/assets/models/Male1_Rigged.glb',
-    //             initialPosition: [12, 0, -35],
-    //             initialRotation: [0, Math.PI, 0],
-    //             scale: [1, 1, 1],
-    //             animationUrls: [
-    //                 '/src/assets/animations/character/Male_Riding_Bicycle_Animation.glb'
-    //             ]
-    //         }
-    //     ],
-    //     actions: [
-    //         // Move to roadside (slow pull-over)
-    //         {
-    //             actorId: 'bicycle_1',
-    //             type: ActionType.MOVEMENT,
-    //             path: [
-    //                 [12, 0, -35],
-    //                 [12, 0, -40],
-    //                 [10.5, 0, -47],
-    //                 [12, 0, -60]
-    //             ],
-    //             speed: 5,
-    //             time: 0,
-    //             duration: 3
-    //         },
-    //         {
-    //             actorId: 'rider_1',
-    //             type: ActionType.MOVEMENT,
-    //             path: [
-    //                 [12, 0, -35],
-    //                 [12, 0, -40],
-    //                 [10.5, 0, -47],
-    //                 [12, 0, -60]
-    //             ],
-    //             speed: 5,
-    //             time: 0,
-    //             duration: 3
-    //         },
-    //         {
-    //             actorId: 'bicycle_1',
-    //             type: ActionType.ANIMATION,
-    //             name: 'Bicycle_Moving_Animation',
-    //             loop: true,
-    //             time: 0
-    //         },
-    //         {
-    //             actorId: 'rider_1',
-    //             type: ActionType.ANIMATION,
-    //             name: 'Take 001',
-    //             loop: true,
-    //             time: 0
-    //         }
-    //     ],
-    //     requiredPlayerResponse: {
-    //         type: PlayerResponseType.DECELERATE,
-    //         targetSpeed: {
-    //             max: 50 // Must slow to under 50 km/h
-    //         },
-    //         validationRadius: 15
-    //     },
-    //     completionCriteria: {
-    //         playerPassed: true,
-    //         maxSpeed: 60 // Player must pass at reasonable speed
-    //     },
-    //     priority: 10,
-    //     prepareConfig: {
-    //         radius: 35, // Start preparing 35m away (trigger is 20m)
-    //         actions: [PrepareActionType.DECELERATE],
-    //         targetSpeedFactor: 0.2
-    //     },
-    //     spawnRadius: 80
-    // },
+    {
+        id: 'oncoming_car_turn',
+        name: '對向來車打燈準備迴轉',
+        description: '對向來車打燈準備迴轉（跨入主角車道），玩家需要通過或跟隨減速',
+        trigger: {
+            type: TriggerType.PROXIMITY,
+            position: [117.6, 0, -71],
+            radius: 15,
+            requiredSpeed: {
+                min: 10 // Only trigger if player is moving (36 km/h)
+            }
+        },
+        actors: [
+            {
+                id: 'oncoming_car_1',
+                type: ActorType.VEHICLE,
+                model: '/src/assets/models/Car1_Rigged.glb',
+                initialPosition: [117.6, 0, -71],
+                initialRotation: [0, Math.PI, 0],
+            }
+        ],
+        actions: [
+            // Turn on hazard lights immediately
+            {
+                actorId: 'oncoming_car_1',
+                type: ActionType.LIGHT,
+                lightType: 'turnLeft',
+                enabled: true,
+                blinkRate: 2,
+                time: 0,
+                duration: 1
+            },
+            // Move to roadside (slow pull-over)
+            {
+                actorId: 'oncoming_car_1',
+                type: ActionType.MOVEMENT,
+                path: [
+                    [117.6, 0, -71],
+                    [116.06, 0, -72.05],
+                    [113.45, 0, -72],
+                    [110.69, 0, -67],
+                    [109.16, 0, -59.25],
+                    [109.7, 0, -48.5],
+                    [110.91, 0, -13.91], //準備右轉離場
+                    [110.18, 0, -9.87],
+                    [106.79, 0, -7.91],
+                    [43.26, 0, -8.3]
+                ],
+                speed: 15,
+                time: 0,
+                duration: 3
+            }
+        ],
+        requiredPlayerResponse: {
+            type: PlayerResponseType.DECELERATE,
+            targetSpeed: {
+                max: 50 // Must slow to under 50 km/h
+            },
+            validationRadius: 15
+        },
+        completionCriteria: {
+            playerPassed: true,
+            maxSpeed: 60 // Player must pass at reasonable speed
+        },
+        priority: 10,
+        prepareConfig: {
+            radius: 35, // Start preparing 35m away (trigger is 20m)
+            actions: [PrepareActionType.DECELERATE],
+            targetSpeedFactor: 0.5,
+            stopDuration: 3
+        },
+        spawnRadius: 90
+    },
+    {
+        id: 'bicycle_dodging_pothole',
+        name: '自行車突然偏移（閃坑洞靠向主角）',
+        description: '自行車突然偏移，玩家需要拉開側向距離，避免與自行車並行貼近',
+        trigger: {
+            type: TriggerType.PROXIMITY,
+            position: [107.5, 0, 28],
+            radius: 5,
+            requiredSpeed: {
+                min: 10 // Only trigger if player is moving (36 km/h)
+            }
+        },
+        actors: [
+            {
+                id: 'bicycle_1',
+                type: ActorType.VEHICLE,
+                model: '/src/assets/models/Bicycle1_Rigged.glb',
+                initialPosition: [107.5, 0, 36],
+                initialRotation: [0, 0, 0],
+                // color: '#FFD700',
+                animationUrls: [
+                    '/src/assets/animations/car/Bicycle_Moving_Animation.glb'
+                ]
+            },
+            {
+                id: 'rider_1',
+                type: ActorType.PEDESTRIAN,
+                model: '/src/assets/models/Male1_Rigged.glb',
+                initialPosition: [107.5, 0, 36],
+                initialRotation: [0, 0, 0],
+                scale: [1, 1, 1],
+                animationUrls: [
+                    '/src/assets/animations/character/Male_Riding_Bicycle_Animation.glb'
+                ]
+            }
+        ],
+        actions: [
+            // Move to roadside (slow pull-over)
+            {
+                actorId: 'bicycle_1',
+                type: ActionType.MOVEMENT,
+                path: [
+                    [107.5, 0, 36],
+                    [107.5, 0, 41],
+                    [109.6, 0, 46.15],
+                    [107.5, 0, 52],
+                    [107.5, 0, 60]
+                ],
+                speed: 5,
+                time: 0,
+                duration: 3
+            },
+            {
+                actorId: 'rider_1',
+                type: ActionType.MOVEMENT,
+                path: [
+                    [107.5, 0, 36],
+                    [107.5, 0, 41],
+                    [109.6, 0, 46.15],
+                    [107.5, 0, 52],
+                    [107.5, 0, 60]
+                ],
+                speed: 5,
+                time: 0,
+                duration: 3
+            },
+            {
+                actorId: 'bicycle_1',
+                type: ActionType.ANIMATION,
+                name: 'Bicycle_Moving_Animation',
+                loop: true,
+                time: 0
+            },
+            {
+                actorId: 'rider_1',
+                type: ActionType.ANIMATION,
+                name: 'Take 001',
+                loop: true,
+                time: 0
+            }
+        ],
+        requiredPlayerResponse: {
+            type: PlayerResponseType.DECELERATE,
+            targetSpeed: {
+                max: 50 // Must slow to under 50 km/h
+            },
+            validationRadius: 15
+        },
+        completionCriteria: {
+            playerPassed: true,
+            maxSpeed: 60 // Player must pass at reasonable speed
+        },
+        priority: 10,
+        prepareConfig: {
+            radius: 15, // Start preparing 35m away (trigger is 20m)
+            actions: [PrepareActionType.DECELERATE],
+            targetSpeedFactor: 0.2
+        },
+        spawnRadius: 100
+    },
 ]
