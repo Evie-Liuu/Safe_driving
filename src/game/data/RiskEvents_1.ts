@@ -483,7 +483,7 @@ export const events: GameEvent[] = [
         trigger: {
             type: TriggerType.PROXIMITY,
             position: [117.6, 0, -71],
-            radius: 15,
+            radius: 22,
             requiredSpeed: {
                 min: 10 // Only trigger if player is moving (36 km/h)
             }
@@ -506,7 +506,7 @@ export const events: GameEvent[] = [
                 enabled: true,
                 blinkRate: 2,
                 time: 0,
-                duration: 1
+                duration: 0.1
             },
             // Move to roadside (slow pull-over)
             {
@@ -542,7 +542,7 @@ export const events: GameEvent[] = [
         },
         priority: 10,
         prepareConfig: {
-            radius: 35, // Start preparing 35m away (trigger is 20m)
+            radius: 25, // Start preparing 35m away (trigger is 20m)
             actions: [PrepareActionType.DECELERATE],
             targetSpeedFactor: 0.5,
             stopDuration: 3
@@ -583,6 +583,14 @@ export const events: GameEvent[] = [
                 animationUrls: [
                     '/src/assets/animations/character/Male_Riding_Bicycle_Animation.glb'
                 ]
+            },
+            {
+                id: 'object_1',
+                type: ActorType.OBJECT,
+                model: '/src/assets/models/objects/Pothole1_light.glb',
+                initialPosition: [108.6, 0.03, 46.75],
+                initialRotation: [0, Math.PI / 2, 0],
+                scale: [1, 1, 1]
             }
         ],
         actions: [
@@ -592,9 +600,10 @@ export const events: GameEvent[] = [
                 type: ActionType.MOVEMENT,
                 path: [
                     [107.5, 0, 36],
-                    [107.5, 0, 41],
-                    [109.6, 0, 46.15],
-                    [107.5, 0, 52],
+                    [108.3, 0, 41],
+                    [110.3, 0, 44],
+                    [110.44, 0, 49.95],
+                    [109.13, 0, 53.19],
                     [107.5, 0, 60]
                 ],
                 speed: 5,
@@ -606,9 +615,10 @@ export const events: GameEvent[] = [
                 type: ActionType.MOVEMENT,
                 path: [
                     [107.5, 0, 36],
-                    [107.5, 0, 41],
-                    [109.6, 0, 46.15],
-                    [107.5, 0, 52],
+                    [108.3, 0, 41],
+                    [110.3, 0, 44],
+                    [110.44, 0, 49.95],
+                    [109.13, 0, 53.19],
                     [107.5, 0, 60]
                 ],
                 speed: 5,
@@ -647,6 +657,6 @@ export const events: GameEvent[] = [
             actions: [PrepareActionType.DECELERATE],
             targetSpeedFactor: 0.2
         },
-        spawnRadius: 100
+        spawnRadius: 120
     },
 ]
