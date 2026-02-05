@@ -112,13 +112,15 @@ export function GameScene() {
 
   // Debug visualization toggle
   const [showDebugRadius, setShowDebugRadius] = useState(true) // Set to true by default for development
+  const [showDebugEvent, setShowDebugEvent] = useState(false) // Set to true by default for development
 
   const handleStatsUpdate = useCallback((newStats: PerformanceStats) => {
     setStats(newStats)
   }, [])
 
   const handlePlayerMove = useCallback((position: THREE.Vector3) => {
-    setPlayerPosition(position)
+    // Create a new Vector3 to trigger useEffect dependencies
+    setPlayerPosition(new THREE.Vector3(position.x, position.y, position.z))
   }, [])
 
   const handleSpeedChange = useCallback((speed: number) => {
@@ -338,7 +340,7 @@ export function GameScene() {
       const prepareRadius = activeDanger.prepareRadius
       const triggerRadius = activeDanger.triggerRadius
       const baseRadius = Math.max(prepareRadius, triggerRadius) // Use the larger radius
-      const fastRangeOuter = baseRadius + FAST_OUTER_BUFFER
+      const fastRangeOuter = prepareRadius + FAST_OUTER_BUFFER
       const fastRangeInner = baseRadius
 
       // Determine judgment based on distance:
@@ -447,6 +449,8 @@ export function GameScene() {
       await Promise.all([...modelPromises, animationPromise])
 
       console.log(`[GameScene] ✅ All assets preloaded!`)
+      console.log(`[GameScene] 📋 Events registered: ${riskEvents.length}`)
+      console.log(`[GameScene] 🎭 Events with spawnRadius:`, riskEvents.filter(e => e.spawnRadius).map(e => `${e.id}(${e.spawnRadius}m)`))
       setIsAssetsLoaded(true)
     }
 
@@ -581,7 +585,10 @@ export function GameScene() {
 
   // Pre-spawn actors when player enters spawnRadius (before trigger)
   useEffect(() => {
-    if (!isAssetsLoaded) return
+    if (!isAssetsLoaded) {
+      console.log(`[GameScene] ⏳ Assets not loaded yet, skipping pre-spawn check`)
+      return
+    }
 
     riskEvents.forEach(event => {
       // Skip if no spawnRadius defined or already pre-spawned
@@ -660,7 +667,7 @@ export function GameScene() {
         preSpawnedEventIds.current.add(event.id)
       }
     })
-  }, [playerPosition, isAssetsLoaded])
+  }, [playerPosition.x, playerPosition.z, isAssetsLoaded]) // Use x, z coordinates for better dependency tracking
 
   const handleTriggerOncomingVehicle = useCallback((playerPosition: THREE.Vector3, playerRotation: number) => {
     // 計算對向車道位置（左側3.5米）
@@ -917,6 +924,78 @@ export function GameScene() {
           點擊畫面中的危險因子!
         </div>
       )}
+
+      {/* 行人事件調試面板 (開發用) */}
+      {showDebugEvent && (() => {
+        const event = riskEvents.find(e => e.id === 'pedestrian_crossing')
+        if (!event || !event.trigger.position) return null
+
+        const distance = Math.sqrt(
+          Math.pow(playerPosition.x - event.trigger.position[0], 2) +
+          Math.pow(playerPosition.z - event.trigger.position[2], 2)
+        )
+        const isPreSpawned = preSpawnedEventIds.current.has(event.id)
+        const isActive = !!eventManagerRef.current?.getEventContext(event.id)
+        const withinRange = distance <= (event.spawnRadius || 0)
+
+        // Determine why not pre-spawned
+        let reason = ''
+        if (isPreSpawned) {
+          reason = '已生成'
+        } else if (isActive) {
+          reason = '已觸發（不需pre-spawn）'
+        } else if (!event.spawnRadius) {
+          reason = '❌ 無 spawnRadius'
+        } else if (!withinRange) {
+          reason = `❌ 太遠 (需 <${event.spawnRadius}m)`
+        } else if (!isAssetsLoaded) {
+          reason = '⏳ 等待資源載入'
+        } else {
+          reason = '⚠️ 未知原因（查看Console）'
+        }
+
+        return (
+          <div style={{
+            position: 'absolute',
+            bottom: '20px',
+            right: '20px',
+            background: 'rgba(0, 0, 0, 0.9)',
+            color: '#fff',
+            fontFamily: 'monospace',
+            fontSize: '11px',
+            padding: '12px',
+            borderRadius: '8px',
+            border: isPreSpawned ? '2px solid #44ff44' : '2px solid #ff6600',
+            zIndex: 100,
+            pointerEvents: 'none',
+            minWidth: '280px'
+          }}>
+            <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '10px', color: '#ff6600' }}>
+              🔍 行人穿越事件診斷
+            </div>
+            <div style={{ marginBottom: '3px' }}>
+              玩家: [{playerPosition.x.toFixed(1)}, {playerPosition.z.toFixed(1)}]
+            </div>
+            <div style={{ marginBottom: '3px' }}>
+              Trigger: [{event.trigger.position.map(v => v.toFixed(0)).join(', ')}]
+            </div>
+            <div style={{ marginBottom: '8px', color: withinRange ? '#44ff44' : '#ff6600', fontWeight: 'bold' }}>
+              距離: {distance.toFixed(1)}m / {event.spawnRadius}m {withinRange ? '✅' : '❌'}
+            </div>
+            <div style={{ borderTop: '1px solid #444', paddingTop: '8px' }}>
+              <div>Pre-spawn: {isPreSpawned ? '✅ 是' : '❌ 否'}</div>
+              <div>已觸發: {isActive ? '✅ 是' : '❌ 否'}</div>
+              <div>資源載入: {isAssetsLoaded ? '✅ 是' : '⏳ 否'}</div>
+              <div style={{ marginTop: '8px', padding: '5px', background: 'rgba(255,102,0,0.2)', borderRadius: '4px', fontSize: '10px' }}>
+                {reason}
+              </div>
+            </div>
+            <div style={{ marginTop: '8px', fontSize: '10px', color: '#888' }}>
+              💡 打開 Console (F12) 查看詳細日誌
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
@@ -1095,6 +1174,40 @@ function UIOverlay({
             {showDebugRadius ? '隱藏範圍圈' : '顯示範圍圈'}
           </button>
         )}
+
+        {/* <button
+          onClick={() => {
+            // Log pedestrian_crossing event distance
+            const event = riskEvents.find(e => e.id === 'pedestrian_crossing')
+            if (event && event.trigger.position) {
+              const distance = Math.sqrt(
+                Math.pow(playerPosition.x - event.trigger.position[0], 2) +
+                Math.pow(playerPosition.z - event.trigger.position[2], 2)
+              )
+              console.log(`[DEBUG] 行人穿越事件診斷:`)
+              console.log(`  - 玩家位置: [${playerPosition.x.toFixed(1)}, ${playerPosition.y.toFixed(1)}, ${playerPosition.z.toFixed(1)}]`)
+              console.log(`  - Trigger 位置: [${event.trigger.position.join(', ')}]`)
+              console.log(`  - 距離: ${distance.toFixed(1)}m / ${event.spawnRadius}m`)
+              console.log(`  - 已 pre-spawn: ${preSpawnedEventIds.current.has(event.id)}`)
+              console.log(`  - 已觸發: ${!!eventManagerRef.current?.getEventContext(event.id)}`)
+              console.log(`  - 資源已載入: ${isAssetsLoaded}`)
+              alert(`行人事件距離: ${distance.toFixed(1)}m\nspawnRadius: ${event.spawnRadius}m\n已pre-spawn: ${preSpawnedEventIds.current.has(event.id)}\n詳見 Console`)
+            }
+          }}
+          style={{
+            background: '#ff6600',
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            width: '100%',
+            marginTop: '8px',
+            fontSize: '12px'
+          }}
+        >
+          診斷行人事件
+        </button> */}
       </div>
 
       <div style={{ marginTop: '5px', paddingTop: '10px', borderTop: '1px solid #666' }}>

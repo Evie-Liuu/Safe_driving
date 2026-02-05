@@ -412,7 +412,7 @@ export const events: GameEvent[] = [
             targetSpeedFactor: 0.3,
             // stopDuration: 3 // 停等 3 秒後繼續
         },
-        spawnRadius: 100
+        spawnRadius: 50
     },
     {
         id: 'pedestrian_crossing_intersection',
