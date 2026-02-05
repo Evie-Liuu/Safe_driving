@@ -319,4 +319,8 @@ export interface EventManagerConfig {
     maxConcurrentEvents?: number
     eventTriggerCheckInterval?: number
     callbacks?: EventCallbacks
+    // Memory management options
+    maxCompletedEventsCache?: number    // Maximum completed events to track (default: 20)
+    enableEventRecycling?: boolean      // Allow events to be reused (default: true)
+    contextCleanupDelay?: number        // Delay before cleaning EventContext (ms, default: 0)
 }

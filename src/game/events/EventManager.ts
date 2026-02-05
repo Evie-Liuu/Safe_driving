@@ -13,6 +13,8 @@ import {
     PrepareZoneStatus,
     ActionType
 } from './EventTypes'
+import { ResourceCleanupManager } from '../optimization/ResourceCleanupManager'
+import { CompletedEventsCache } from './CompletedEventsCache'
 
 /**
  * Central event management system
@@ -26,6 +28,7 @@ export class EventManager {
     private config: EventManagerConfig
     private callbacks: EventCallbacks
     private lastCheckTime: number = 0
+    private resourceCleanupManager: ResourceCleanupManager
 
     constructor(config: EventManagerConfig = {}) {
         this.config = {
@@ -35,6 +38,11 @@ export class EventManager {
             ...config
         }
         this.callbacks = config.callbacks || {}
+        this.resourceCleanupManager = new ResourceCleanupManager({
+            cleanupThreshold: 5,
+            cleanupInterval: 2000,
+            enableLogging: true
+        })
     }
 
     /**
@@ -213,6 +221,9 @@ export class EventManager {
 
         // Complete events that met their criteria
         eventsToComplete.forEach(eventId => this.completeEvent(eventId, true))
+
+        // Update resource cleanup manager
+        this.resourceCleanupManager.update(currentTime)
     }
 
     /**
@@ -379,6 +390,27 @@ export class EventManager {
         if (!context) return
 
         context.state = success ? EventState.COMPLETED : EventState.FAILED
+
+        // Collect actor IDs for cleanup
+        const actorIds = Array.from(context.activeActors.keys())
+
+        // Collect resources for cleanup (will be collected by actors themselves)
+        // Note: Resources are actually held by EventActor components,
+        // so we'll need to coordinate with them for actual cleanup
+        // For now, we schedule the cleanup task with empty resources
+        // and will populate it when we integrate with EventActor
+        this.resourceCleanupManager.scheduleCleanup(eventId, actorIds, {
+            geometries: [],
+            materials: [],
+            textures: [],
+            animationMixers: [],
+            sceneObjects: []
+        })
+
+        // Clear context internal references
+        context.activeActors.clear()
+        context.completedActions.clear()
+        context.actorPathsCompleted?.clear()
 
         this.activeEvents.delete(eventId)
         this.completedEvents.add(eventId)
@@ -658,9 +690,24 @@ export class EventManager {
      * Dispose and cleanup
      */
     dispose(): void {
+        this.resourceCleanupManager.dispose()
         this.eventRegistry.clear()
         this.pendingEvents.clear()
         this.activeEvents.clear()
         this.completedEvents.clear()
+    }
+
+    /**
+     * Get resource cleanup manager (for external control)
+     */
+    getResourceCleanupManager(): ResourceCleanupManager {
+        return this.resourceCleanupManager
+    }
+
+    /**
+     * Get cleanup statistics
+     */
+    getCleanupStats() {
+        return this.resourceCleanupManager.getStats()
     }
 }
