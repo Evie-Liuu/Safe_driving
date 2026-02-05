@@ -38,6 +38,7 @@ export function ClickableObject({
   const animControllerRef = useRef<AnimationController | null>(null);
   const pathProgressRef = useRef(0);
   const currentPathIndexRef = useRef(0);
+  const [hitBoxArgs, setHitBoxArgs] = useState<{ size: [number, number, number], center: [number, number, number] } | null>(null);
 
   // Clone the scene and update to data pose
   useEffect(() => {
@@ -150,6 +151,31 @@ export function ClickableObject({
     }
   });
 
+  // Calculate hit box when scene changes
+  useEffect(() => {
+    if (!clonedScene) return;
+
+    // Ensure matrices are up to date for accurate box calculation
+    clonedScene.updateWorldMatrix(true, true);
+
+    const box = new THREE.Box3().setFromObject(clonedScene);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+
+    // Ensure minimum size for clickability
+    size.max(new THREE.Vector3(1, 1, 1));
+
+    // Scale up slightly for better UX
+    size.multiplyScalar(1.2);
+
+    setHitBoxArgs({
+      size: [size.x, size.y, size.z],
+      center: [center.x, center.y, center.z]
+    });
+  }, [clonedScene]);
+
   if (!clonedScene) return null;
 
   return (
@@ -159,6 +185,8 @@ export function ClickableObject({
       rotation={rotation}
       scale={scale}
       onClick={(e) => {
+        console.log('click');
+        console.log(disabled, found);
         e.stopPropagation();
         if (!disabled && !found) {
           onClick();
@@ -175,6 +203,14 @@ export function ClickableObject({
       }}
     >
       <primitive object={clonedScene} />
+
+      {/* HitBox for better clicking */}
+      {hitBoxArgs && (
+        <mesh position={hitBoxArgs.center}>
+          <boxGeometry args={hitBoxArgs.size} />
+          <meshBasicMaterial transparent opacity={2} depthWrite={false} />
+        </mesh>
+      )}
       {/* Visual indicator when found */}
       {found && (
         <mesh position={[0, 2, 0]}>

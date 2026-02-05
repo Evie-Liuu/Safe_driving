@@ -68,9 +68,9 @@ export function useGameState({ totalDangers, maxLives, timeLimit }: UseGameState
   }, [foundCount, totalDangers]);
 
   const handleTimeUp = useCallback(() => {
-    if (status === 'playing') {
-      setStatus('lost');
-    }
+    // if (status === 'playing') {
+    //   setStatus('lost');
+    // }
   }, [status]);
 
   const resetGame = useCallback(() => {

@@ -18,6 +18,7 @@ export interface QuizQuestion {
 export interface DangerFactor {
   id: string;
   name: string;
+  type: string;
   position: [number, number, number];
   rotation?: [number, number, number];
   scale?: [number, number, number];
