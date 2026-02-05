@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGLTF } from '@react-three/drei';
+import { SkeletonUtils } from 'three-stdlib';
 import { DangerBehavior } from '../types';
 import { AnimationController } from '../../../game/animations/AnimationController';
 import { getSharedLoader } from '../../../game/utils/SharedLoader';
@@ -38,9 +39,18 @@ export function ClickableObject({
   const pathProgressRef = useRef(0);
   const currentPathIndexRef = useRef(0);
 
-  // Clone the scene to avoid sharing issues
+  // Clone the scene and update to data pose
   useEffect(() => {
-    const clone = scene.clone(true);
+    // 使用 SkeletonUtils.clone 以正確複製 SkinnedMesh 骨架
+    const clone = SkeletonUtils.clone(scene) as THREE.Group;
+
+    // 更新成資料姿態 (Rest Pose / Bind Pose)
+    clone.traverse((child) => {
+      if ((child as any).isSkinnedMesh) {
+        (child as any).skeleton.pose();
+      }
+    });
+
     setClonedScene(clone);
 
     return () => {

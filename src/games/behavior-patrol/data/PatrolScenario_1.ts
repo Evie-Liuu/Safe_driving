@@ -20,9 +20,9 @@ export const patrolScenario1: PatrolScenario = {
       position: [8, 0, 5],
       rotation: [0, -Math.PI / 2, 0],
       model: '/src/assets/models/Male1_Rigged.glb',
-      animationUrls: ['/src/assets/models/animations/Male_Walking_Animation.glb'],
+      animationUrls: ['/src/assets/animations/character/Male_Walking_Remain_Animation.glb'],
       behaviors: [
-        { type: 'animation', animation: 'Armature|mixamo.com|Layer0', animationLoop: true },
+        { type: 'animation', animation: 'Take 001', animationLoop: true },
         { type: 'movement', path: [[8, 0, 5], [8, 0, -5]], speed: 1.5, loop: false },
       ],
       questions: {
@@ -52,7 +52,7 @@ export const patrolScenario1: PatrolScenario = {
       questions: {
         q1: {
           question: '這個駕駛行為有什麼問題？',
-          options: ['車速過快', '未打方向燈變換車道', '闯红灯', '逆向行駛'],
+          options: ['車速過快', '未打方向燈變換車道', '闖紅燈', '逆向行駛'],
           correctIndex: 1,
         },
         q2: {
@@ -118,9 +118,9 @@ export const patrolScenario1: PatrolScenario = {
       rotation: [0, -Math.PI / 2, 0],
       scale: [0.7, 0.7, 0.7],
       model: '/src/assets/models/Male1_Rigged.glb',
-      animationUrls: ['/src/assets/models/animations/Male_Running_Animation.glb'],
+      animationUrls: ['/src/assets/animations/character/Male_Walking_Remain_Animation.glb'],
       behaviors: [
-        { type: 'animation', animation: 'Armature|mixamo.com|Layer0', animationLoop: true },
+        { type: 'animation', animation: 'Take 001', animationLoop: true },
         { type: 'movement', path: [[12, 0, -3], [12, 0, 3]], speed: 3, loop: false },
       ],
       questions: {
@@ -157,10 +157,7 @@ export const patrolScenario1: PatrolScenario = {
       position: [-6, 0, 6],
       rotation: [0, 0, 0],
       model: '/src/assets/models/Male1_Rigged.glb',
-      animationUrls: ['/src/assets/models/animations/Male_Idle_Animation.glb'],
-      behaviors: [
-        { type: 'animation', animation: 'Armature|mixamo.com|Layer0', animationLoop: true },
-      ],
+      behaviors: [],
     },
   ],
 };

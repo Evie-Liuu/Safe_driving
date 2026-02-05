@@ -696,7 +696,7 @@ export function GameScene() {
           onSpeedChange={handleSpeedChange}
           onTriggerOncomingVehicle={handleTriggerOncomingVehicle}
           onCruiseComplete={handleCruiseComplete}
-          enableCameraFollow={true}
+          enableCameraFollow={false}
           isCruising={isCruising && !gameEnded}
           isBraking={isBraking || autoBraking}
           cruisePoints={cruisePoints}
@@ -771,7 +771,7 @@ export function GameScene() {
       </Canvas>
 
       {/* 全螢幕點擊區域 - 用於辨識危險 */}
-      <div
+      {/* <div
         style={{
           position: 'absolute',
           top: 0,
@@ -782,7 +782,7 @@ export function GameScene() {
           zIndex: 10
         }}
         onClick={handleScreenClick}
-      />
+      /> */}
 
       {/* 剩餘點擊次數顯示 */}
       <div style={{

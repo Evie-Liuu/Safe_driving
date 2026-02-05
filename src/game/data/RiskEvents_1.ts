@@ -10,9 +10,9 @@ import { GameEvent, TriggerType, ActionType, ActorType, PlayerResponseType, Prep
  */
 export const cruisePoints: [number, number, number][] = [
     // [10, 0, 120], //起點 
-    // [10, 0, 80],
-    // [10, 0, 49],
-    // [10, 0, 12],
+    [10, 0, 80],
+    [10, 0, 49],
+    [10, 0, 12],
     [10, 0, 0],  //E點
     [10, 0, -60],
     [10, 0, -106],
