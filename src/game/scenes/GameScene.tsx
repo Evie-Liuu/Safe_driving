@@ -428,6 +428,14 @@ export function GameScene() {
     console.log(`[GameScene] 🎭 Actor ready: ${actorId}, total ready: ${readyActorsRef.current.size}`)
   }, [])
 
+  // Callback for when an actor completes its movement path
+  const handleActorPathComplete = useCallback((eventId: string, actorId: string) => {
+    console.log(`[GameScene] 🏁 Actor path completed: ${actorId} in event ${eventId}`)
+    if (eventManagerRef.current) {
+      eventManagerRef.current.markActorPathCompleted(eventId, actorId)
+    }
+  }, [])
+
   // Initialize event manager (only after assets are loaded)
   useEffect(() => {
     if (!isAssetsLoaded) {
@@ -692,6 +700,7 @@ export function GameScene() {
             ref={actor.ref}
             {...actor}
             onReady={handleActorReady}
+            onComplete={handleActorPathComplete}
             enableDebug={true}
           />
         ))}

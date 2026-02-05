@@ -196,7 +196,8 @@ export interface RequiredPlayerResponse {
  * Event completion criteria
  */
 export interface CompletionCriteria {
-    playerPassed?: boolean
+    playerPassed?: boolean // Player has moved away from event after approaching
+    requireActorPathComplete?: boolean // Require all actor movement paths to be completed
     minSpeed?: number
     maxSpeed?: number
     allActionsCompleted?: boolean
@@ -214,6 +215,11 @@ export interface EventContext {
     activeActors: Map<string, any>
     completedActions: Set<string>
     playerState: PlayerState
+    // Distance tracking for completion detection
+    previousDistance?: number // Distance to event trigger in previous frame
+    minDistanceReached?: number // Closest distance achieved to the event
+    // Actor path completion tracking
+    actorPathsCompleted?: Set<string> // Track which actors have finished their movement paths
 }
 
 /**

@@ -10,9 +10,9 @@ import { GameEvent, TriggerType, ActionType, ActorType, PlayerResponseType, Prep
  */
 export const cruisePoints: [number, number, number][] = [
     // [10, 0, 120], //起點 
-    [10, 0, 80],
-    [10, 0, 49],
-    [10, 0, 12],
+    // [10, 0, 80],
+    // [10, 0, 49],
+    // [10, 0, 12],
     [10, 0, 0],  //E點
     [10, 0, -60],
     [10, 0, -106],
@@ -88,7 +88,8 @@ export const events: GameEvent[] = [
             validationRadius: 15
         },
         completionCriteria: {
-            playerPassed: true,
+            playerPassed: true, // Player must move away from event
+            requireActorPathComplete: true // Taxi must finish movement path
             // maxSpeed: 60 // Player must pass at reasonable speed
         },
         priority: 10,

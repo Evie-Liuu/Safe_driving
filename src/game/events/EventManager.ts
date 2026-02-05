@@ -10,7 +10,8 @@ import {
     PlayerResponseType,
     PrepareInstruction,
     PrepareActionType,
-    PrepareZoneStatus
+    PrepareZoneStatus,
+    ActionType
 } from './EventTypes'
 
 /**
@@ -216,6 +217,9 @@ export class EventManager {
 
     /**
      * Check if event completion criteria are met
+     * Event completes when BOTH conditions are met:
+     * 1. Actor paths have completed (if required)
+     * 2. Player has moved away from the event (if required)
      */
     private checkCompletionCriteria(
         event: GameEvent,
@@ -228,55 +232,126 @@ export class EventManager {
         }
 
         const criteria = event.completionCriteria
+        let allCriteriaMet = true
+        const checks: Record<string, boolean> = {}
 
-        // Check if player has passed the event location (using vector dot product)
+        // Check 1: Actor path completion (if required)
+        if (criteria.requireActorPathComplete) {
+            // Initialize actor path completion tracking if not exists
+            if (!context.actorPathsCompleted) {
+                context.actorPathsCompleted = new Set<string>()
+            }
+
+            // Count how many movement actions exist in this event
+            const movementActions = event.actions.filter(action => action.type === ActionType.MOVEMENT)
+
+            // Check if all movement actions have been marked as completed
+            const pathsComplete = movementActions.every(action =>
+                context.actorPathsCompleted!.has(action.actorId)
+            )
+
+            checks.actorPathsComplete = pathsComplete
+            if (!pathsComplete) {
+                allCriteriaMet = false
+            }
+        }
+
+        // Check 2: Player has passed the event (approach → moving away detection)
         if (criteria.playerPassed) {
             const eventPos = event.trigger.position
-            if (!eventPos) return false
+            if (!eventPos) {
+                checks.playerPassed = false
+                allCriteriaMet = false
+            } else {
+                const eventVec = new THREE.Vector3(eventPos[0], eventPos[1], eventPos[2])
+                const currentDistance = playerState.position.distanceTo(eventVec)
 
-            const eventVec = new THREE.Vector3(eventPos[0], eventPos[1], eventPos[2])
+                // Track previous distance (initialize to current if first frame)
+                const prevDistance = context.previousDistance ?? currentDistance
+                context.previousDistance = currentDistance
 
-            // Calculate player's forward direction from rotation (Y-axis rotation)
-            // In THREE.js with typical driving setup: rotation 0 = facing -Z direction
-            const playerForward = new THREE.Vector3(
-                -Math.sin(playerState.rotation),
-                0,
-                -Math.cos(playerState.rotation)
-            )
+                // Track minimum distance reached
+                const minDistance = context.minDistanceReached ?? Infinity
+                if (currentDistance < minDistance) {
+                    context.minDistanceReached = currentDistance
+                }
 
-            // Vector from event to player (on XZ plane)
-            const eventToPlayer = new THREE.Vector3(
-                playerState.position.x - eventVec.x,
-                0,
-                playerState.position.z - eventVec.z
-            )
+                const triggerRadius = event.trigger.radius || 10
 
-            // Dot product: positive means player is "ahead" of event in their travel direction
-            const dotProduct = eventToPlayer.dot(playerForward)
+                // Completion criteria:
+                // 1. Player must have been within trigger radius at some point (actually approached the event)
+                // 2. Distance is now INCREASING (moving away from event)
+                // 3. Player has moved past the closest point by a threshold (to ensure consistent trend)
+                const wasInsideTrigger = minDistance <= triggerRadius
+                const isMovingAway = currentDistance > prevDistance
+                const distanceIncreaseThreshold = 0.5 // Meters - ensures we're definitively moving away
+                const hasPassedClosestPoint = (currentDistance - minDistance) > distanceIncreaseThreshold
 
-            // Player must be beyond threshold in the forward direction to be considered "passed"
-            // Use trigger radius + buffer to ensure player has fully passed the event area
-            const triggerRadius = event.trigger.radius || 10
-            const passedThreshold = triggerRadius + 15 // Extra buffer after passing event target
+                const playerPassedCheck = wasInsideTrigger && isMovingAway && hasPassedClosestPoint
+                checks.playerPassed = playerPassedCheck
 
-            if (dotProduct > passedThreshold) {
-                // Player has passed the event (moved past it in their direction of travel)
+                if (!playerPassedCheck) {
+                    allCriteriaMet = false
+                } else {
+                    // Check speed criteria if player has passed
+                    const speedKmh = playerState.speed * 3.6
+                    if (criteria.minSpeed && speedKmh < criteria.minSpeed) {
+                        checks.speedTooLow = true
+                        allCriteriaMet = false
+                    }
+                    if (criteria.maxSpeed && speedKmh > criteria.maxSpeed) {
+                        checks.speedTooHigh = true
+                        allCriteriaMet = false
+                    }
+                }
 
-                // Check speed criteria if specified
-                const speedKmh = playerState.speed * 3.6
-                if (criteria.minSpeed && speedKmh < criteria.minSpeed) return false
-                if (criteria.maxSpeed && speedKmh > criteria.maxSpeed) return false
-
-                return true
+                // Debug logging
+                if (wasInsideTrigger || Object.keys(checks).some(k => checks[k])) {
+                    console.log(`[Completion] ${event.id}:`, {
+                        currentDist: currentDistance.toFixed(2),
+                        prevDist: prevDistance.toFixed(2),
+                        minDist: minDistance.toFixed(2),
+                        wasInsideTrigger,
+                        isMovingAway,
+                        hasPassedClosestPoint,
+                        checks,
+                        allCriteriaMet
+                    })
+                }
             }
         }
 
         // Check custom condition
         if (criteria.customCondition) {
-            return criteria.customCondition(context)
+            const customPassed = criteria.customCondition(context)
+            checks.customCondition = customPassed
+            if (!customPassed) {
+                allCriteriaMet = false
+            }
+        }
+
+        // Final check: all required criteria must be met
+        if (allCriteriaMet) {
+            console.log(`✅ Event ${event.id} completion triggered:`, checks)
+            return true
         }
 
         return false
+    }
+
+    /**
+     * Mark an actor's movement path as completed
+     * Called by EventActor when movement action finishes
+     */
+    markActorPathCompleted(eventId: string, actorId: string): void {
+        const context = this.activeEvents.get(eventId)
+        if (context) {
+            if (!context.actorPathsCompleted) {
+                context.actorPathsCompleted = new Set()
+            }
+            context.actorPathsCompleted.add(actorId)
+            console.log(`[EventManager] 🎬 Actor path completed: ${actorId} in event ${eventId}`)
+        }
     }
 
     /**

@@ -57,9 +57,9 @@ export function Environment({
         // console.log(gltf)
       }} />
 
-      <ModelLoader url="/src/assets/models/objects/Pothole1_light.glb" position={[0, 0.05, 0]} onLoad={(gltf) => {
+      {/* <ModelLoader url="/src/assets/models/objects/Pothole1_light.glb" position={[0, 0.05, 0]} onLoad={(gltf) => {
         console.log(gltf)
-      }} />
+      }} /> */}
       {/* <AnimatedModel modelUrl="/src/assets/models/Male1_Rigged.glb"
         animationUrls={[
           "/src/assets/models/animations/Male_Walking_Animation.glb",

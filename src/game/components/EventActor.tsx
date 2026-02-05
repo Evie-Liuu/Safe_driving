@@ -63,7 +63,8 @@ export interface EventActorHandle {
 
 interface EventActorProps extends EventActorType {
     animationUrls?: string[]
-    onComplete?: () => void
+    eventId?: string // Event this actor belongs to
+    onComplete?: (eventId: string, actorId: string) => void // Notify when actor completes its path
     onReady?: (actorId: string) => void
     initialLightAction?: LightConfig
     initialAnimationAction?: AnimationConfig
@@ -85,6 +86,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
             initialRotation = [0, 0, 0],
             scale = [1, 1, 1],
             color,
+            eventId,
             onComplete,
             onReady,
             initialLightAction,
@@ -315,8 +317,9 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                             } else {
                                 // Movement complete
                                 movementConfigRef.current = null
-                                if (onComplete) {
-                                    onComplete()
+                                console.log(`[EventActor] 🏁 Actor ${id} completed movement path`)
+                                if (onComplete && eventId) {
+                                    onComplete(eventId, id)
                                 }
                             }
                         }
@@ -618,7 +621,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
             return () => {
                 isMounted = false
             }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+            // eslint-disable-next-line react-hooks/exhaustive-deps
         }, [id, model, color, type])
 
         const rotationEuler: [number, number, number] = [
