@@ -241,6 +241,7 @@ export const events: GameEvent[] = [
         },
         completionCriteria: {
             playerPassed: true,
+            requireActorPathComplete: true // Bus must finish movement path
             // maxSpeed: 60 // Player must pass at reasonable speed
         },
         priority: 10,
@@ -310,6 +311,7 @@ export const events: GameEvent[] = [
         },
         completionCriteria: {
             playerPassed: true,
+            requireActorPathComplete: true // Car must finish movement path
             // maxSpeed: 60 // Player must pass at reasonable speed
         },
         priority: 10,
@@ -380,6 +382,7 @@ export const events: GameEvent[] = [
         },
         completionCriteria: {
             playerPassed: true,
+            requireActorPathComplete: true // Pedestrian must finish crossing
             // maxSpeed: 40
         },
         priority: 13, // Higher priority than taxi event
@@ -466,6 +469,7 @@ export const events: GameEvent[] = [
         },
         completionCriteria: {
             playerPassed: true,
+            requireActorPathComplete: true // Pedestrian must finish crossing
             // maxSpeed: 30
         },
         priority: 20, // 高優先級
@@ -549,6 +553,7 @@ export const events: GameEvent[] = [
         },
         completionCriteria: {
             playerPassed: true,
+            requireActorPathComplete: true // Oncoming car must finish U-turn
             // maxSpeed: 60 // Player must pass at reasonable speed
         },
         priority: 10,
@@ -660,6 +665,7 @@ export const events: GameEvent[] = [
         },
         completionCriteria: {
             playerPassed: true,
+            requireActorPathComplete: true // Bicycle and rider must finish movement
             // maxSpeed: 60 // Player must pass at reasonable speed
         },
         priority: 10,
