@@ -220,6 +220,7 @@ export interface EventContext {
     minDistanceReached?: number // Closest distance achieved to the event
     // Actor path completion tracking
     actorPathsCompleted?: Set<string> // Track which actors have finished their movement paths
+    playerPassedNotified?: boolean // Track if player passed event notification was sent
 }
 
 /**
@@ -305,6 +306,7 @@ export interface EventCallbacks {
     onEventActivated?: (eventId: string) => void
     onEventCompleted?: (eventId: string, success: boolean) => void
     onEventFailed?: (eventId: string, reason: string) => void
+    onPlayerPassed?: (eventId: string) => void
     onPlayerResponseRequired?: (eventId: string, response: RequiredPlayerResponse) => void
     onPlayerResponseValidated?: (eventId: string, correct: boolean) => void
 }

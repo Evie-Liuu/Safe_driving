@@ -290,6 +290,13 @@ export class EventManager {
                 const playerPassedCheck = wasInsideTrigger && isMovingAway && hasPassedClosestPoint
                 checks.playerPassed = playerPassedCheck
 
+                if (playerPassedCheck && !context.playerPassedNotified) {
+                    context.playerPassedNotified = true
+                    if (this.callbacks.onPlayerPassed) {
+                        this.callbacks.onPlayerPassed(event.id)
+                    }
+                }
+
                 if (!playerPassedCheck) {
                     allCriteriaMet = false
                 } else {

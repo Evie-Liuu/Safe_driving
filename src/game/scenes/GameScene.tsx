@@ -490,9 +490,10 @@ export function GameScene() {
           console.log(`✅ Event ${success ? 'completed' : 'failed'}: ${eventId}`)
           const event = riskEvents.find(e => e.id === eventId)
           if (event) {
-            // Check if player missed clicking this danger event
+            // Check if player missed clicking this danger event (fallback if onPlayerPassed missed it)
+            // But usually onPlayerPassed handles it now
             if (event.prepareConfig && !clickedEventIds.current.has(eventId)) {
-              console.log(`[GameScene] ❌ Event ${eventId} completed without player click - MISS`)
+              console.log(`[GameScene] ❌ Event ${eventId} completed without player click - MISS (Fallback)`)
               setJudgmentResult({ judgment: DangerClickJudgment.MISS, eventName: event.name })
               recordScore(event.name, DangerClickJudgment.MISS)
               if (judgmentTimerRef.current) clearTimeout(judgmentTimerRef.current)
@@ -516,6 +517,20 @@ export function GameScene() {
             preSpawnedEventIds.current.delete(eventId)
           }
           eventExecutorRef.current.cancelActions(eventId)
+        },
+        onPlayerPassed: (eventId) => {
+          console.log(`[GameScene] 📍 Player passed event: ${eventId}`)
+          const event = riskEvents.find(e => e.id === eventId)
+          if (event && event.prepareConfig && !clickedEventIds.current.has(eventId)) {
+            console.log(`[GameScene] ❌ Player passed event ${eventId} without clicking - MISS`)
+            setJudgmentResult({ judgment: DangerClickJudgment.MISS, eventName: event.name })
+            recordScore(event.name, DangerClickJudgment.MISS)
+            if (judgmentTimerRef.current) clearTimeout(judgmentTimerRef.current)
+            judgmentTimerRef.current = setTimeout(() => setJudgmentResult(null), 2000)
+
+            // Mark as clicked so fallback in onEventCompleted doesn't trigger
+            clickedEventIds.current.add(eventId)
+          }
         },
         onPlayerResponseRequired: (eventId, response) => {
           console.log(`⚠️ Player response required for ${eventId}:`, response.type)
