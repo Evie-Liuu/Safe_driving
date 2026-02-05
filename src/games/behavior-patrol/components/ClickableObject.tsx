@@ -33,78 +33,70 @@ export function ClickableObject({
   found = false,
 }: ClickableObjectProps) {
   const groupRef = useRef<THREE.Group>(null);
-  const { scene } = useGLTF(model);
-  const [clonedScene, setClonedScene] = useState<THREE.Group | null>(null);
+  // const { scene } = useGLTF(model);
+  const modelSceneRef = useRef<THREE.Object3D | null>(null)
   const animControllerRef = useRef<AnimationController | null>(null);
   const pathProgressRef = useRef(0);
   const currentPathIndexRef = useRef(0);
   const [hitBoxArgs, setHitBoxArgs] = useState<{ size: [number, number, number], center: [number, number, number] } | null>(null);
 
-  // Clone the scene and update to data pose
-  useEffect(() => {
-    // 使用 SkeletonUtils.clone 以正確複製 SkinnedMesh 骨架
-    const clone = SkeletonUtils.clone(scene) as THREE.Group;
 
-    // 更新成資料姿態 (Rest Pose / Bind Pose)
-    clone.traverse((child) => {
-      if ((child as any).isSkinnedMesh) {
-        (child as any).skeleton.pose();
-      }
-    });
 
-    setClonedScene(clone);
-
-    return () => {
-      clone.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.geometry?.dispose();
-          if (Array.isArray(child.material)) {
-            child.material.forEach(m => m.dispose());
-          } else {
-            child.material?.dispose();
-          }
-        }
-      });
-    };
-  }, [scene]);
+  const [isReady, setIsReady] = useState(false);
 
   // Load animations
   useEffect(() => {
-    if (!clonedScene || !animationUrls || animationUrls.length === 0) return;
+    // if (!modelSceneRef.current) return;
 
-    const loadAnimations = async () => {
+    const loadModelAndAnimations = async () => {
+      setIsReady(false);
+
       const loader = getSharedLoader();
-      for (const url of animationUrls) {
-        try {
-          const gltf = await loader.loadAsync(url);
-          if (!animControllerRef.current) {
-            animControllerRef.current = new AnimationController(clonedScene);
+      const gltf = await loader.loadAsync(model);
+      // 使用 SkeletonUtils.clone 以正確複製 SkinnedMesh 骨架
+      const clonedScene = SkeletonUtils.clone(gltf.scene)
+      modelSceneRef.current = clonedScene
+
+      // TODO: Add clonedScene to the group first, so AnimationMixer can find all nodes
+      // if (groupRef.current) {
+      //   groupRef.current.add(clonedScene)
+      // }
+
+      if (animationUrls && animationUrls.length > 0) {
+        for (const url of animationUrls) {
+          try {
+            const gltf = await loader.loadAsync(url);
+            if (!animControllerRef.current) {
+              animControllerRef.current = new AnimationController(clonedScene);
+            }
+            animControllerRef.current.loadSeparateAnimations(gltf, clonedScene);
+          } catch (error) {
+            console.error(`Failed to load animation: ${url}`, error);
           }
-          animControllerRef.current.loadSeparateAnimations(gltf, clonedScene);
-        } catch (error) {
-          console.error(`Failed to load animation: ${url}`, error);
+        }
+
+        // Start animation behaviors
+        const animBehavior = behaviors.find(b => b.type === 'animation');
+        if (animBehavior?.animation && animControllerRef.current) {
+          animControllerRef.current.play(animBehavior.animation, {
+            loop: animBehavior.animationLoop ? THREE.LoopRepeat : THREE.LoopOnce,
+          });
         }
       }
 
-      // Start animation behaviors
-      const animBehavior = behaviors.find(b => b.type === 'animation');
-      if (animBehavior?.animation && animControllerRef.current) {
-        animControllerRef.current.play(animBehavior.animation, {
-          loop: animBehavior.animationLoop ? THREE.LoopRepeat : THREE.LoopOnce,
-        });
-      }
+      setIsReady(true);
     };
 
-    loadAnimations();
+    loadModelAndAnimations();
 
     return () => {
       animControllerRef.current?.stopAll();
     };
-  }, [clonedScene, animationUrls, behaviors]);
+  }, [model, animationUrls]);
 
   // Update animations and movement
   useFrame((_, delta) => {
-    if (!groupRef.current || found) return;
+    if (!groupRef.current || found || !isReady) return;
 
     // Update animation
     animControllerRef.current?.update(delta);
@@ -153,12 +145,12 @@ export function ClickableObject({
 
   // Calculate hit box when scene changes
   useEffect(() => {
-    if (!clonedScene) return;
+    if (!modelSceneRef.current) return;
 
     // Ensure matrices are up to date for accurate box calculation
-    clonedScene.updateWorldMatrix(true, true);
+    modelSceneRef.current.updateWorldMatrix(true, true);
 
-    const box = new THREE.Box3().setFromObject(clonedScene);
+    const box = new THREE.Box3().setFromObject(modelSceneRef.current);
     const size = new THREE.Vector3();
     box.getSize(size);
     const center = new THREE.Vector3();
@@ -174,13 +166,14 @@ export function ClickableObject({
       size: [size.x, size.y, size.z],
       center: [center.x, center.y, center.z]
     });
-  }, [clonedScene]);
+  }, [modelSceneRef]);
 
-  if (!clonedScene) return null;
+  if (!modelSceneRef.current) return null;
 
   return (
     <group
       ref={groupRef}
+      visible={isReady}
       position={position}
       rotation={rotation}
       scale={scale}
@@ -202,7 +195,7 @@ export function ClickableObject({
         document.body.style.cursor = 'default';
       }}
     >
-      <primitive object={clonedScene} />
+      <primitive object={modelSceneRef.current} />
 
       {/* HitBox for better clicking */}
       {hitBoxArgs && (
