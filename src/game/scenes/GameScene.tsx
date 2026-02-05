@@ -696,7 +696,7 @@ export function GameScene() {
           onSpeedChange={handleSpeedChange}
           onTriggerOncomingVehicle={handleTriggerOncomingVehicle}
           onCruiseComplete={handleCruiseComplete}
-          enableCameraFollow={false}
+          enableCameraFollow={true}
           isCruising={isCruising && !gameEnded}
           isBraking={isBraking || autoBraking}
           cruisePoints={cruisePoints}
@@ -721,21 +721,21 @@ export function GameScene() {
         ))}
 
         {/* 場景紅綠燈 */}
-        {trafficLights.map((light) => (
+        {/* {trafficLights.map((light) => (
           <TrafficLight
             key={light.id}
             {...light}
           />
-        ))}
+        ))} */}
 
         {/* 一些裝飾物 */}
         {/* <DemoObjects /> */}
 
         {/* 行走的路人 */}
-        <MaleCharacter position={[5, 0, 5]} rotation={[0, 0, 0]} />
+        {/* <MaleCharacter position={[5, 0, 5]} rotation={[0, 0, 0]} /> */}
 
         {/* 對向車輛 */}
-        {oncomingVehicles.map(vehicle => (
+        {/* {oncomingVehicles.map(vehicle => (
           <OncomingVehicle
             key={vehicle.id}
             startPosition={vehicle.startPosition}
@@ -745,7 +745,7 @@ export function GameScene() {
               setOncomingVehicles(prev => prev.filter(v => v.id !== vehicle.id))
             }}
           />
-        ))}
+        ))} */}
 
         {/* 危險因子點擊標記 */}
         {activeDanger && (

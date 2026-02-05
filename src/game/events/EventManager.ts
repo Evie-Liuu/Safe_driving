@@ -313,18 +313,18 @@ export class EventManager {
                 }
 
                 // Debug logging
-                if (wasInsideTrigger || Object.keys(checks).some(k => checks[k])) {
-                    console.log(`[Completion] ${event.id}:`, {
-                        currentDist: currentDistance.toFixed(2),
-                        prevDist: prevDistance.toFixed(2),
-                        minDist: minDistance.toFixed(2),
-                        wasInsideTrigger,
-                        isMovingAway,
-                        hasPassedClosestPoint,
-                        checks,
-                        allCriteriaMet
-                    })
-                }
+                // if (wasInsideTrigger || Object.keys(checks).some(k => checks[k])) {
+                //     console.log(`[Completion] ${event.id}:`, {
+                //         currentDist: currentDistance.toFixed(2),
+                //         prevDist: prevDistance.toFixed(2),
+                //         minDist: minDistance.toFixed(2),
+                //         wasInsideTrigger,
+                //         isMovingAway,
+                //         hasPassedClosestPoint,
+                //         checks,
+                //         allCriteriaMet
+                //     })
+                // }
             }
         }
 

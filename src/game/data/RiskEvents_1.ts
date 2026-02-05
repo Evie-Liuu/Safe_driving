@@ -10,9 +10,9 @@ import { GameEvent, TriggerType, ActionType, ActorType, PlayerResponseType, Prep
  */
 export const cruisePoints: [number, number, number][] = [
     // [10, 0, 120], //起點 
-    [10, 0, 80],
-    [10, 0, 49],
-    [10, 0, 12],
+    // [10, 0, 80],
+    // [10, 0, 49],
+    // [10, 0, 12],
     [10, 0, 0],  //E點
     [10, 0, -60],
     [10, 0, -106],
@@ -201,9 +201,19 @@ export const events: GameEvent[] = [
                 initialPosition: [9.5, 0, 20],
                 initialRotation: [0, Math.PI, 0],
                 // color: '#FFD700' // Gold color for taxi
+                animationUrls: [
+                    '/src/assets/animations/car/Bus_Moving_Animation.glb'
+                ]
             }
         ],
         actions: [
+            {
+                actorId: 'bus_1',
+                type: ActionType.ANIMATION,
+                name: 'Bus_Moving_Animation',
+                loop: true,
+                time: 0,
+            },
             // Turn on hazard lights immediately
             {
                 actorId: 'bus_1',
@@ -271,10 +281,20 @@ export const events: GameEvent[] = [
                 model: '/src/assets/models/Car2_Rigged.glb',
                 initialPosition: [8.5, 0, -35],
                 initialRotation: [0, Math.PI, 0],
-                color: '#FFD700' // Gold color for taxi
+                color: '#FFD700', // Gold color for taxi
+                animationUrls: [
+                    '/src/assets/animations/car/Car2_Moving_Animation.glb'
+                ]
             }
         ],
         actions: [
+            {
+                actorId: 'car_1',
+                type: ActionType.ANIMATION,
+                name: 'Car2_Moving_Animation',
+                loop: true,
+                time: 0,
+            },
             {
                 actorId: 'car_1',
                 type: ActionType.LIGHT,
@@ -387,12 +407,12 @@ export const events: GameEvent[] = [
         },
         priority: 13, // Higher priority than taxi event
         prepareConfig: {
-            radius: 11, // Start preparing 25m away (trigger is 20m)
+            radius: 12, // Start preparing 25m away (trigger is 20m)
             actions: [PrepareActionType.DECELERATE],
             targetSpeedFactor: 0.3,
             // stopDuration: 3 // 停等 3 秒後繼續
         },
-        spawnRadius: 80
+        spawnRadius: 100
     },
     {
         id: 'pedestrian_crossing_intersection',
@@ -479,7 +499,7 @@ export const events: GameEvent[] = [
             targetSpeedFactor: 0.5,
             stopDuration: 2 // 停等 2 秒讓行人通過
         },
-        spawnRadius: 80
+        spawnRadius: 100
     },
     {
         id: 'oncoming_car_turn',
@@ -500,9 +520,19 @@ export const events: GameEvent[] = [
                 model: '/src/assets/models/Car1_Rigged.glb',
                 initialPosition: [117.6, 0, -71],
                 initialRotation: [0, Math.PI, 0],
+                animationUrls: [
+                    '/src/assets/animations/car/Car1_Moving_Animation.glb'
+                ]
             }
         ],
         actions: [
+            {
+                actorId: 'oncoming_car_1',
+                type: ActionType.ANIMATION,
+                name: 'Car1_Moving_Animation',
+                loop: true,
+                time: 0,
+            },
             // 左轉燈：迴轉階段
             {
                 actorId: 'oncoming_car_1',
@@ -563,7 +593,7 @@ export const events: GameEvent[] = [
             targetSpeedFactor: 0.5,
             stopDuration: 3
         },
-        spawnRadius: 90
+        spawnRadius: 100
     },
     {
         id: 'bicycle_dodging_pothole',
