@@ -15,6 +15,7 @@ interface ClickableObjectProps {
   scale?: [number, number, number];
   behaviors: DangerBehavior[];
   animationUrls?: string[];
+  accessoryNames?: string[];
   onClick: () => void;
   disabled?: boolean;
   found?: boolean;
@@ -28,6 +29,7 @@ export function ClickableObject({
   scale = [1, 1, 1],
   behaviors,
   animationUrls,
+  accessoryNames,
   onClick,
   disabled = false,
   found = false,
@@ -56,6 +58,26 @@ export function ClickableObject({
       // 使用 SkeletonUtils.clone 以正確複製 SkinnedMesh 骨架
       const clonedScene = SkeletonUtils.clone(gltf.scene)
       modelSceneRef.current = clonedScene
+
+      // console.log(model);
+      // console.log(clonedScene);
+
+      // 配件
+      if (accessoryNames && accessoryNames.length > 0) {
+        modelSceneRef.current?.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+
+            if (!child.name.includes('Accessory')) return
+            if (accessoryNames.includes(child.name)) {
+              child.visible = false;
+            } else {
+              child.visible = true;
+            }
+          }
+        });
+      }
 
       // TODO: Add clonedScene to the group first, so AnimationMixer can find all nodes
       // if (groupRef.current) {
@@ -144,29 +166,29 @@ export function ClickableObject({
   });
 
   // Calculate hit box when scene changes
-  useEffect(() => {
-    if (!modelSceneRef.current) return;
+  // useEffect(() => {
+  //   if (!modelSceneRef.current) return;
 
-    // Ensure matrices are up to date for accurate box calculation
-    modelSceneRef.current.updateWorldMatrix(true, true);
+  //   // Ensure matrices are up to date for accurate box calculation
+  //   modelSceneRef.current.updateWorldMatrix(true, true);
 
-    const box = new THREE.Box3().setFromObject(modelSceneRef.current);
-    const size = new THREE.Vector3();
-    box.getSize(size);
-    const center = new THREE.Vector3();
-    box.getCenter(center);
+  //   const box = new THREE.Box3().setFromObject(modelSceneRef.current);
+  //   const size = new THREE.Vector3();
+  //   box.getSize(size);
+  //   const center = new THREE.Vector3();
+  //   box.getCenter(center);
 
-    // Ensure minimum size for clickability
-    size.max(new THREE.Vector3(1, 1, 1));
+  //   // Ensure minimum size for clickability
+  //   size.max(new THREE.Vector3(1, 1, 1));
 
-    // Scale up slightly for better UX
-    size.multiplyScalar(1.2);
+  //   // Scale up slightly for better UX
+  //   size.multiplyScalar(1.2);
 
-    setHitBoxArgs({
-      size: [size.x, size.y, size.z],
-      center: [center.x, center.y, center.z]
-    });
-  }, [modelSceneRef]);
+  //   setHitBoxArgs({
+  //     size: [size.x, size.y, size.z],
+  //     center: [center.x, center.y, center.z]
+  //   });
+  // }, [modelSceneRef]);
 
   if (!modelSceneRef.current) return null;
 
@@ -178,8 +200,6 @@ export function ClickableObject({
       rotation={rotation}
       scale={scale}
       onClick={(e) => {
-        console.log('click');
-        console.log(disabled, found);
         e.stopPropagation();
         if (!disabled && !found) {
           onClick();
@@ -198,12 +218,12 @@ export function ClickableObject({
       <primitive object={modelSceneRef.current} />
 
       {/* HitBox for better clicking */}
-      {hitBoxArgs && (
+      {/* {hitBoxArgs && (
         <mesh position={hitBoxArgs.center}>
           <boxGeometry args={hitBoxArgs.size} />
           <meshBasicMaterial transparent opacity={2} depthWrite={false} />
         </mesh>
-      )}
+      )} */}
       {/* Visual indicator when found */}
       {found && (
         <mesh position={[0, 2, 0]}>

@@ -23,6 +23,7 @@ export interface DangerFactor {
   rotation?: [number, number, number];
   scale?: [number, number, number];
   model: string;
+  accessoryNames?: string[];
   animationUrls?: string[];
   behaviors: DangerBehavior[];
   questions: {

@@ -25,72 +25,79 @@ export function PatrolScene({
   const [currentClick, setCurrentClick] = useState<THREE.Vector3 | null>(null)
 
   return (
-    <Canvas shadows>
-      <PerspectiveCamera
-        makeDefault
-        position={scenario.scene.cameraPosition}
-        fov={60}
-      />
-      <OrbitControls
-        target={scenario.scene.cameraLookAt}
-        // enablePan={false}
-        // enableZoom={true}
-        minDistance={15}
-        maxDistance={100}
-        maxPolarAngle={Math.PI / 2.2}
-      // mouseButtons={{
-      //   LEFT: THREE.MOUSE.PAN,
-      //   MIDDLE: THREE.MOUSE.DOLLY,
-      //   RIGHT: THREE.MOUSE.ROTATE
-      // }}
-      />
-
-      <Environment />
-
-      {/* 危險因子 */}
-      {scenario.dangers.map((danger) => (
-        <ClickableObject
-          key={danger.id}
-          id={danger.id}
-          model={danger.model}
-          position={danger.position}
-          rotation={danger.rotation}
-          scale={danger.scale}
-          behaviors={danger.behaviors}
-          animationUrls={danger.animationUrls}
-          onClick={() => onDangerClick(danger)}
-          disabled={disabled}
-          found={foundDangerIds.has(danger.id)}
+    <>
+      <Canvas shadows>
+        <PerspectiveCamera
+          makeDefault
+          position={scenario.scene.cameraPosition}
+          fov={60}
         />
-      ))}
-
-      {/* 安全物件 */}
-      {scenario.safeObjects.map((obj) => (
-        <ClickableObject
-          key={obj.id}
-          id={obj.id}
-          model={obj.model}
-          position={obj.position}
-          rotation={obj.rotation}
-          scale={obj.scale}
-          behaviors={obj.behaviors}
-          animationUrls={obj.animationUrls}
-          onClick={onSafeClick}
-          disabled={disabled}
+        <OrbitControls
+          target={scenario.scene.cameraLookAt}
+          // enablePan={false}
+          // enableZoom={true}
+          minDistance={15}
+          maxDistance={100}
+          maxPolarAngle={Math.PI / 2.2}
+        // mouseButtons={{
+        //   LEFT: THREE.MOUSE.PAN,
+        //   MIDDLE: THREE.MOUSE.DOLLY,
+        //   RIGHT: THREE.MOUSE.ROTATE
+        // }}
         />
-      ))}
 
-      {/* 點擊處理器 */}
-      <ClickHandler
-        onClick={(point) => {
-          setCurrentClick(point)
-          setClickPoints(prev => [...prev, point])
-        }}
-      />
+        <Environment />
 
-      {/* 點可視化 */}
-      <PointVisualization currentClick={currentClick} clickPoints={clickPoints} />
-    </Canvas>
+        {/* 危險因子 */}
+        {scenario.dangers.map((danger) => (
+          <ClickableObject
+            key={danger.id}
+            id={danger.id}
+            model={danger.model}
+            position={danger.position}
+            rotation={danger.rotation}
+            scale={danger.scale}
+            behaviors={danger.behaviors}
+            animationUrls={danger.animationUrls}
+            accessoryNames={danger.accessoryNames}
+            onClick={() => onDangerClick(danger)}
+            disabled={disabled}
+            found={foundDangerIds.has(danger.id)}
+          />
+        ))}
+
+        {/* 安全物件 */}
+        {scenario.safeObjects.map((obj) => (
+          <ClickableObject
+            key={obj.id}
+            id={obj.id}
+            model={obj.model}
+            position={obj.position}
+            rotation={obj.rotation}
+            scale={obj.scale}
+            behaviors={obj.behaviors}
+            animationUrls={obj.animationUrls}
+            onClick={onSafeClick}
+            disabled={disabled}
+          />
+        ))}
+
+        {/* 點擊處理器 */}
+        <ClickHandler
+          onClick={(point) => {
+            setCurrentClick(point)
+            setClickPoints(prev => [...prev, point])
+          }}
+        />
+
+        {/* 點可視化 */}
+        <PointVisualization currentClick={currentClick} clickPoints={clickPoints} />
+      </Canvas>
+
+      <div className='absolute bottom-0 left-0 z-[100] text-white bg-black bg-opacity-50 p-2'>
+        <p>當前點擊: X: {currentClick?.x.toFixed(2)}, Y: {currentClick?.y.toFixed(2)}, Z: {currentClick?.z.toFixed(2)}</p>
+      </div>
+    </>
   );
 }
 

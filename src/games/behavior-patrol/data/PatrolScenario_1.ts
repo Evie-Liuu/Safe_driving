@@ -18,13 +18,14 @@ export const patrolScenario1: PatrolScenario = {
       id: 'danger-1',
       name: '行人邊走邊滑手機',
       type: 'pedestrian',
-      position: [8, 0, 5],
-      rotation: [0, -Math.PI / 2, 0],
-      model: '/src/assets/models/Male1_Rigged.glb',
+      position: [-92.17, 0, -15.64],
+      rotation: [0, Math.PI / 2, 0],
+      model: '/src/assets/models/Male1_CnH_Rigged.glb',
+      accessoryNames: ['Phone'],
       animationUrls: ['/src/assets/animations/character/Male_Walking_Remain_Animation.glb'],
       behaviors: [
         { type: 'animation', animation: 'Take 001', animationLoop: true },
-        { type: 'movement', path: [[8, 0, 5], [8, 0, -5]], speed: 1.5, loop: false },
+        { type: 'movement', path: [[-92.17, 0, -15.64], [-82.48, 0, -15.54], [-71.69, 0, -15.25]], speed: 1.5, loop: true },
       ],
       questions: {
         q1: {
