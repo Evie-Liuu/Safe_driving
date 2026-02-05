@@ -44,6 +44,8 @@ export function GameScene() {
   }>>([])
   const vehicleIdCounter = useRef(0)
 
+  const debugflag = useRef(false)
+
   // Event system
   const eventManagerRef = useRef<EventManager | null>(null)
   const eventExecutorRef = useRef<EventExecutor>(new EventExecutor())
@@ -61,6 +63,7 @@ export function GameScene() {
     triggerPosition: [number, number, number]
     clickDeadline: number
     prepareRadius: number // Store prepare radius for FAST range calculation
+    triggerRadius: number // Store trigger radius for FAST range calculation
   } | null>(null)
   const dangerEnteredTimeRef = useRef<number>(0)
   const brakingStartTimeRef = useRef<number>(0)
@@ -180,9 +183,10 @@ export function GameScene() {
     if (instruction) {
       // Track when we first enter prepare zone for this event
       if (currentProcessingEventIdRef.current !== instruction.eventId) {
-        // Find the event to get prepareRadius
+        // Find the event to get prepareRadius and triggerRadius
         const event = riskEvents.find(e => e.id === instruction.eventId)
         const prepareRadius = event?.prepareConfig?.radius || 25
+        const triggerRadius = event?.trigger.radius || 10
 
         currentProcessingEventIdRef.current = instruction.eventId
         dangerEnteredTimeRef.current = performance.now()
@@ -195,7 +199,8 @@ export function GameScene() {
           eventName: instruction.eventName,
           triggerPosition: instruction.triggerPosition,
           clickDeadline: instruction.clickDeadline,
-          prepareRadius: prepareRadius
+          prepareRadius: prepareRadius,
+          triggerRadius: triggerRadius
         })
       }
 
@@ -327,15 +332,18 @@ export function GameScene() {
         Math.pow(playerPosition.z - triggerPos[2], 2)
       )
 
-      // FAST range: from (prepareRadius + 5m) to prepareRadius
+      // FAST range: based on the larger of trigger or prepare radius
+      // This handles cases where trigger radius > prepare radius
       const FAST_OUTER_BUFFER = 5 // meters
       const prepareRadius = activeDanger.prepareRadius
-      const fastRangeOuter = prepareRadius + FAST_OUTER_BUFFER
-      const fastRangeInner = prepareRadius
+      const triggerRadius = activeDanger.triggerRadius
+      const baseRadius = Math.max(prepareRadius, triggerRadius) // Use the larger radius
+      const fastRangeOuter = baseRadius + FAST_OUTER_BUFFER
+      const fastRangeInner = baseRadius
 
       // Determine judgment based on distance:
       // - FAST: clicked while in range (fastRangeOuter ~ fastRangeInner)
-      // - SLOW: clicked inside prepareRadius
+      // - SLOW: clicked inside baseRadius
       let judgment: DangerClickJudgment
       if (distance >= fastRangeInner && distance <= fastRangeOuter) {
         judgment = DangerClickJudgment.FAST
@@ -719,7 +727,7 @@ export function GameScene() {
           onSpeedChange={handleSpeedChange}
           onTriggerOncomingVehicle={handleTriggerOncomingVehicle}
           onCruiseComplete={handleCruiseComplete}
-          enableCameraFollow={true}
+          enableCameraFollow={!debugflag.current}
           isCruising={isCruising && !gameEnded}
           isBraking={isBraking || autoBraking}
           cruisePoints={cruisePoints}
@@ -805,7 +813,8 @@ export function GameScene() {
           width: '100%',
           height: '100%',
           cursor: isClickDisabled ? 'not-allowed' : 'pointer',
-          zIndex: 10
+          zIndex: 10,
+          display: debugflag.current ? 'none' : 'block'
         }}
         onClick={handleScreenClick}
       />
@@ -1533,7 +1542,8 @@ function DebugRadiusVisualizer({
         const position = event.trigger.position
         const prepareRadius = event.prepareConfig.radius
         const triggerRadius = event.trigger.radius || 0
-        const fastOuterRadius = prepareRadius + FAST_OUTER_BUFFER
+        const baseRadius = Math.max(prepareRadius, triggerRadius) // Use the larger radius
+        const fastOuterRadius = baseRadius + FAST_OUTER_BUFFER
 
         return (
           <group key={event.id} position={[position[0], 0.1, position[2]]}>
