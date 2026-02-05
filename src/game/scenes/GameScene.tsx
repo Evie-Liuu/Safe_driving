@@ -60,10 +60,12 @@ export function GameScene() {
     eventName: string
     triggerPosition: [number, number, number]
     clickDeadline: number
+    prepareRadius: number // Store prepare radius for FAST range calculation
   } | null>(null)
   const dangerEnteredTimeRef = useRef<number>(0)
   const brakingStartTimeRef = useRef<number>(0)
   const dangerClickedRef = useRef(false)
+  const fastRangeEnteredRef = useRef(false) // Track if player entered FAST range (prepareRadius + 5m)
   // Stop action tracking
   const stopStartTimeRef = useRef<number>(0)
   const stopCompletedEventsRef = useRef<Set<string>>(new Set())
@@ -104,6 +106,9 @@ export function GameScene() {
   const [missCount, setMissCount] = useState(0)
   const [showScorePanel, setShowScorePanel] = useState(false)
   const [gameEnded, setGameEnded] = useState(false)
+
+  // Debug visualization toggle
+  const [showDebugRadius, setShowDebugRadius] = useState(true) // Set to true by default for development
 
   const handleStatsUpdate = useCallback((newStats: PerformanceStats) => {
     setStats(newStats)
@@ -175,16 +180,22 @@ export function GameScene() {
     if (instruction) {
       // Track when we first enter prepare zone for this event
       if (currentProcessingEventIdRef.current !== instruction.eventId) {
+        // Find the event to get prepareRadius
+        const event = riskEvents.find(e => e.id === instruction.eventId)
+        const prepareRadius = event?.prepareConfig?.radius || 25
+
         currentProcessingEventIdRef.current = instruction.eventId
         dangerEnteredTimeRef.current = performance.now()
         brakingStartTimeRef.current = 0
         stopStartTimeRef.current = 0
         dangerClickedRef.current = false
+        fastRangeEnteredRef.current = false
         setActiveDanger({
           eventId: instruction.eventId,
           eventName: instruction.eventName,
           triggerPosition: instruction.triggerPosition,
-          clickDeadline: instruction.clickDeadline
+          clickDeadline: instruction.clickDeadline,
+          prepareRadius: prepareRadius
         })
       }
 
@@ -309,12 +320,24 @@ export function GameScene() {
       // Reset wrong click count on successful identification
       setWrongClickCount(0)
 
-      const clickTime = performance.now()
-      const brakingStart = brakingStartTimeRef.current
+      // Calculate distance from player to event trigger position
+      const triggerPos = activeDanger.triggerPosition
+      const distance = Math.sqrt(
+        Math.pow(playerPosition.x - triggerPos[0], 2) +
+        Math.pow(playerPosition.z - triggerPos[2], 2)
+      )
 
-      // Determine judgment: clicked before braking = Fast, after = Slow
+      // FAST range: from (prepareRadius + 5m) to prepareRadius
+      const FAST_OUTER_BUFFER = 5 // meters
+      const prepareRadius = activeDanger.prepareRadius
+      const fastRangeOuter = prepareRadius + FAST_OUTER_BUFFER
+      const fastRangeInner = prepareRadius
+
+      // Determine judgment based on distance:
+      // - FAST: clicked while in range (fastRangeOuter ~ fastRangeInner)
+      // - SLOW: clicked inside prepareRadius
       let judgment: DangerClickJudgment
-      if (brakingStart === 0 || clickTime < brakingStart) {
+      if (distance >= fastRangeInner && distance <= fastRangeOuter) {
         judgment = DangerClickJudgment.FAST
       } else {
         judgment = DangerClickJudgment.SLOW
@@ -766,12 +789,15 @@ export function GameScene() {
         {/* 點可視化 */}
         <PointVisualization currentClick={currentClick} clickPoints={clickPoints} cruisePoints={cruisePoints} />
 
+        {/* Debug radius visualization (development only) */}
+        <DebugRadiusVisualizer events={riskEvents} visible={showDebugRadius} />
+
         {/* 軌道控制器（開發用，實際遊戲中可能不需要） */}
         <OrbitControls enableDamping target={[playerPosition.x, playerPosition.y, playerPosition.z]} />
       </Canvas>
 
       {/* 全螢幕點擊區域 - 用於辨識危險 */}
-      {/* <div
+      <div
         style={{
           position: 'absolute',
           top: 0,
@@ -782,7 +808,7 @@ export function GameScene() {
           zIndex: 10
         }}
         onClick={handleScreenClick}
-      /> */}
+      />
 
       {/* 剩餘點擊次數顯示 */}
       <div style={{
@@ -839,6 +865,8 @@ export function GameScene() {
         onToggleCruise={toggleCruise}
         onBrakeStart={() => setIsBraking(true)}
         onBrakeEnd={() => setIsBraking(false)}
+        showDebugRadius={showDebugRadius}
+        onToggleDebugRadius={() => setShowDebugRadius(prev => !prev)}
       />
 
       {/* 判定結果顯示 */}
@@ -959,7 +987,9 @@ function UIOverlay({
   isCruising,
   onToggleCruise,
   onBrakeStart,
-  onBrakeEnd
+  onBrakeEnd,
+  showDebugRadius,
+  onToggleDebugRadius
 }: {
   playerPosition: THREE.Vector3;
   currentClick: THREE.Vector3 | null;
@@ -968,6 +998,8 @@ function UIOverlay({
   onToggleCruise: () => void;
   onBrakeStart?: () => void;
   onBrakeEnd?: () => void;
+  showDebugRadius?: boolean;
+  onToggleDebugRadius?: () => void;
 }) {
   if (currentClick) {
     // console.log(`${currentClick.x.toFixed(2)},${currentClick.y.toFixed(2)},${currentClick.z.toFixed(2)}`);
@@ -1029,10 +1061,29 @@ function UIOverlay({
               cursor: 'pointer',
               fontWeight: 'bold',
               width: '100%',
+              marginTop: '8px',
               userSelect: 'none'
             }}
           >
             減速 (按住)
+          </button>
+        )}
+
+        {onToggleDebugRadius && (
+          <button
+            onClick={onToggleDebugRadius}
+            style={{
+              background: showDebugRadius ? '#6666ff' : '#666666',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              width: '100%',
+              marginTop: '8px'
+            }}
+          >
+            {showDebugRadius ? '隱藏範圍圈' : '顯示範圍圈'}
           </button>
         )}
       </div>
@@ -1456,5 +1507,67 @@ function PerformanceDisplay({ stats }: { stats: PerformanceStats | null }) {
         </>
       )}
     </div>
+  )
+}
+
+/**
+ * 調試範圍視覺化組件（開發用）
+ * 顯示 prepareRadius, triggerRadius, FAST 範圍外圈
+ */
+function DebugRadiusVisualizer({
+  events,
+  visible = true
+}: {
+  events: GameEvent[]
+  visible?: boolean
+}) {
+  if (!visible) return null
+
+  const FAST_OUTER_BUFFER = 5 // Same as in handleScreenClick
+
+  return (
+    <group>
+      {events.map((event) => {
+        if (!event.prepareConfig || !event.trigger.position) return null
+
+        const position = event.trigger.position
+        const prepareRadius = event.prepareConfig.radius
+        const triggerRadius = event.trigger.radius || 0
+        const fastOuterRadius = prepareRadius + FAST_OUTER_BUFFER
+
+        return (
+          <group key={event.id} position={[position[0], 0.1, position[2]]}>
+            {/* FAST range outer circle (yellow) */}
+            <mesh rotation={[-Math.PI / 2, 0, 0]}>
+              <ringGeometry args={[fastOuterRadius - 0.2, fastOuterRadius, 64]} />
+              <meshBasicMaterial color="#ffff00" transparent opacity={0.4} side={THREE.DoubleSide} />
+            </mesh>
+
+            {/* Prepare radius circle (green) */}
+            <mesh rotation={[-Math.PI / 2, 0, 0]}>
+              <ringGeometry args={[prepareRadius - 0.2, prepareRadius, 64]} />
+              <meshBasicMaterial color="#00ff00" transparent opacity={0.5} side={THREE.DoubleSide} />
+            </mesh>
+
+            {/* Trigger radius circle (red) */}
+            {triggerRadius > 0 && (
+              <mesh rotation={[-Math.PI / 2, 0, 0]}>
+                <ringGeometry args={[triggerRadius - 0.2, triggerRadius, 64]} />
+                <meshBasicMaterial color="#ff0000" transparent opacity={0.6} side={THREE.DoubleSide} />
+              </mesh>
+            )}
+
+            {/* Center marker */}
+            <mesh position={[0, 0.5, 0]}>
+              <sphereGeometry args={[0.3, 16, 16]} />
+              <meshBasicMaterial color="#ffffff" />
+            </mesh>
+
+            {/* Event label */}
+            {/* Note: For better labels, consider using @react-three/drei's Text component */}
+          </group>
+        )
+      })}
+    </group>
   )
 }
