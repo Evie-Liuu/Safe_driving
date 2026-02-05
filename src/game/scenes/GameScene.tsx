@@ -114,6 +114,11 @@ export function GameScene() {
   const [showDebugRadius, setShowDebugRadius] = useState(true) // Set to true by default for development
   const [showDebugEvent, setShowDebugEvent] = useState(false) // Set to true by default for development
 
+  // Start screen and instructions
+  const [showStartScreen, setShowStartScreen] = useState(true)
+  const [showInstructions, setShowInstructions] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
+
   const handleStatsUpdate = useCallback((newStats: PerformanceStats) => {
     setStats(newStats)
   }, [])
@@ -735,7 +740,7 @@ export function GameScene() {
           onTriggerOncomingVehicle={handleTriggerOncomingVehicle}
           onCruiseComplete={handleCruiseComplete}
           enableCameraFollow={!debugflag.current}
-          isCruising={isCruising && !gameEnded}
+          isCruising={isCruising && !gameEnded && !isPaused}
           isBraking={isBraking || autoBraking}
           cruisePoints={cruisePoints}
           laneOffset={autoLaneOffset}
@@ -996,6 +1001,91 @@ export function GameScene() {
           </div>
         )
       })()}
+
+      {/* 遊戲開始畫面 */}
+      {showStartScreen && (
+        <StartScreen
+          onStart={() => {
+            setShowStartScreen(false)
+          }}
+        />
+      )}
+
+      {/* 遊戲中的說明按鈕（右下角，不在開始畫面或結算時顯示） */}
+      {!showStartScreen && !showScorePanel && (
+        <button
+          onClick={() => {
+            setShowInstructions(true)
+            setIsPaused(true)
+          }}
+          style={{
+            position: 'absolute',
+            bottom: '100px',
+            right: '20px',
+            width: '60px',
+            height: '60px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #4a90d9 0%, #357abd 100%)',
+            border: '2px solid rgba(255, 255, 255, 0.3)',
+            boxShadow: '0 4px 15px rgba(74, 144, 217, 0.5)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '24px',
+            zIndex: 100,
+            transition: 'all 0.3s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.1)'
+            e.currentTarget.style.boxShadow = '0 6px 20px rgba(74, 144, 217, 0.7)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.boxShadow = '0 4px 15px rgba(74, 144, 217, 0.5)'
+          }}
+          title="查看遊戲說明"
+        >
+          ❓
+        </button>
+      )}
+
+      {/* 暫停提示 */}
+      {isPaused && !showInstructions && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: 'rgba(0, 0, 0, 0.9)',
+          color: '#ffa500',
+          padding: '30px 50px',
+          borderRadius: '15px',
+          fontFamily: 'monospace',
+          fontSize: '28px',
+          fontWeight: 'bold',
+          zIndex: 500,
+          boxShadow: '0 0 30px rgba(255, 165, 0, 0.5)',
+          border: '2px solid #ffa500',
+          pointerEvents: 'none',
+          textAlign: 'center'
+        }}>
+          ⏸️ 遊戲已暫停
+          <div style={{ fontSize: '16px', marginTop: '10px', color: '#fff' }}>
+            查看說明或關閉暫停繼續遊戲
+          </div>
+        </div>
+      )}
+
+      {/* 遊戲中的說明面板 */}
+      {showInstructions && (
+        <InstructionsPanel
+          onClose={() => {
+            setShowInstructions(false)
+            setIsPaused(false)
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -1693,4 +1783,538 @@ function DebugRadiusVisualizer({
       })}
     </group>
   )
+}
+
+/**
+ * 遊戲說明面板（帶分頁）
+ */
+function InstructionsPanel({
+  onClose,
+  showStartButton = false,
+  onStart
+}: {
+  onClose?: () => void
+  showStartButton?: boolean
+  onStart?: () => void
+}) {
+  const [activeTab, setActiveTab] = useState(0)
+
+  const tabs = [
+    { id: 0, label: '📋 基本說明', icon: '📋' },
+    { id: 1, label: '⚠️ 危險因子', icon: '⚠️' },
+    { id: 2, label: '💯 計分方式', icon: '💯' }
+  ]
+
+  return (
+    <div style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(20,20,40,0.95) 100%)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1000,
+      animation: 'fadeIn 0.3s ease-in'
+    }}>
+      <div style={{
+        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+        borderRadius: '20px',
+        padding: '40px',
+        maxWidth: '800px',
+        width: '90%',
+        maxHeight: '90vh',
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '0 0 60px rgba(74, 144, 217, 0.4)',
+        border: '2px solid rgba(100, 150, 255, 0.3)'
+      }}>
+        {/* 標題 */}
+        <div style={{ marginBottom: '20px' }}>
+          <h1 style={{
+            textAlign: 'center',
+            fontSize: '32px',
+            fontFamily: 'monospace',
+            color: '#fff',
+            margin: '0 0 5px 0',
+            textShadow: '0 0 20px rgba(74, 144, 217, 0.8)'
+          }}>
+            🏍️ 安全駕駛訓練
+          </h1>
+          <div style={{
+            textAlign: 'center',
+            fontSize: '14px',
+            color: '#ffa500',
+            fontFamily: 'monospace',
+            fontWeight: 'bold'
+          }}>
+            每回合 60 秒
+          </div>
+        </div>
+
+        {/* 分頁標籤 */}
+        <div style={{
+          display: 'flex',
+          gap: '10px',
+          marginBottom: '20px',
+          borderBottom: '2px solid rgba(100, 150, 255, 0.2)',
+          paddingBottom: '10px'
+        }}>
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                flex: 1,
+                padding: '12px 20px',
+                fontSize: '14px',
+                fontFamily: 'monospace',
+                fontWeight: 'bold',
+                color: activeTab === tab.id ? '#fff' : '#888',
+                background: activeTab === tab.id
+                  ? 'linear-gradient(135deg, #4a90d9 0%, #357abd 100%)'
+                  : 'rgba(0, 0, 0, 0.3)',
+                border: activeTab === tab.id ? '2px solid #4a90d9' : '2px solid transparent',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: activeTab === tab.id ? '0 4px 15px rgba(74, 144, 217, 0.4)' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== tab.id) {
+                  e.currentTarget.style.background = 'rgba(74, 144, 217, 0.2)'
+                  e.currentTarget.style.color = '#4a90d9'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== tab.id) {
+                  e.currentTarget.style.background = 'rgba(0, 0, 0, 0.3)'
+                  e.currentTarget.style.color = '#888'
+                }
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* 分頁內容（可滾動） */}
+        <div style={{
+          flex: 1,
+          overflowY: 'auto',
+          fontFamily: 'monospace',
+          color: '#fff',
+          fontSize: '14px',
+          paddingRight: '10px'
+        }}>
+          {/* Tab 0: 基本說明 */}
+          {activeTab === 0 && (
+            <div>
+              {/* 任務說明 */}
+              <div style={{
+                background: 'rgba(0, 0, 0, 0.3)',
+                borderRadius: '10px',
+                padding: '20px',
+                marginBottom: '15px',
+                lineHeight: '1.8'
+              }}>
+                <h2 style={{ color: '#4a90d9', marginTop: 0, marginBottom: '12px', fontSize: '18px' }}>
+                  📋 任務說明
+                </h2>
+                <p style={{ margin: '0 0 12px 0' }}>
+                  你會在騎乘途中遇到多次<strong style={{ color: '#ff6666' }}>「危險因子」</strong>。
+                </p>
+                <p style={{ margin: '0' }}>
+                  你的任務是：<strong style={{ color: '#44ff44' }}>越早發現、越快點擊。</strong>
+                </p>
+              </div>
+
+              {/* 操作方式 */}
+              <div style={{
+                background: 'rgba(0, 0, 0, 0.3)',
+                borderRadius: '10px',
+                padding: '20px',
+                marginBottom: '15px'
+              }}>
+                <h2 style={{ color: '#4a90d9', marginTop: 0, marginBottom: '12px', fontSize: '18px' }}>
+                  🎮 操作方式
+                </h2>
+                <p style={{ margin: 0, background: 'rgba(68, 255, 68, 0.1)', padding: '10px', borderRadius: '5px', borderLeft: '3px solid #44ff44' }}>
+                  看到畫面中的<strong>「潛在危險因子」</strong>，就用<strong>滑鼠點擊</strong>它。
+                </p>
+              </div>
+
+              {/* 判定標準 */}
+              <div style={{
+                background: 'rgba(0, 0, 0, 0.3)',
+                borderRadius: '10px',
+                padding: '20px',
+                marginBottom: '15px'
+              }}>
+                <h2 style={{ color: '#4a90d9', marginTop: 0, marginBottom: '12px', fontSize: '18px' }}>
+                  🎯 判定標準
+                </h2>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{
+                    background: 'linear-gradient(90deg, rgba(68, 255, 68, 0.2), transparent)',
+                    padding: '10px',
+                    borderRadius: '8px',
+                    borderLeft: '4px solid #44ff44'
+                  }}>
+                    <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#44ff44', marginBottom: '4px' }}>
+                      ⚡ 超強危險因子預判
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#ddd' }}>
+                      主角尚未減速／煞車前就點到 → <strong style={{ color: '#44ff44' }}>12.5 分</strong>
+                    </div>
+                  </div>
+
+                  <div style={{
+                    background: 'linear-gradient(90deg, rgba(255, 165, 0, 0.2), transparent)',
+                    padding: '10px',
+                    borderRadius: '8px',
+                    borderLeft: '4px solid #ffa500'
+                  }}>
+                    <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#ffa500', marginBottom: '4px' }}>
+                      🐢 適中危險預判
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#ddd' }}>
+                      畫面已減速／煞車後才點到 → <strong style={{ color: '#ffa500' }}>6.25 分</strong>
+                    </div>
+                  </div>
+
+                  <div style={{
+                    background: 'linear-gradient(90deg, rgba(255, 68, 68, 0.2), transparent)',
+                    padding: '10px',
+                    borderRadius: '8px',
+                    borderLeft: '4px solid #ff4444'
+                  }}>
+                    <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#ff4444', marginBottom: '4px' }}>
+                      ❌ 有待加強
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#ddd' }}>
+                      超過最晚點擊時間仍未點到 → <strong style={{ color: '#ff4444' }}>0 分</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 容錯機制 */}
+              <div style={{
+                background: 'rgba(255, 68, 68, 0.2)',
+                borderRadius: '10px',
+                padding: '20px',
+                border: '2px solid rgba(255, 68, 68, 0.5)'
+              }}>
+                <h2 style={{ color: '#ff6666', marginTop: 0, marginBottom: '12px', fontSize: '18px' }}>
+                  ⚠️ 容錯機制
+                </h2>
+                <p style={{ margin: '0 0 10px 0', lineHeight: '1.6' }}>
+                  每回合有 <strong style={{ color: '#ffa500' }}>3 次容錯</strong>（把「不是危險因子」誤點成危險因子也算一次）
+                </p>
+                <p style={{
+                  margin: 0,
+                  background: 'rgba(255, 0, 0, 0.3)',
+                  padding: '10px',
+                  borderRadius: '5px',
+                  fontWeight: 'bold',
+                  color: '#ff6666',
+                  fontSize: '13px'
+                }}>
+                  ⚠️ 若用完 3 次容錯，第 4 次點錯會<strong>直接結束遊戲</strong>，判定未能完成關卡。
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 1: 危險因子 */}
+          {activeTab === 1 && (
+            <div style={{
+              background: 'rgba(0, 0, 0, 0.3)',
+              borderRadius: '10px',
+              padding: '25px',
+              lineHeight: '1.8'
+            }}>
+              <h2 style={{ color: '#4a90d9', marginTop: 0, marginBottom: '20px', fontSize: '20px' }}>
+                ⚠️ 什麼算危險因子？
+              </h2>
+
+              <p style={{ margin: '0 0 20px 0', fontSize: '15px', color: '#ffa500', fontWeight: 'bold' }}>
+                只要接下來幾秒內可能讓你必須立即反應的狀況，都算危險因子：
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <div style={{
+                  background: 'rgba(255, 165, 0, 0.1)',
+                  padding: '15px',
+                  borderRadius: '8px',
+                  borderLeft: '4px solid #ffa500'
+                }}>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#ffa500', marginBottom: '8px' }}>
+                    🚗 車輛行為
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                    <li>車輛突然<strong>逼車</strong>、<strong>切入</strong>你的路線</li>
+                    <li>路邊停車突然<strong>開門</strong></li>
+                    <li>對向車輛可能<strong>跨線</strong>行駛</li>
+                    <li>前方車輛<strong>急煞</strong>或<strong>臨停</strong></li>
+                  </ul>
+                </div>
+
+                <div style={{
+                  background: 'rgba(255, 68, 68, 0.1)',
+                  padding: '15px',
+                  borderRadius: '8px',
+                  borderLeft: '4px solid #ff4444'
+                }}>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#ff4444', marginBottom: '8px' }}>
+                    🚶 行人因素
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                    <li>行人突然<strong>穿越道路</strong></li>
+                    <li>路邊行人可能<strong>闖入</strong>車道</li>
+                    <li>人群聚集處的<strong>潛在風險</strong></li>
+                  </ul>
+                </div>
+
+                <div style={{
+                  background: 'rgba(68, 255, 68, 0.1)',
+                  padding: '15px',
+                  borderRadius: '8px',
+                  borderLeft: '4px solid #44ff44'
+                }}>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#44ff44', marginBottom: '8px' }}>
+                    ⚡ 需立即反應的狀況
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                    <li>必須<strong>急煞</strong>才能避免碰撞</li>
+                    <li>必須<strong>急閃</strong>才能避開障礙</li>
+                    <li>任何讓你必須<strong>緊急改變路線</strong>的情況</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div style={{
+                marginTop: '20px',
+                padding: '15px',
+                background: 'rgba(74, 144, 217, 0.1)',
+                borderRadius: '8px',
+                border: '2px solid rgba(74, 144, 217, 0.3)'
+              }}>
+                <div style={{ fontSize: '14px', color: '#4a90d9', fontWeight: 'bold', marginBottom: '8px' }}>
+                  💡 判斷原則
+                </div>
+                <p style={{ margin: 0, fontSize: '13px', lineHeight: '1.6' }}>
+                  如果你看到某個狀況，心裡想「這可能需要我減速或閃避」，那就是危險因子！
+                  <strong style={{ color: '#44ff44' }}>寧可提早發現，也不要錯過。</strong>
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 2: 計分方式 */}
+          {activeTab === 2 && (
+            <div>
+              <div style={{
+                background: 'rgba(0, 0, 0, 0.3)',
+                borderRadius: '10px',
+                padding: '25px',
+                marginBottom: '15px'
+              }}>
+                <h2 style={{ color: '#4a90d9', marginTop: 0, marginBottom: '20px', fontSize: '20px' }}>
+                  💯 計分方式
+                </h2>
+
+                <div style={{
+                  background: 'rgba(255, 215, 0, 0.1)',
+                  padding: '20px',
+                  borderRadius: '8px',
+                  border: '2px solid #ffd700',
+                  textAlign: 'center',
+                  marginBottom: '20px'
+                }}>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#ffd700' }}>
+                    總分：100 分
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#ddd', marginTop: '5px' }}>
+                    依反應速度和準確度計算
+                  </div>
+                </div>
+
+                <h3 style={{ color: '#4a90d9', fontSize: '16px', marginBottom: '12px' }}>
+                  每個危險因子計分：
+                </h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+                  <div style={{
+                    background: 'linear-gradient(90deg, rgba(68, 255, 68, 0.2), transparent)',
+                    padding: '15px',
+                    borderRadius: '8px',
+                    borderLeft: '4px solid #44ff44',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#44ff44' }}>
+                        ⚡ 越早發現（減速前）
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#ddd', marginTop: '4px' }}>
+                        在主角減速／煞車前就點擊
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#44ff44' }}>
+                      12.5
+                    </div>
+                  </div>
+
+                  <div style={{
+                    background: 'linear-gradient(90deg, rgba(255, 165, 0, 0.2), transparent)',
+                    padding: '15px',
+                    borderRadius: '8px',
+                    borderLeft: '4px solid #ffa500',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#ffa500' }}>
+                        🐢 適中反應（減速後）
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#ddd', marginTop: '4px' }}>
+                        在主角減速／煞車後才點擊
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffa500' }}>
+                      6.25
+                    </div>
+                  </div>
+
+                  <div style={{
+                    background: 'linear-gradient(90deg, rgba(255, 68, 68, 0.2), transparent)',
+                    padding: '15px',
+                    borderRadius: '8px',
+                    borderLeft: '4px solid #ff4444',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#ff4444' }}>
+                        ❌ 完全沒發現
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#ddd', marginTop: '4px' }}>
+                        超過最晚時間仍未點擊
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#ff4444' }}>
+                      0
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{
+                  background: 'rgba(74, 144, 217, 0.1)',
+                  padding: '15px',
+                  borderRadius: '8px',
+                  border: '2px solid rgba(74, 144, 217, 0.3)'
+                }}>
+                  <div style={{ fontSize: '14px', color: '#4a90d9', fontWeight: 'bold', marginBottom: '8px' }}>
+                    📊 評分標準
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', lineHeight: '1.6' }}>
+                    <li><strong style={{ color: '#ffd700' }}>S 級</strong> (90-100 分)：超強危險預判能力</li>
+                    <li><strong style={{ color: '#44ff44' }}>A 級</strong> (80-89 分)：優秀的反應速度</li>
+                    <li><strong style={{ color: '#88ff88' }}>B 級</strong> (70-79 分)：良好的觀察力</li>
+                    <li><strong style={{ color: '#ffa500' }}>C 級</strong> (60-69 分)：需要加強</li>
+                    <li><strong style={{ color: '#ff4444' }}>D 級</strong> (50-59 分)：有待改進</li>
+                    <li><strong style={{ color: '#ff4444' }}>F 級</strong> (&lt;50 分)：建議重新訓練</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 底部按鈕 */}
+        <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+          {onClose && (
+            <button
+              onClick={onClose}
+              style={{
+                flex: 1,
+                padding: '15px',
+                fontSize: '16px',
+                fontFamily: 'monospace',
+                fontWeight: 'bold',
+                color: '#fff',
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+              }}
+            >
+              關閉說明
+            </button>
+          )}
+
+          {showStartButton && onStart && (
+            <button
+              onClick={onStart}
+              style={{
+                flex: 2,
+                padding: '15px',
+                fontSize: '20px',
+                fontFamily: 'monospace',
+                fontWeight: 'bold',
+                color: '#fff',
+                background: 'linear-gradient(135deg, #4a90d9 0%, #357abd 100%)',
+                border: 'none',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                boxShadow: '0 6px 20px rgba(74, 144, 217, 0.5)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.03)'
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(74, 144, 217, 0.7)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(74, 144, 217, 0.5)'
+              }}
+            >
+              🚀 開始訓練
+            </button>
+          )}
+        </div>
+      </div>
+
+      <style>
+        {`
+          @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+          }
+        `}
+      </style>
+    </div>
+  )
+}
+
+/**
+ * 遊戲開始畫面（使用 InstructionsPanel）
+ */
+function StartScreen({ onStart }: { onStart: () => void }) {
+  return <InstructionsPanel showStartButton onStart={onStart} />
 }
