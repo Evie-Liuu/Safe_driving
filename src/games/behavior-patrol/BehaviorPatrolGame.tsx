@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { GameProps } from '../types';
 import { GameHUD, QuizModal, FeedbackPanel, ResultScreen, PatrolScene } from './components';
 import { useGameState, useTimer } from './hooks';
@@ -188,13 +188,13 @@ export function BehaviorPatrolGame({ onExit }: GameProps) {
       )}
 
       {/* 結果畫面 */}
-      {(status === 'won' || status === 'lost') && (
+      {/* {(status === 'won' || status === 'lost') && (
         <ResultScreen
           progress={{ ...progress, timeRemaining, score, foundCount }}
           onRestart={handleRestart}
           onExit={onExit}
         />
-      )}
+      )} */}
     </div>
   );
 }

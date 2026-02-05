@@ -5,9 +5,10 @@ import { gameRegistry } from './games';
 function App(): React.ReactElement | null {
   const [currentGameId, setCurrentGameId] = useState<string | null>(null);
 
-  useEffect(() => {
-    setCurrentGameId('safe-driving');
-  }, []);
+  // useEffect(() => {
+  //   setCurrentGameId('safe-driving');
+  // }, []);
+
   // 主選單
   if (!currentGameId) {
     return (

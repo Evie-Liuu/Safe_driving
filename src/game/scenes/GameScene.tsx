@@ -288,7 +288,7 @@ export function GameScene() {
     }
   }, [activeDanger, playerPosition.x, playerPosition.z])
 
-  // Handle screen click for danger identification
+  // TODO: Handle screen click for danger identification
   const handleScreenClick = useCallback(() => {
     // Ignore clicks if disabled (exceeded wrong click limit)
     if (isClickDisabled) return
@@ -771,7 +771,7 @@ export function GameScene() {
       </Canvas>
 
       {/* 全螢幕點擊區域 - 用於辨識危險 */}
-      {/* <div
+      <div
         style={{
           position: 'absolute',
           top: 0,
@@ -782,7 +782,7 @@ export function GameScene() {
           zIndex: 10
         }}
         onClick={handleScreenClick}
-      /> */}
+      />
 
       {/* 剩餘點擊次數顯示 */}
       <div style={{
