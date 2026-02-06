@@ -18,6 +18,19 @@ export {
     type ActorLifecycleConfig
 } from './ActorLifecycleManager'
 
+export {
+    ActorPool,
+    type PooledActor,
+    type PoolStats,
+    type ActorPoolConfig
+} from './ActorPool'
+
 export { ChunkLoader } from './ChunkLoader'
 export { LODSystem } from './LODSystem'
-export { PerformanceMonitor } from './PerformanceMonitor'
+export { PerformanceMonitor, type PerformanceStats } from './PerformanceMonitor'
+
+export {
+    PerformanceIntegration,
+    type ExtendedPerformanceStats,
+    type PerformanceRecommendation
+} from './PerformanceIntegration'
