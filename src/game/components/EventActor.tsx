@@ -66,6 +66,7 @@ interface EventActorProps extends EventActorType {
     eventId?: string // Event this actor belongs to
     onComplete?: (eventId: string, actorId: string) => void // Notify when actor completes its path
     onReady?: (actorId: string) => void
+    onClick?: (eventId: string, actorId: string) => void // Notify when actor is clicked
     initialLightAction?: LightConfig
     initialAnimationAction?: AnimationConfig
     enableDebug?: boolean
@@ -89,6 +90,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
             eventId,
             onComplete,
             onReady,
+            onClick,
             initialLightAction,
             initialAnimationAction,
             enableDebug = false
@@ -632,9 +634,29 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
 
         // Always render the group so ref is available
         // Model is added to group in useEffect, not rendered here
+        // Handle click on actor
+        const handleClick = (e: { stopPropagation: () => void }) => {
+            e.stopPropagation()
+            if (onClick && eventId) {
+                onClick(eventId, id)
+            }
+        }
+
         return (
             <>
-                <group ref={groupRef} position={initialPosition} rotation={rotationEuler} scale={scale}>
+                <group
+                    ref={groupRef}
+                    position={initialPosition}
+                    rotation={rotationEuler}
+                    scale={scale}
+                    onClick={handleClick}
+                    onPointerOver={() => {
+                        document.body.style.cursor = 'pointer'
+                    }}
+                    onPointerOut={() => {
+                        document.body.style.cursor = 'auto'
+                    }}
+                >
                     {/* Debug visualization */}
                     {enableDebug && (
                         <>

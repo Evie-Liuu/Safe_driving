@@ -44,7 +44,7 @@ export function GameScene() {
   }>>([])
   const vehicleIdCounter = useRef(0)
 
-  const debugflag = useRef(true)
+  const debugflag = useRef(false)
 
   // Event system
   const eventManagerRef = useRef<EventManager | null>(null)
@@ -327,8 +327,8 @@ export function GameScene() {
     }
   }, [activeDanger, playerPosition.x, playerPosition.z])
 
-  // TODO: Handle screen click for danger identification
-  const handleScreenClick = useCallback(() => {
+  // Handle click on model for danger identification
+  const handleModelClick = useCallback((clickedEventId: string, _actorId: string) => {
     // Ignore clicks if disabled (exceeded wrong click limit)
     if (isClickDisabled) return
 
@@ -338,8 +338,9 @@ export function GameScene() {
     // Clear any existing judgment timer
     if (judgmentTimerRef.current) clearTimeout(judgmentTimerRef.current)
 
-    if (activeDanger && !passedEventIds.current.has(activeDanger.eventId)) {
-      // CORRECT CLICK - There's an active danger
+    // Check if clicked model belongs to the active danger event
+    if (activeDanger && clickedEventId === activeDanger.eventId && !passedEventIds.current.has(activeDanger.eventId)) {
+      // CORRECT CLICK - Clicked the correct danger model
       dangerClickedRef.current = true
 
       // Track that player clicked this event (for MISS judgment on completion)
@@ -379,10 +380,12 @@ export function GameScene() {
       recordScore(eventId, eventName, judgment)
       setActiveDanger(null)
 
+      console.log(`[GameScene] ✅ Correct model clicked: ${clickedEventId}, judgment: ${judgment}`)
+
       // Clear judgment display after 2s
       judgmentTimerRef.current = setTimeout(() => setJudgmentResult(null), 2000)
     } else {
-      // WRONG CLICK - No danger present
+      // WRONG CLICK - Clicked wrong model or no danger present
       const newWrongCount = wrongClickCount + 1
       setWrongClickCount(newWrongCount)
 
@@ -390,7 +393,8 @@ export function GameScene() {
       setJudgmentResult({ judgment: DangerClickJudgment.WRONG, eventName: `剩餘 ${MAX_WRONG_CLICKS - newWrongCount} 次` })
       recordScore('', '', DangerClickJudgment.WRONG)
 
-      // TODO: 遊戲結束
+      console.log(`[GameScene] ❌ Wrong model clicked: ${clickedEventId}, active danger: ${activeDanger?.eventId || 'none'}`)
+
       if (newWrongCount >= MAX_WRONG_CLICKS) {
         // Exceeded limit - disable clicks temporarily
         setIsClickDisabled(true)
@@ -411,8 +415,12 @@ export function GameScene() {
     }
   }, [activeDanger, wrongClickCount, isClickDisabled, playerPosition.x, playerPosition.z])
 
-  // Keep old function name for compatibility
-  const handleDangerClick = handleScreenClick
+  // Keep old function name for compatibility (for DangerMarker)
+  const handleDangerClick = useCallback(() => {
+    if (activeDanger) {
+      handleModelClick(activeDanger.eventId, '')
+    }
+  }, [activeDanger, handleModelClick])
 
   // Preload all assets (animations + models)
   useEffect(() => {
@@ -777,6 +785,7 @@ export function GameScene() {
             {...actor}
             onReady={handleActorReady}
             onComplete={handleActorPathComplete}
+            onClick={handleModelClick}
             enableDebug={true}
           />
         ))}
@@ -834,20 +843,7 @@ export function GameScene() {
         <OrbitControls enableDamping target={[playerPosition.x, playerPosition.y, playerPosition.z]} />
       </Canvas>
 
-      {/* 全螢幕點擊區域 - 用於辨識危險 */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          cursor: isClickDisabled ? 'not-allowed' : 'pointer',
-          zIndex: 10,
-          display: debugflag.current ? 'none' : 'block'
-        }}
-        onClick={handleScreenClick}
-      />
+      {/* 點擊已改為直接點擊3D模型，移除全螢幕點擊區域 */}
 
       {/* 剩餘點擊次數顯示 */}
       <div style={{
@@ -1706,7 +1702,7 @@ function ScorePanel({
                     {/* 事件卡片 - 左右佈局 */}
                     <div className="flex">
                       {/* 左側：事件資訊 */}
-                      <div className="flex-shrink-0 w-56 p-4 border-r border-slate-700/30">
+                      <div className="flex-shrink-0 w-68 p-4 border-r border-slate-700/30">
                         <div className="flex items-start gap-3">
                           {/* 序號 */}
                           <div className="w-6 h-6 rounded-full bg-slate-700/50 flex items-center justify-center text-xs font-medium text-slate-400 flex-shrink-0 mt-0.5">
