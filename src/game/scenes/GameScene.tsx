@@ -843,8 +843,6 @@ export function GameScene() {
         <OrbitControls enableDamping target={[playerPosition.x, playerPosition.y, playerPosition.z]} />
       </Canvas>
 
-      {/* 點擊已改為直接點擊3D模型，移除全螢幕點擊區域 */}
-
       {/* 剩餘點擊次數顯示 */}
       <div style={{
         position: 'absolute',
