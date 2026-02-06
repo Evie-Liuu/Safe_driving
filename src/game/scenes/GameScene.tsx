@@ -1519,7 +1519,8 @@ function JudgmentDisplay({
 }
 
 /**
- * 結算面板
+ * 結算面板 - 專業遊戲風格設計
+ * 包含完整的事件反應結果列表與反饋
  */
 function ScorePanel({
   scoreHistory,
@@ -1532,177 +1533,250 @@ function ScorePanel({
   maxMissTolerance: number
   onRestart: () => void
 }) {
-  const totalScore = scoreHistory.reduce((sum, item) => sum + item.score, 0)
-  const maxPossibleScore = scoreHistory.length * 12.5
+  // 過濾出有效事件（排除空名稱的 WRONG 點擊）
+  const validEvents = scoreHistory.filter(s => s.eventName !== '')
+  const wrongClicks = scoreHistory.filter(s => s.judgment === DangerClickJudgment.WRONG)
+
+  const totalScore = validEvents.reduce((sum, item) => sum + item.score, 0)
+  const maxPossibleScore = validEvents.length * 12.5
   const percentage = maxPossibleScore > 0 ? Math.round((totalScore / maxPossibleScore) * 100) : 0
 
-  const fastCount = scoreHistory.filter(s => s.judgment === DangerClickJudgment.FAST).length
-  const slowCount = scoreHistory.filter(s => s.judgment === DangerClickJudgment.SLOW).length
-  const wrongCount = scoreHistory.filter(s => s.judgment === DangerClickJudgment.WRONG).length
-  const missCountInHistory = scoreHistory.filter(s => s.judgment === DangerClickJudgment.MISS).length
+  const fastCount = validEvents.filter(s => s.judgment === DangerClickJudgment.FAST).length
+  const slowCount = validEvents.filter(s => s.judgment === DangerClickJudgment.SLOW).length
+  const missCountInHistory = validEvents.filter(s => s.judgment === DangerClickJudgment.MISS).length
+  const wrongCount = wrongClicks.length
 
-  // Determine grade based on percentage
+  // 判定等級
   let grade = 'F'
-  let gradeColor = '#ff4444'
-  if (percentage >= 90) { grade = 'S'; gradeColor = '#ffd700' }
-  else if (percentage >= 80) { grade = 'A'; gradeColor = '#44ff44' }
-  else if (percentage >= 70) { grade = 'B'; gradeColor = '#88ff88' }
-  else if (percentage >= 60) { grade = 'C'; gradeColor = '#ffa500' }
-  else if (percentage >= 50) { grade = 'D'; gradeColor = '#ff8844' }
+  let gradeColor = '#ef4444'
+  let gradeBg = 'rgba(239, 68, 68, 0.15)'
+  if (percentage >= 90) { grade = 'S'; gradeColor = '#fbbf24'; gradeBg = 'rgba(251, 191, 36, 0.15)' }
+  else if (percentage >= 80) { grade = 'A'; gradeColor = '#22c55e'; gradeBg = 'rgba(34, 197, 94, 0.15)' }
+  else if (percentage >= 70) { grade = 'B'; gradeColor = '#4ade80'; gradeBg = 'rgba(74, 222, 128, 0.15)' }
+  else if (percentage >= 60) { grade = 'C'; gradeColor = '#fb923c'; gradeBg = 'rgba(251, 146, 60, 0.15)' }
+  else if (percentage >= 50) { grade = 'D'; gradeColor = '#f97316'; gradeBg = 'rgba(249, 115, 22, 0.15)' }
+
+  // 取得判定對應的樣式配置
+  const getJudgmentConfig = (judgment: DangerClickJudgment) => {
+    switch (judgment) {
+      case DangerClickJudgment.FAST:
+        return {
+          label: 'FAST',
+          color: '#22c55e',
+          bgColor: 'rgba(34, 197, 94, 0.15)',
+          borderColor: 'rgba(34, 197, 94, 0.3)',
+          feedback: '反應迅速，優秀的危險識別！'
+        }
+      case DangerClickJudgment.SLOW:
+        return {
+          label: 'SLOW',
+          color: '#fb923c',
+          bgColor: 'rgba(251, 146, 60, 0.15)',
+          borderColor: 'rgba(251, 146, 60, 0.3)',
+          feedback: '反應稍慢，需加強警覺'
+        }
+      case DangerClickJudgment.MISS:
+        return {
+          label: 'MISS',
+          color: '#ef4444',
+          bgColor: 'rgba(239, 68, 68, 0.15)',
+          borderColor: 'rgba(239, 68, 68, 0.3)',
+          feedback: '未能識別危險，請注意觀察'
+        }
+      default:
+        return {
+          label: 'WRONG',
+          color: '#a855f7',
+          bgColor: 'rgba(168, 85, 247, 0.15)',
+          borderColor: 'rgba(168, 85, 247, 0.3)',
+          feedback: '誤判，無危險情況'
+        }
+    }
+  }
 
   return (
-    <div style={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.85)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 200
-    }}>
-      <div style={{
-        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-        borderRadius: '20px',
-        padding: '40px',
-        minWidth: '400px',
-        maxWidth: '500px',
-        boxShadow: '0 0 40px rgba(0, 100, 255, 0.3)',
-        border: '2px solid rgba(100, 150, 255, 0.3)'
-      }}>
-        <h1 style={{
-          textAlign: 'center',
-          fontSize: '32px',
-          fontFamily: 'monospace',
-          color: '#fff',
-          marginBottom: '30px',
-          textShadow: '0 0 10px rgba(100, 150, 255, 0.5)'
-        }}>
-          🏁 遊戲結束
-        </h1>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+      style={{ background: 'radial-gradient(ellipse at center, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.98) 100%)' }}>
 
-        {/* Grade */}
-        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <div style={{
-            fontSize: '80px',
-            fontWeight: 'bold',
-            fontFamily: 'monospace',
-            color: gradeColor,
-            textShadow: `0 0 30px ${gradeColor}`
-          }}>
-            {grade}
-          </div>
-          <div style={{
-            fontSize: '24px',
-            color: '#aaa',
-            fontFamily: 'monospace'
-          }}>
-            {percentage}%
-          </div>
+      {/* 主面板容器 */}
+      <div className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-2xl"
+        style={{
+          background: 'linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%)',
+          // boxShadow: '0 0 60px rgba(59, 130, 246, 0.2), 0 0 120px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+          border: '1px solid rgba(71, 85, 105, 0.4)'
+        }}>
+
+        {/* 頂部裝飾線 */}
+        <div className="h-1 w-full" style={{
+          background: `linear-gradient(90deg, transparent 0%, ${gradeColor} 50%, transparent 100%)`
+        }} />
+
+        {/* 標題區 */}
+        <div className="px-8 pt-6 pb-4 text-center border-b border-slate-700/50">
+          <h1 className="text-2xl font-bold tracking-wide text-white mb-1">
+            行車結束
+          </h1>
+          <p className="text-sm text-slate-400">駕駛安全評估報告</p>
         </div>
 
-        {/* Score breakdown */}
-        <div style={{
-          background: 'rgba(0, 0, 0, 0.3)',
-          borderRadius: '10px',
-          padding: '20px',
-          marginBottom: '20px'
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            fontSize: '18px',
-            fontFamily: 'monospace',
-            color: '#fff',
-            marginBottom: '15px'
-          }}>
-            <span>總分</span>
-            <span style={{ color: '#ffd700' }}>{totalScore.toFixed(1)} 分</span>
+        {/* 成績區 - 等級與分數 */}
+        <div className="px-8 py-6 flex items-center justify-center gap-8 border-b border-slate-700/50">
+          {/* 等級圓環 */}
+          <div className="relative flex items-center justify-center w-28 h-28 rounded-full"
+            style={{
+              background: gradeBg,
+              boxShadow: `0 0 30px ${gradeColor}40, inset 0 0 20px ${gradeColor}20`
+            }}>
+            <div className="absolute inset-2 rounded-full border-4"
+              style={{ borderColor: `${gradeColor}60` }} />
+            <span className="text-5xl font-black" style={{ color: gradeColor, textShadow: `0 0 20px ${gradeColor}80` }}>
+              {grade}
+            </span>
           </div>
 
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '15px' }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              fontSize: '14px',
-              fontFamily: 'monospace',
-              color: '#44ff44',
-              marginBottom: '8px'
-            }}>
-              <span>FAST ({fastCount})</span>
-              <span>+{(fastCount * 12.5).toFixed(1)}</span>
+          {/* 分數統計 */}
+          <div className="flex flex-col gap-3">
+            <div className="flex items-baseline gap-2">
+              <span className="text-4xl font-bold text-white">{totalScore.toFixed(1)}</span>
+              <span className="text-lg text-slate-400">/ {maxPossibleScore.toFixed(1)} 分</span>
             </div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              fontSize: '14px',
-              fontFamily: 'monospace',
-              color: '#ffa500',
-              marginBottom: '8px'
-            }}>
-              <span>SLOW ({slowCount})</span>
-              <span>+{(slowCount * 6.25).toFixed(1)}</span>
-            </div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              fontSize: '14px',
-              fontFamily: 'monospace',
-              color: '#ff4444'
-            }}>
-              <span>MISS ({missCountInHistory})</span>
-              <span>+0</span>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-2 rounded-full bg-slate-700/50 overflow-hidden" style={{ width: '180px' }}>
+                <div className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${percentage}%`,
+                    background: `linear-gradient(90deg, ${gradeColor}80, ${gradeColor})`
+                  }} />
+              </div>
+              <span className="text-sm font-medium" style={{ color: gradeColor }}>{percentage}%</span>
             </div>
           </div>
         </div>
 
-        {/* Wrong tolerance warning */}
+        {/* 統計概覽 */}
+        <div className="px-8 py-4 grid grid-cols-4 gap-3 border-b border-slate-700/50">
+          {[
+            { label: 'FAST', count: fastCount, color: '#22c55e', score: fastCount * 12.5 },
+            { label: 'SLOW', count: slowCount, color: '#fb923c', score: slowCount * 6.25 },
+            { label: 'MISS', count: missCountInHistory, color: '#ef4444', score: 0 },
+            { label: 'WRONG', count: wrongCount, color: '#a855f7', score: 0 }
+          ].map((stat) => (
+            <div key={stat.label} className="flex flex-col items-center p-3 rounded-xl"
+              style={{ background: `${stat.color}10`, border: `1px solid ${stat.color}30` }}>
+              <span className="text-xs font-semibold tracking-wider" style={{ color: stat.color }}>{stat.label}</span>
+              <span className="text-2xl font-bold text-white mt-1">{stat.count}</span>
+              <span className="text-xs text-slate-400">+{stat.score.toFixed(1)}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* 事件詳細列表 */}
+        <div className="px-8 py-4">
+          <h2 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            事件反應詳情
+          </h2>
+
+          <div className="max-h-48 overflow-y-auto pr-2 space-y-2 custom-scrollbar">
+            {validEvents.length === 0 ? (
+              <div className="text-center py-8 text-slate-500">
+                <p>本次行程無風險事件</p>
+              </div>
+            ) : (
+              validEvents.map((event, index) => {
+                const config = getJudgmentConfig(event.judgment)
+                return (
+                  <div key={index} className="flex items-center gap-3 p-3 rounded-xl transition-colors hover:bg-slate-700/20"
+                    style={{
+                      background: config.bgColor,
+                      border: `1px solid ${config.borderColor}`
+                    }}>
+                    {/* 序號 */}
+                    <div className="w-6 h-6 rounded-full bg-slate-700/50 flex items-center justify-center text-xs font-medium text-slate-400">
+                      {index + 1}
+                    </div>
+
+                    {/* 事件資訊 */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-white truncate">{event.eventName}</span>
+                      </div>
+                      <p className="text-xs mt-0.5" style={{ color: `${config.color}cc` }}>{config.feedback}</p>
+                    </div>
+
+                    {/* 判定標籤 */}
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-bold"
+                        style={{
+                          color: config.color,
+                          background: `${config.color}20`,
+                          border: `1px solid ${config.color}40`
+                        }}>
+                        {config.label}
+                      </span>
+                      <span className="text-sm font-semibold w-14 text-right"
+                        style={{ color: event.score > 0 ? config.color : '#64748b' }}>
+                        +{event.score.toFixed(1)}
+                      </span>
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
+        </div>
+
+        {/* 誤點警告 */}
         {wrongCount > 0 && (
-          <div style={{
-            background: 'rgba(255, 68, 68, 0.2)',
-            borderRadius: '8px',
-            padding: '10px 15px',
-            marginBottom: '20px',
-            fontSize: '14px',
-            fontFamily: 'monospace',
-            color: '#ff6666',
-            textAlign: 'center'
-          }}>
-            WRONG 次數: {wrongCount} / {maxMissTolerance}
+          <div className="mx-8 mb-4 p-3 rounded-xl flex items-center gap-3"
+            style={{
+              background: 'rgba(168, 85, 247, 0.1)',
+              border: '1px solid rgba(168, 85, 247, 0.3)'
+            }}>
+            <svg className="w-5 h-5 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-purple-300">誤點警告</p>
+              <p className="text-xs text-purple-400/80">誤點 {wrongCount} 次（容許上限 {maxMissTolerance} 次）</p>
+            </div>
           </div>
         )}
 
-        {/* Restart button */}
-        <button
-          onClick={onRestart}
-          style={{
-            width: '100%',
-            padding: '15px',
-            fontSize: '18px',
-            fontFamily: 'monospace',
-            fontWeight: 'bold',
-            color: '#fff',
-            background: 'linear-gradient(135deg, #4a90d9 0%, #357abd 100%)',
-            border: 'none',
-            borderRadius: '10px',
-            cursor: 'pointer',
-            boxShadow: '0 4px 15px rgba(74, 144, 217, 0.4)',
-            transition: 'transform 0.2s, box-shadow 0.2s'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.02)'
-            e.currentTarget.style.boxShadow = '0 6px 20px rgba(74, 144, 217, 0.6)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)'
-            e.currentTarget.style.boxShadow = '0 4px 15px rgba(74, 144, 217, 0.4)'
-          }}
-        >
-          重新開始
-        </button>
+        {/* 底部操作區 */}
+        <div className="px-8 pb-6 pt-2">
+          <button
+            onClick={onRestart}
+            className="w-full py-4 rounded-xl font-semibold text-white transition-all duration-200 cursor-pointer
+                       hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
+            style={{
+              background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+              boxShadow: '0 4px 20px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+            }}>
+            重新開始
+          </button>
+        </div>
       </div>
+
+      {/* 自定義滾動條樣式 */}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(51, 65, 85, 0.3);
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(100, 116, 139, 0.5);
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(100, 116, 139, 0.7);
+        }
+      `}</style>
     </div>
   )
 }

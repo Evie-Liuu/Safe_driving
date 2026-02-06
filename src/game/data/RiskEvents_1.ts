@@ -18,11 +18,11 @@ export const cruisePoints: [number, number, number][] = [
     // [10, 0, 0],  //E點
     // [10, 0, -60],
     // [10, 0, -106],
-    [17, 0, -110], //B點右轉
-    [52, 0, -110],
-    [100.46, 0, -109],
-    [107.8, 0, -108.25], //C點右轉
-    [110.10, 0, -106.56], //C點右轉
+    // [17, 0, -110], //B點右轉
+    // [52, 0, -110],
+    // [100.46, 0, -109],
+    // [107.8, 0, -108.25], //C點右轉
+    // [110.10, 0, -106.56], //C點右轉
     [111.27, 0, -100.99],
     [109.1, 0, -66.4],
     [109.1, 0, 8],
@@ -457,7 +457,7 @@ export const events: GameEvent[] = [
             {
                 actorId: 'intersection_pedestrian_1',
                 type: ActionType.ANIMATION,
-                name: 'Female_Walking_Animation',
+                name: 'Female_Walking_Remain_Animation',
                 loop: true,
                 time: 0
             },
