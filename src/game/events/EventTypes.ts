@@ -198,6 +198,7 @@ export interface RequiredPlayerResponse {
 export interface CompletionCriteria {
     playerPassed?: boolean // Player has moved away from event after approaching
     requireActorPathComplete?: boolean // Require all actor movement paths to be completed
+    duration?: number // Event must be active for at least this many seconds
     minSpeed?: number
     maxSpeed?: number
     allActionsCompleted?: boolean

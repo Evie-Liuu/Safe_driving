@@ -18,12 +18,12 @@ export const cruisePoints: [number, number, number][] = [
     // [10, 0, 0],  //E點
     // [10, 0, -60],
     // [10, 0, -106],
-    [17, 0, -110], //B點右轉
-    [52, 0, -110],
-    [100.46, 0, -109],
-    [107.8, 0, -108.25], //C點右轉
-    [110.10, 0, -106.56], //C點右轉
-    [111.27, 0, -100.99],
+    // [17, 0, -110], //B點右轉
+    // [52, 0, -110],
+    // [100.46, 0, -109],
+    // [107.8, 0, -108.25], //C點右轉
+    // [110.10, 0, -106.56], //C點右轉
+    // [111.27, 0, -100.99],
     [109.1, 0, -66.4],
     [109.1, 0, 8],
     [111.34, 0, 46.56], //坑洞旁
@@ -81,7 +81,7 @@ export const events: GameEvent[] = [
                 ],
                 speed: 12,
                 time: 0,
-                duration: 10
+                duration: 8
             }
         ],
         requiredPlayerResponse: {
@@ -163,7 +163,7 @@ export const events: GameEvent[] = [
             {
                 actorId: 'driver_1',
                 type: ActionType.ANIMATION,
-                name: 'Take 001.008',
+                name: 'Male_OpenCarLeftDoor_Inside_Animation',
                 loop: false,
                 time: 0
             }
@@ -673,7 +673,7 @@ export const events: GameEvent[] = [
                 ],
                 speed: 5,
                 time: 0,
-                duration: 3
+                duration: 5
             },
             {
                 actorId: 'bicycle_1',
@@ -685,7 +685,7 @@ export const events: GameEvent[] = [
             {
                 actorId: 'rider_1',
                 type: ActionType.ANIMATION,
-                name: 'Take 001',
+                name: 'Male_Riding_Bicycle_Animation',
                 loop: true,
                 time: 0
             }

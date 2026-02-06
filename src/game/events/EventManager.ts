@@ -199,7 +199,7 @@ export class EventManager {
             context.playerState = { ...playerState }
 
             // Check completion criteria
-            if (this.checkCompletionCriteria(event, context, playerState)) {
+            if (this.checkCompletionCriteria(event, context, playerState, currentTime)) {
                 eventsToComplete.push(eventId)
             }
 
@@ -225,7 +225,8 @@ export class EventManager {
     private checkCompletionCriteria(
         event: GameEvent,
         context: EventContext,
-        playerState: PlayerState
+        playerState: PlayerState,
+        currentTime: number
     ): boolean {
         if (!event.completionCriteria) {
             // Default: complete when all actions are done
@@ -251,8 +252,15 @@ export class EventManager {
                 context.actorPathsCompleted!.has(action.actorId)
             )
 
+            // Also check if the duration of movement actions has passed
+            const maxDuration = Math.max(...movementActions.map(a => (a.time || 0) + (a.duration || 0)), 0)
+            const elapsed = currentTime - context.startTime
+            const durationMet = elapsed >= maxDuration
+
             checks.actorPathsComplete = pathsComplete
-            if (!pathsComplete) {
+            checks.durationMet = durationMet
+
+            if (!pathsComplete || !durationMet) {
                 allCriteriaMet = false
             }
         }
@@ -624,11 +632,11 @@ export class EventManager {
                     eventId: event.id,
                     eventName: event.name,
                     triggerPosition: event.trigger.position!,
-                    shouldBrake: config.actions.includes(PrepareActionType.DECELERATE) && distToTrigger <= (event.prepareConfig.radius || 0),
-                    shouldStop: config.actions.includes(PrepareActionType.STOP) && distToTrigger <= (event.prepareConfig.radius || 0),
+                    shouldBrake: config.actions.includes(PrepareActionType.DECELERATE) && distToTrigger <= (config.radius || 0),
+                    shouldStop: config.actions.includes(PrepareActionType.STOP) && distToTrigger <= (config.radius || 0),
                     stopDuration: config.stopDuration ?? 3,
                     targetSpeedFactor: config.targetSpeedFactor ?? 0.5,
-                    laneOffset: (isLaneSwitch && distToTrigger <= (event.prepareConfig.radius || 0)) ? (config.laneOffset ?? -1.5) : 0,
+                    laneOffset: (isLaneSwitch && distToTrigger <= (config.radius || 0)) ? (config.laneOffset ?? -1.5) : 0,
                     clickDeadline: config.clickDeadline ?? 5,
                     // status: PrepareZoneStatus.INSIDE_TRIGGER
                     status
