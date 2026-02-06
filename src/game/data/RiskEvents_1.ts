@@ -104,7 +104,11 @@ export const events: GameEvent[] = [
             laneOffset: -2.5,
             offsetHoldDistance: 5
         },
-        spawnRadius: 80
+        spawnRadius: 80,
+        feedback: {
+            hazard: '減速偏移/可能停住',
+            safety: '鬆油門、留右側距離'
+        }
     },
     {
         id: 'parked_car_door_opening',
@@ -708,6 +712,10 @@ export const events: GameEvent[] = [
             actions: [PrepareActionType.DECELERATE],
             targetSpeedFactor: 0.2
         },
-        spawnRadius: 100
+        spawnRadius: 100,
+        feedback: {
+            hazard: '自行車突然橫移靠近',
+            safety: '減速、拉側向距離'
+        }
     },
 ]

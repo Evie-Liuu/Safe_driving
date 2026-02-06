@@ -104,6 +104,7 @@ export function GameScene() {
   const SCORE_MISS = 0
   const MAX_MISS_TOLERANCE = 3
   const [scoreHistory, setScoreHistory] = useState<Array<{
+    eventId: string
     eventName: string
     judgment: DangerClickJudgment
     score: number
@@ -139,7 +140,7 @@ export function GameScene() {
   }, [])
 
   // Record score for a judgment
-  const recordScore = useCallback((eventName: string, judgment: DangerClickJudgment) => {
+  const recordScore = useCallback((eventId: string, eventName: string, judgment: DangerClickJudgment) => {
     let score = SCORE_MISS
     if (judgment === DangerClickJudgment.FAST) {
       score = SCORE_FAST
@@ -151,7 +152,7 @@ export function GameScene() {
     // WRONG clicks don't affect score history
 
     // if (judgment !== DangerClickJudgment.WRONG) {
-    setScoreHistory(prev => [...prev, { eventName, judgment, score }])
+    setScoreHistory(prev => [...prev, { eventId, eventName, judgment, score }])
     // }
   }, [])
 
@@ -307,10 +308,11 @@ export function GameScene() {
           const missThreshold = prepareRadius + 15 // Player must be well beyond prepare zone
 
           if (distanceFromEvent > missThreshold) {
+            const eventId = activeDanger.eventId
             const name = activeDanger.eventName
-            console.log(`[GameScene] ❌ Player passed event ${activeDanger.eventId} without triggering (distance: ${distanceFromEvent.toFixed(1)}m) - MISS`)
+            console.log(`[GameScene] ❌ Player passed event ${eventId} without triggering (distance: ${distanceFromEvent.toFixed(1)}m) - MISS`)
             setJudgmentResult({ judgment: DangerClickJudgment.MISS, eventName: name })
-            recordScore(name, DangerClickJudgment.MISS)
+            recordScore(eventId, name, DangerClickJudgment.MISS)
             setActiveDanger(null)
             if (judgmentTimerRef.current) clearTimeout(judgmentTimerRef.current)
             judgmentTimerRef.current = setTimeout(() => setJudgmentResult(null), 2000)
@@ -371,9 +373,10 @@ export function GameScene() {
         judgment = DangerClickJudgment.SLOW
       }
 
+      const eventId = activeDanger.eventId
       const eventName = activeDanger.eventName
       setJudgmentResult({ judgment, eventName })
-      recordScore(eventName, judgment)
+      recordScore(eventId, eventName, judgment)
       setActiveDanger(null)
 
       // Clear judgment display after 2s
@@ -385,7 +388,7 @@ export function GameScene() {
 
       // Show wrong click feedback
       setJudgmentResult({ judgment: DangerClickJudgment.WRONG, eventName: `剩餘 ${MAX_WRONG_CLICKS - newWrongCount} 次` })
-      recordScore('', DangerClickJudgment.WRONG)
+      recordScore('', '', DangerClickJudgment.WRONG)
 
       // TODO: 遊戲結束
       if (newWrongCount >= MAX_WRONG_CLICKS) {
@@ -549,7 +552,7 @@ export function GameScene() {
             if (event.prepareConfig && !clickedEventIds.current.has(eventId)) {
               console.log(`[GameScene] ❌ Event ${eventId} completed without player click - MISS (Fallback)`)
               setJudgmentResult({ judgment: DangerClickJudgment.MISS, eventName: event.name })
-              recordScore(event.name, DangerClickJudgment.MISS)
+              recordScore(eventId, event.name, DangerClickJudgment.MISS)
               if (judgmentTimerRef.current) clearTimeout(judgmentTimerRef.current)
               judgmentTimerRef.current = setTimeout(() => setJudgmentResult(null), 2000)
             }
@@ -579,7 +582,7 @@ export function GameScene() {
           if (event && event.prepareConfig && !clickedEventIds.current.has(eventId)) {
             console.log(`[GameScene] ❌ Player passed event ${eventId} without clicking - MISS`)
             setJudgmentResult({ judgment: DangerClickJudgment.MISS, eventName: event.name })
-            recordScore(event.name, DangerClickJudgment.MISS)
+            recordScore(eventId, event.name, DangerClickJudgment.MISS)
             if (judgmentTimerRef.current) clearTimeout(judgmentTimerRef.current)
             judgmentTimerRef.current = setTimeout(() => setJudgmentResult(null), 2000)
 
@@ -917,6 +920,7 @@ export function GameScene() {
       {showScorePanel && (
         <ScorePanel
           scoreHistory={scoreHistory}
+          riskEvents={riskEvents}
           missCount={missCount}
           maxMissTolerance={MAX_MISS_TOLERANCE}
           onRestart={handleRestart}
@@ -1520,15 +1524,17 @@ function JudgmentDisplay({
 
 /**
  * 結算面板 - 專業遊戲風格設計
- * 包含完整的事件反應結果列表與反饋
+ * 包含完整的事件反應結果列表、危險原因與安全駕駛反饋
  */
 function ScorePanel({
   scoreHistory,
+  riskEvents,
   missCount,
   maxMissTolerance,
   onRestart
 }: {
-  scoreHistory: Array<{ eventName: string; judgment: DangerClickJudgment; score: number }>
+  scoreHistory: Array<{ eventId: string; eventName: string; judgment: DangerClickJudgment; score: number }>
+  riskEvents: GameEvent[]
   missCount: number
   maxMissTolerance: number
   onRestart: () => void
@@ -1556,53 +1562,57 @@ function ScorePanel({
   else if (percentage >= 60) { grade = 'C'; gradeColor = '#fb923c'; gradeBg = 'rgba(251, 146, 60, 0.15)' }
   else if (percentage >= 50) { grade = 'D'; gradeColor = '#f97316'; gradeBg = 'rgba(249, 115, 22, 0.15)' }
 
-  // 取得判定對應的樣式配置
+  // 取得判定對應的樣式配置與安全駕駛建議
   const getJudgmentConfig = (judgment: DangerClickJudgment) => {
     switch (judgment) {
       case DangerClickJudgment.FAST:
         return {
           label: 'FAST',
           color: '#22c55e',
-          bgColor: 'rgba(34, 197, 94, 0.15)',
-          borderColor: 'rgba(34, 197, 94, 0.3)',
-          feedback: '反應迅速，優秀的危險識別！'
+          bgColor: 'rgba(34, 197, 94, 0.08)',
+          borderColor: 'rgba(34, 197, 94, 0.25)',
+          safetyAdvice: '您及時識別危險並採取正確行動，保持良好的駕駛習慣！'
         }
       case DangerClickJudgment.SLOW:
         return {
           label: 'SLOW',
           color: '#fb923c',
-          bgColor: 'rgba(251, 146, 60, 0.15)',
-          borderColor: 'rgba(251, 146, 60, 0.3)',
-          feedback: '反應稍慢，需加強警覺'
+          bgColor: 'rgba(251, 146, 60, 0.08)',
+          borderColor: 'rgba(251, 146, 60, 0.25)',
+          safetyAdvice: '雖然有識別危險，但反應時間較長。建議提高警覺，保持更遠的安全距離。'
         }
       case DangerClickJudgment.MISS:
         return {
           label: 'MISS',
           color: '#ef4444',
-          bgColor: 'rgba(239, 68, 68, 0.15)',
-          borderColor: 'rgba(239, 68, 68, 0.3)',
-          feedback: '未能識別危險，請注意觀察'
+          bgColor: 'rgba(239, 68, 68, 0.08)',
+          borderColor: 'rgba(239, 68, 68, 0.25)',
+          safetyAdvice: '未能識別此危險情況。請加強觀察周遭環境，隨時注意可能的危險因子。'
         }
       default:
         return {
           label: 'WRONG',
           color: '#a855f7',
-          bgColor: 'rgba(168, 85, 247, 0.15)',
-          borderColor: 'rgba(168, 85, 247, 0.3)',
-          feedback: '誤判，無危險情況'
+          bgColor: 'rgba(168, 85, 247, 0.08)',
+          borderColor: 'rgba(168, 85, 247, 0.25)',
+          safetyAdvice: '誤判危險情況。請仔細觀察，避免不必要的緊急反應。'
         }
     }
+  }
+
+  // 根據 eventId 取得事件詳細資訊
+  const getEventDetails = (eventId: string) => {
+    return riskEvents.find(e => e.id === eventId)
   }
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4"
       style={{ background: 'radial-gradient(ellipse at center, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.98) 100%)' }}>
 
-      {/* 主面板容器 */}
-      <div className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-2xl"
+      {/* 主面板容器 - 加寬以容納右側反饋 */}
+      <div className="w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl"
         style={{
           background: 'linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%)',
-          // boxShadow: '0 0 60px rgba(59, 130, 246, 0.2), 0 0 120px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
           border: '1px solid rgba(71, 85, 105, 0.4)'
         }}>
 
@@ -1620,28 +1630,28 @@ function ScorePanel({
         </div>
 
         {/* 成績區 - 等級與分數 */}
-        <div className="px-8 py-6 flex items-center justify-center gap-8 border-b border-slate-700/50">
+        <div className="px-8 py-5 flex items-center justify-center gap-8 border-b border-slate-700/50">
           {/* 等級圓環 */}
-          <div className="relative flex items-center justify-center w-28 h-28 rounded-full"
+          <div className="relative flex items-center justify-center w-24 h-24 rounded-full"
             style={{
               background: gradeBg,
               boxShadow: `0 0 30px ${gradeColor}40, inset 0 0 20px ${gradeColor}20`
             }}>
             <div className="absolute inset-2 rounded-full border-4"
               style={{ borderColor: `${gradeColor}60` }} />
-            <span className="text-5xl font-black" style={{ color: gradeColor, textShadow: `0 0 20px ${gradeColor}80` }}>
+            <span className="text-4xl font-black" style={{ color: gradeColor, textShadow: `0 0 20px ${gradeColor}80` }}>
               {grade}
             </span>
           </div>
 
           {/* 分數統計 */}
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-bold text-white">{totalScore.toFixed(1)}</span>
-              <span className="text-lg text-slate-400">/ {maxPossibleScore.toFixed(1)} 分</span>
+              <span className="text-3xl font-bold text-white">{totalScore.toFixed(1)}</span>
+              <span className="text-base text-slate-400">/ {maxPossibleScore.toFixed(1)} 分</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex-1 h-2 rounded-full bg-slate-700/50 overflow-hidden" style={{ width: '180px' }}>
+              <div className="flex-1 h-2 rounded-full bg-slate-700/50 overflow-hidden" style={{ width: '160px' }}>
                 <div className="h-full rounded-full transition-all duration-500"
                   style={{
                     width: `${percentage}%`,
@@ -1651,35 +1661,34 @@ function ScorePanel({
               <span className="text-sm font-medium" style={{ color: gradeColor }}>{percentage}%</span>
             </div>
           </div>
+
+          {/* 統計概覽 - 橫向排列 */}
+          <div className="flex gap-2">
+            {[
+              { label: 'FAST', count: fastCount, color: '#22c55e' },
+              { label: 'SLOW', count: slowCount, color: '#fb923c' },
+              { label: 'MISS', count: missCountInHistory, color: '#ef4444' },
+              { label: 'WRONG', count: wrongCount, color: '#a855f7' }
+            ].map((stat) => (
+              <div key={stat.label} className="flex flex-col items-center px-3 py-2 rounded-lg"
+                style={{ background: `${stat.color}15`, border: `1px solid ${stat.color}30` }}>
+                <span className="text-[10px] font-semibold tracking-wider" style={{ color: stat.color }}>{stat.label}</span>
+                <span className="text-lg font-bold text-white">{stat.count}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* 統計概覽 */}
-        <div className="px-8 py-4 grid grid-cols-4 gap-3 border-b border-slate-700/50">
-          {[
-            { label: 'FAST', count: fastCount, color: '#22c55e', score: fastCount * 12.5 },
-            { label: 'SLOW', count: slowCount, color: '#fb923c', score: slowCount * 6.25 },
-            { label: 'MISS', count: missCountInHistory, color: '#ef4444', score: 0 },
-            { label: 'WRONG', count: wrongCount, color: '#a855f7', score: 0 }
-          ].map((stat) => (
-            <div key={stat.label} className="flex flex-col items-center p-3 rounded-xl"
-              style={{ background: `${stat.color}10`, border: `1px solid ${stat.color}30` }}>
-              <span className="text-xs font-semibold tracking-wider" style={{ color: stat.color }}>{stat.label}</span>
-              <span className="text-2xl font-bold text-white mt-1">{stat.count}</span>
-              <span className="text-xs text-slate-400">+{stat.score.toFixed(1)}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* 事件詳細列表 */}
-        <div className="px-8 py-4">
-          <h2 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+        {/* 事件詳細列表 - 含右側反饋 */}
+        <div className="px-6 py-4">
+          <h2 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2 px-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
             事件反應詳情
           </h2>
 
-          <div className="max-h-48 overflow-y-auto pr-2 space-y-2 custom-scrollbar">
+          <div className="max-h-64 overflow-y-auto pr-1 space-y-3 custom-scrollbar">
             {validEvents.length === 0 ? (
               <div className="text-center py-8 text-slate-500">
                 <p>本次行程無風險事件</p>
@@ -1687,39 +1696,73 @@ function ScorePanel({
             ) : (
               validEvents.map((event, index) => {
                 const config = getJudgmentConfig(event.judgment)
+                const eventDetails = getEventDetails(event.eventId)
                 return (
-                  <div key={index} className="flex items-center gap-3 p-3 rounded-xl transition-colors hover:bg-slate-700/20"
+                  <div key={index} className="rounded-xl overflow-hidden"
                     style={{
                       background: config.bgColor,
                       border: `1px solid ${config.borderColor}`
                     }}>
-                    {/* 序號 */}
-                    <div className="w-6 h-6 rounded-full bg-slate-700/50 flex items-center justify-center text-xs font-medium text-slate-400">
-                      {index + 1}
-                    </div>
-
-                    {/* 事件資訊 */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-white truncate">{event.eventName}</span>
+                    {/* 事件卡片 - 左右佈局 */}
+                    <div className="flex">
+                      {/* 左側：事件資訊 */}
+                      <div className="flex-shrink-0 w-56 p-4 border-r border-slate-700/30">
+                        <div className="flex items-start gap-3">
+                          {/* 序號 */}
+                          <div className="w-6 h-6 rounded-full bg-slate-700/50 flex items-center justify-center text-xs font-medium text-slate-400 flex-shrink-0 mt-0.5">
+                            {index + 1}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-white text-sm leading-tight">{event.eventName}</div>
+                            {/* 判定標籤與分數 */}
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="px-2 py-0.5 rounded text-xs font-bold"
+                                style={{
+                                  color: config.color,
+                                  background: `${config.color}25`,
+                                  border: `1px solid ${config.color}40`
+                                }}>
+                                {config.label}
+                              </span>
+                              <span className="text-sm font-semibold"
+                                style={{ color: event.score > 0 ? config.color : '#64748b' }}>
+                                +{event.score.toFixed(1)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-xs mt-0.5" style={{ color: `${config.color}cc` }}>{config.feedback}</p>
-                    </div>
 
-                    {/* 判定標籤 */}
-                    <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-1 rounded-lg text-xs font-bold"
-                        style={{
-                          color: config.color,
-                          background: `${config.color}20`,
-                          border: `1px solid ${config.color}40`
-                        }}>
-                        {config.label}
-                      </span>
-                      <span className="text-sm font-semibold w-14 text-right"
-                        style={{ color: event.score > 0 ? config.color : '#64748b' }}>
-                        +{event.score.toFixed(1)}
-                      </span>
+                      {/* 右側：危險原因與安全駕駛反饋 */}
+                      <div className="flex-1 p-4 space-y-3">
+                        {/* 危險原因 */}
+                        {eventDetails?.feedback?.hazard && (
+                          <div>
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <svg className="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                              </svg>
+                              <span className="text-xs font-medium text-amber-400">危險原因</span>
+                            </div>
+                            <p className="text-xs text-slate-300 leading-relaxed pl-5">
+                              {eventDetails?.feedback?.hazard}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* 安全駕駛反饋 */}
+                        <div>
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <svg className="w-3.5 h-3.5" style={{ color: config.color }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            <span className="text-xs font-medium" style={{ color: config.color }}>安全駕駛反饋</span>
+                          </div>
+                          <p className="text-xs text-slate-400 leading-relaxed pl-5">
+                            {eventDetails.feedback?.safety}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )
@@ -1730,7 +1773,7 @@ function ScorePanel({
 
         {/* 誤點警告 */}
         {wrongCount > 0 && (
-          <div className="mx-8 mb-4 p-3 rounded-xl flex items-center gap-3"
+          <div className="mx-6 mb-4 p-3 rounded-xl flex items-center gap-3"
             style={{
               background: 'rgba(168, 85, 247, 0.1)',
               border: '1px solid rgba(168, 85, 247, 0.3)'
@@ -1740,17 +1783,17 @@ function ScorePanel({
             </svg>
             <div className="flex-1">
               <p className="text-sm font-medium text-purple-300">誤點警告</p>
-              <p className="text-xs text-purple-400/80">誤點 {wrongCount} 次（容許上限 {maxMissTolerance} 次）</p>
+              <p className="text-xs text-purple-400/80">誤點 {wrongCount} 次（容許上限 {maxMissTolerance} 次），過多誤點會影響行車安全判斷。</p>
             </div>
           </div>
         )}
 
         {/* 底部操作區 */}
-        <div className="px-8 pb-6 pt-2">
+        <div className="px-6 pb-5 pt-2">
           <button
             onClick={onRestart}
-            className="w-full py-4 rounded-xl font-semibold text-white transition-all duration-200 cursor-pointer
-                       hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
+            className="w-full py-3.5 rounded-xl font-semibold text-white transition-all duration-200 cursor-pointer
+                       hover:scale-[1.01] hover:shadow-lg active:scale-[0.99]"
             style={{
               background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
               boxShadow: '0 4px 20px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)'

@@ -298,6 +298,10 @@ export interface GameEvent {
     repeatable?: boolean
     prepareConfig?: PrepareConfig // Auto-prepare when approaching in cruise mode
     spawnRadius?: number // Pre-spawn actors when player enters this radius (should be larger than trigger radius)
+    feedback?: {
+        hazard: string
+        safety: string
+    }
 }
 
 /**
