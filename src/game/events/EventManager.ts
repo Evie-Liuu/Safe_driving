@@ -24,7 +24,7 @@ export class EventManager {
     private eventRegistry: Map<string, GameEvent> = new Map() // 儲存所有事件定義
     private pendingEvents: Map<string, GameEvent> = new Map()
     private activeEvents: Map<string, EventContext> = new Map()
-    private completedEvents: Set<string> = new Set()
+    private completedEventsCache: CompletedEventsCache
     private config: EventManagerConfig
     private callbacks: EventCallbacks
     private lastCheckTime: number = 0
@@ -35,6 +35,8 @@ export class EventManager {
             enableDebugVisualization: false,
             maxConcurrentEvents: 5,
             eventTriggerCheckInterval: 0.1, // Check every 100ms
+            maxCompletedEventsCache: 20,
+            enableEventRecycling: true,
             ...config
         }
         this.callbacks = config.callbacks || {}
@@ -43,6 +45,9 @@ export class EventManager {
             cleanupInterval: 2000,
             enableLogging: true
         })
+        this.completedEventsCache = new CompletedEventsCache(
+            this.config.maxCompletedEventsCache
+        )
     }
 
     /**
@@ -413,20 +418,23 @@ export class EventManager {
         context.actorPathsCompleted?.clear()
 
         this.activeEvents.delete(eventId)
-        this.completedEvents.add(eventId)
+
+        // Add to completed events cache with LRU management
+        this.completedEventsCache.add(eventId, success)
 
         console.log(`Event ${success ? 'completed' : 'failed'}: ${eventId}`)
+        console.log(`[EventManager] 📊 Completed events cache size: ${this.completedEventsCache.size()}/${this.config.maxCompletedEventsCache}`)
 
         // Trigger callback
         if (this.callbacks.onEventCompleted) {
             this.callbacks.onEventCompleted(eventId, success)
         }
 
-        // Re-register if repeatable
+        // Re-register if repeatable (Note: repeatable events won't be in completed cache)
         const event = this.getEventById(eventId)
         if (event && event.repeatable) {
             this.pendingEvents.set(eventId, event)
-            this.completedEvents.delete(eventId)
+            // Don't need to remove from cache as it will be naturally evicted by LRU
         }
     }
 
@@ -682,7 +690,7 @@ export class EventManager {
      */
     reset(): void {
         this.activeEvents.clear()
-        this.completedEvents.clear()
+        this.completedEventsCache.clear()
         // Note: pendingEvents are preserved to allow replay
     }
 
@@ -694,7 +702,7 @@ export class EventManager {
         this.eventRegistry.clear()
         this.pendingEvents.clear()
         this.activeEvents.clear()
-        this.completedEvents.clear()
+        this.completedEventsCache.clear()
     }
 
     /**

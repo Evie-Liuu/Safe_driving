@@ -71,6 +71,10 @@ export function EventSystemUpdater({
             playerState
         )
 
+        // Update resource cleanup manager
+        const cleanupManager = eventManager.getResourceCleanupManager()
+        cleanupManager.update(currentTime)
+
         // Update event executor timelines for each active event
         const activeEvents = eventManager.getActiveEvents()
         const activeEventIds = Array.from(activeEvents.map(e => e.id))

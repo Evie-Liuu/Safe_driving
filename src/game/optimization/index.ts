@@ -11,4 +11,13 @@ export {
     type ResourceCleanupConfig
 } from './ResourceCleanupManager'
 
-// LOD and performance monitoring exports can be added here
+export {
+    ActorLifecycleManager,
+    type ActorInfo,
+    type RemovalTask,
+    type ActorLifecycleConfig
+} from './ActorLifecycleManager'
+
+export { ChunkLoader } from './ChunkLoader'
+export { LODSystem } from './LODSystem'
+export { PerformanceMonitor } from './PerformanceMonitor'
