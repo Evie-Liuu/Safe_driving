@@ -44,7 +44,7 @@ export function GameScene() {
   }>>([])
   const vehicleIdCounter = useRef(0)
 
-  const debugflag = useRef(false)
+  const debugflag = useRef(true)
 
   // Event system
   const eventManagerRef = useRef<EventManager | null>(null)
@@ -89,6 +89,8 @@ export function GameScene() {
 
   // Track which events player has clicked/acknowledged (for MISS judgment on completion)
   const clickedEventIds = useRef<Set<string>>(new Set())
+  // Track events that player has passed (to prevent late clicks)
+  const passedEventIds = useRef<Set<string>>(new Set())
 
   // Click error tolerance system (3 wrong clicks allowed)
   const MAX_WRONG_CLICKS = 3
@@ -148,9 +150,9 @@ export function GameScene() {
     }
     // WRONG clicks don't affect score history
 
-    if (judgment !== DangerClickJudgment.WRONG) {
-      setScoreHistory(prev => [...prev, { eventName, judgment, score }])
-    }
+    // if (judgment !== DangerClickJudgment.WRONG) {
+    setScoreHistory(prev => [...prev, { eventName, judgment, score }])
+    // }
   }, [])
 
   // Handle cruise complete - show score panel
@@ -173,6 +175,7 @@ export function GameScene() {
     setActiveDanger(null)
     setJudgmentResult(null)
     clickedEventIds.current.clear()
+    passedEventIds.current.clear()
     dangerClickedRef.current = false
 
     // Reset event manager
@@ -223,7 +226,8 @@ export function GameScene() {
         if (eventContext) {
           // Event is active - MISS will be handled in onEventCompleted if player didn't click
           console.log(`[GameScene] ✅ Event ${activeDanger.eventId} was triggered, clearing danger marker (MISS handled by onEventCompleted)`)
-          setActiveDanger(null)
+          // 移除危險標記 (移到完成事件後移除)
+          // setActiveDanger(null)
         }
         // If event not triggered yet (e.g., speed requirement not met), keep activeDanger for MISS judgment
       }
@@ -238,6 +242,7 @@ export function GameScene() {
 
       const shouldActivateStop = instruction.shouldStop &&
         instruction.status === PrepareZoneStatus.INSIDE_TRIGGER &&
+        // instruction.status === PrepareZoneStatus.IN_PREPARE_ZONE &&
         !stopCompletedEventsRef.current.has(instruction.eventId)
 
       if (shouldActivateStop) {
@@ -277,7 +282,7 @@ export function GameScene() {
           // Event is active - player successfully triggered it, clear without MISS
           // MISS judgment will be handled in onEventCompleted if player didn't click
           console.log(`[GameScene] ✅ Event ${activeDanger.eventId} was triggered, clearing danger marker`)
-          setActiveDanger(null)
+          // setActiveDanger(null)
         } else {
           // Event was NOT activated - check if player has moved far enough to be considered a miss
           // This handles the "passing by from the side" scenario
@@ -322,7 +327,7 @@ export function GameScene() {
     // Clear any existing judgment timer
     if (judgmentTimerRef.current) clearTimeout(judgmentTimerRef.current)
 
-    if (activeDanger) {
+    if (activeDanger && !passedEventIds.current.has(activeDanger.eventId)) {
       // CORRECT CLICK - There's an active danger
       dangerClickedRef.current = true
 
@@ -371,6 +376,7 @@ export function GameScene() {
 
       // Show wrong click feedback
       setJudgmentResult({ judgment: DangerClickJudgment.WRONG, eventName: `剩餘 ${MAX_WRONG_CLICKS - newWrongCount} 次` })
+      recordScore('', DangerClickJudgment.WRONG)
 
       // TODO: 遊戲結束
       if (newWrongCount >= MAX_WRONG_CLICKS) {
@@ -559,6 +565,7 @@ export function GameScene() {
         },
         onPlayerPassed: (eventId) => {
           console.log(`[GameScene] 📍 Player passed event: ${eventId}`)
+          passedEventIds.current.add(eventId)
           const event = riskEvents.find(e => e.id === eventId)
           if (event && event.prepareConfig && !clickedEventIds.current.has(eventId)) {
             console.log(`[GameScene] ❌ Player passed event ${eventId} without clicking - MISS`)
@@ -1522,6 +1529,7 @@ function ScorePanel({
 
   const fastCount = scoreHistory.filter(s => s.judgment === DangerClickJudgment.FAST).length
   const slowCount = scoreHistory.filter(s => s.judgment === DangerClickJudgment.SLOW).length
+  const wrongCount = scoreHistory.filter(s => s.judgment === DangerClickJudgment.WRONG).length
   const missCountInHistory = scoreHistory.filter(s => s.judgment === DangerClickJudgment.MISS).length
 
   // Determine grade based on percentage
@@ -1563,7 +1571,7 @@ function ScorePanel({
           marginBottom: '30px',
           textShadow: '0 0 10px rgba(100, 150, 255, 0.5)'
         }}>
-          🏁 行程結束
+          🏁 遊戲結束
         </h1>
 
         {/* Grade */}
@@ -1614,7 +1622,7 @@ function ScorePanel({
               color: '#44ff44',
               marginBottom: '8px'
             }}>
-              <span>⚡ FAST ({fastCount})</span>
+              <span>FAST ({fastCount})</span>
               <span>+{(fastCount * 12.5).toFixed(1)}</span>
             </div>
             <div style={{
@@ -1625,7 +1633,7 @@ function ScorePanel({
               color: '#ffa500',
               marginBottom: '8px'
             }}>
-              <span>🐢 SLOW ({slowCount})</span>
+              <span>SLOW ({slowCount})</span>
               <span>+{(slowCount * 6.25).toFixed(1)}</span>
             </div>
             <div style={{
@@ -1635,14 +1643,14 @@ function ScorePanel({
               fontFamily: 'monospace',
               color: '#ff4444'
             }}>
-              <span>❌ MISS ({missCountInHistory})</span>
+              <span>MISS ({missCountInHistory})</span>
               <span>+0</span>
             </div>
           </div>
         </div>
 
-        {/* Miss tolerance warning */}
-        {missCount > 0 && (
+        {/* Wrong tolerance warning */}
+        {wrongCount > 0 && (
           <div style={{
             background: 'rgba(255, 68, 68, 0.2)',
             borderRadius: '8px',
@@ -1653,7 +1661,7 @@ function ScorePanel({
             color: '#ff6666',
             textAlign: 'center'
           }}>
-            ⚠️ MISS 次數: {missCount} / {maxMissTolerance}
+            WRONG 次數: {wrongCount} / {maxMissTolerance}
           </div>
         )}
 
@@ -1683,7 +1691,7 @@ function ScorePanel({
             e.currentTarget.style.boxShadow = '0 4px 15px rgba(74, 144, 217, 0.4)'
           }}
         >
-          🔄 重新開始
+          重新開始
         </button>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { GameEvent, TriggerType, ActionType, ActorType, PlayerResponseType, PrepareActionType } from '../events/EventTypes'
 
-export const FAST_OUTER_BUFFER = 10
+export const FAST_OUTER_BUFFER = 7
 
 /**
  * Cruise points for the route
@@ -15,10 +15,10 @@ export const cruisePoints: [number, number, number][] = [
     // [10, 0, 80],
     // [10, 0, 49],
     // [10, 0, 12],
-    [10, 0, 0],  //E點
-    [10, 0, -60],
-    [10, 0, -106],
-    [17, 0, -110], //B點右轉
+    // [10, 0, 0],  //E點
+    // [10, 0, -60],
+    // [10, 0, -106],
+    // [17, 0, -110], //B點右轉
     [52, 0, -110],
     [100.46, 0, -109],
     [108.76, 0, -108.6], //C點右轉
@@ -423,7 +423,8 @@ export const events: GameEvent[] = [
         description: '雙黃燈號誌路口及行人穿越斑馬線，玩家需禮讓停等',
         trigger: {
             type: TriggerType.PROXIMITY,
-            position: [105.9, 0, -104.9],
+            // position: [105.9, 0, -104.9],
+            position: [110.59, 0, -104.56],
             radius: 14,
             // requiredSpeed: {
             //     min: 5
@@ -497,7 +498,7 @@ export const events: GameEvent[] = [
         },
         priority: 20, // 高優先級
         prepareConfig: {
-            radius: 3,
+            radius: 4,
             actions: [PrepareActionType.DECELERATE, PrepareActionType.STOP],
             targetSpeedFactor: 0.5,
             stopDuration: 2 // 停等 2 秒讓行人通過
