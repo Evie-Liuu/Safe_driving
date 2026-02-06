@@ -18,12 +18,12 @@ export const cruisePoints: [number, number, number][] = [
     // [10, 0, 0],  //E點
     // [10, 0, -60],
     // [10, 0, -106],
-    // [17, 0, -110], //B點右轉
-    // [52, 0, -110],
-    // [100.46, 0, -109],
-    // [107.8, 0, -108.25], //C點右轉
-    // [110.10, 0, -106.56], //C點右轉
-    // [111.27, 0, -100.99],
+    [17, 0, -110], //B點右轉
+    [52, 0, -110],
+    [100.46, 0, -109],
+    [107.8, 0, -108.25], //C點右轉
+    [110.10, 0, -106.56], //C點右轉
+    [111.27, 0, -100.99],
     [109.1, 0, -66.4],
     [109.1, 0, 8],
     [111.34, 0, 46.56], //坑洞旁
@@ -364,7 +364,7 @@ export const events: GameEvent[] = [
                 id: 'pedestrian_1',
                 type: ActorType.PEDESTRIAN,
                 model: '/src/assets/models/Male1_Rigged.glb',
-                initialPosition: [50, 0, -106.8],
+                initialPosition: [50, 0.1, -106.8],
                 initialRotation: [0, Math.PI, 0],
                 scale: [1, 1, 1],
                 animationUrls: [
@@ -378,10 +378,10 @@ export const events: GameEvent[] = [
                 actorId: 'pedestrian_1',
                 type: ActionType.MOVEMENT,
                 path: [
-                    [50, 0, -106.8],
-                    [50.5, 0, -110.67],
-                    [50.75, 0, -118.3],
-                    [50.66, 0, -125.55]
+                    [50, 0.3, -106.8],
+                    [50.5, 0.3, -110.67],
+                    [50.75, 0.3, -118.3],
+                    [50.66, 0.3, -125.55]
                 ],
                 speed: 4,
                 time: 0,
@@ -435,7 +435,7 @@ export const events: GameEvent[] = [
                 id: 'intersection_pedestrian_1',
                 type: ActorType.PEDESTRIAN,
                 model: '/src/assets/models/Female2_Rigged.glb',
-                initialPosition: [105.9, 0, -104.9],
+                initialPosition: [105.9, 0.1, -104.9],
                 initialRotation: [0, Math.PI / 2, 0],
                 scale: [1, 1, 1],
                 animationUrls: [
@@ -466,9 +466,9 @@ export const events: GameEvent[] = [
                 actorId: 'intersection_pedestrian_1',
                 type: ActionType.MOVEMENT,
                 path: [
-                    [105.9, 0, -104.9],
-                    [115.77, 0, -104.66],
-                    [127, 0, -104.9]
+                    [105.9, 0.3, -104.9],
+                    [115.77, 0.3, -104.66],
+                    [127, 0.3, -104.9]
                 ],
                 speed: 2.5,
                 time: 0,
@@ -673,7 +673,7 @@ export const events: GameEvent[] = [
                 ],
                 speed: 5,
                 time: 0,
-                duration: 5
+                duration: 8
             },
             {
                 actorId: 'bicycle_1',
