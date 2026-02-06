@@ -1,4 +1,4 @@
-import { GameEvent, TriggerType, ActionType, ActorType, PlayerResponseType, PrepareActionType } from '../events/EventTypes'
+import { GameEvent, TriggerType, ActionType, ActorType, PlayerResponseType, PrepareActionType, EventCategory } from '../events/EventTypes'
 
 export const FAST_OUTER_BUFFER = 7
 
@@ -11,18 +11,18 @@ export const FAST_OUTER_BUFFER = 7
  * G--H--I
  */
 export const cruisePoints: [number, number, number][] = [
-    // [10, 0, 120], //起點 
-    // [10, 0, 80],
-    // [10, 0, 49],
-    // [10, 0, 12],
-    // [10, 0, 0],  //E點
-    // [10, 0, -60],
-    // [10, 0, -106],
-    // [17, 0, -110], //B點右轉
-    // [52, 0, -110],
-    // [100.46, 0, -109],
-    // [107.8, 0, -108.25], //C點右轉
-    // [110.10, 0, -106.56], //C點右轉
+    [10, 0, 120], //起點 
+    [10, 0, 80],
+    [10, 0, 49],
+    [10, 0, 12],
+    [10, 0, 0],  //E點
+    [10, 0, -60],
+    [10, 0, -106],
+    [17, 0, -110], //B點右轉
+    [52, 0, -110],
+    [100.46, 0, -109],
+    [107.8, 0, -108.25], //C點右轉
+    [110.10, 0, -106.56], //C點右轉
     [111.27, 0, -100.99],
     [109.1, 0, -66.4],
     [109.1, 0, 8],
@@ -718,4 +718,233 @@ export const events: GameEvent[] = [
             safety: '減速、拉側向距離'
         }
     },
+
+    // ===== 正確行為事件 (SAFE) - 點擊這些會算 WRONG =====
+
+    // {
+    //     id: 'safe_normal_driving_car',
+    //     name: '正常行駛車輛',
+    //     description: '前方車輛正常速限行駛，保持車道，無異常行為。這是正常的道路情況，不需要特別反應。',
+    //     category: EventCategory.SAFE,
+    //     trigger: {
+    //         type: TriggerType.PROXIMITY,
+    //         position: [8, 0, 60],
+    //         radius: 25
+    //     },
+    //     actors: [
+    //         {
+    //             id: 'normal_car_1',
+    //             type: ActorType.VEHICLE,
+    //             model: '/src/assets/models/Car2_Rigged.glb',
+    //             initialPosition: [8, 0, 60],
+    //             initialRotation: [0, Math.PI, 0],
+    //             animationUrls: [
+    //                 '/src/assets/animations/car/Car2_Moving_Animation.glb'
+    //             ]
+    //         }
+    //     ],
+    //     actions: [
+    //         {
+    //             actorId: 'normal_car_1',
+    //             type: ActionType.ANIMATION,
+    //             name: 'Car2_Moving_Animation',
+    //             loop: true,
+    //             time: 0
+    //         },
+    //         {
+    //             actorId: 'normal_car_1',
+    //             type: ActionType.MOVEMENT,
+    //             path: [
+    //                 [8, 0, 60],
+    //                 [8, 0, 40],
+    //                 [8, 0, 20],
+    //                 [8, 0, 0],
+    //                 [8, 0, -20]
+    //             ],
+    //             speed: 12,
+    //             time: 0,
+    //             duration: 15
+    //         }
+    //     ],
+    //     requiredPlayerResponse: {
+    //         type: PlayerResponseType.NONE
+    //     },
+    //     completionCriteria: {
+    //         playerPassed: true
+    //     },
+    //     priority: 5,
+    //     spawnRadius: 80,
+    //     feedback: {
+    //         hazard: '無危險 - 車輛正常行駛',
+    //         safety: '這是正確的駕駛行為，保持正常行駛即可。'
+    //     }
+    // },
+    // {
+    //     id: 'safe_pedestrian_on_sidewalk',
+    //     name: '人行道上的行人',
+    //     description: '行人正常在人行道上行走，沒有進入車道的跡象。這是安全的情況，不需要反應。',
+    //     category: EventCategory.SAFE,
+    //     trigger: {
+    //         type: TriggerType.PROXIMITY,
+    //         position: [15, 0, 30],
+    //         radius: 20
+    //     },
+    //     actors: [
+    //         {
+    //             id: 'safe_pedestrian_1',
+    //             type: ActorType.PEDESTRIAN,
+    //             model: '/src/assets/models/Female1_Rigged.glb',
+    //             initialPosition: [15, 0, 30],
+    //             initialRotation: [0, Math.PI / 2, 0],
+    //             scale: [1, 1, 1],
+    //             animationUrls: [
+    //                 '/src/assets/animations/character/Female_Walking_Animation.glb'
+    //             ]
+    //         }
+    //     ],
+    //     actions: [
+    //         {
+    //             actorId: 'safe_pedestrian_1',
+    //             type: ActionType.ANIMATION,
+    //             name: 'Female_Walking_Animation',
+    //             loop: true,
+    //             time: 0
+    //         },
+    //         {
+    //             actorId: 'safe_pedestrian_1',
+    //             type: ActionType.MOVEMENT,
+    //             path: [
+    //                 [15, 0, 30],
+    //                 [15, 0, 25],
+    //                 [15, 0, 20],
+    //                 [15, 0, 15]
+    //             ],
+    //             speed: 1.5,
+    //             time: 0,
+    //             duration: 10
+    //         }
+    //     ],
+    //     requiredPlayerResponse: {
+    //         type: PlayerResponseType.NONE
+    //     },
+    //     completionCriteria: {
+    //         playerPassed: true
+    //     },
+    //     priority: 3,
+    //     spawnRadius: 60,
+    //     feedback: {
+    //         hazard: '無危險 - 行人在人行道上',
+    //         safety: '行人在人行道上正常行走，不會影響行車安全。'
+    //     }
+    // },
+    // {
+    //     id: 'safe_yielding_driver',
+    //     name: '斑馬線前禮讓的車輛',
+    //     description: '前方車輛在斑馬線前停車禮讓行人，這是正確的駕駛行為。',
+    //     category: EventCategory.SAFE,
+    //     trigger: {
+    //         type: TriggerType.PROXIMITY,
+    //         position: [8, 0, -50],
+    //         radius: 20
+    //     },
+    //     actors: [
+    //         {
+    //             id: 'yielding_car_1',
+    //             type: ActorType.VEHICLE,
+    //             model: '/src/assets/models/Car_Main2_Rigged.glb',
+    //             initialPosition: [8, 0, -50],
+    //             initialRotation: [0, Math.PI, 0],
+    //             color: '#4A90A4'
+    //         },
+    //         {
+    //             id: 'crossing_pedestrian_1',
+    //             type: ActorType.PEDESTRIAN,
+    //             model: '/src/assets/models/Male1_Rigged.glb',
+    //             initialPosition: [2, 0, -55],
+    //             initialRotation: [0, Math.PI / 2, 0],
+    //             scale: [1, 1, 1],
+    //             animationUrls: [
+    //                 '/src/assets/animations/character/Male_Walking_Animation.glb'
+    //             ]
+    //         }
+    //     ],
+    //     actions: [
+    //         // 車輛停止等待
+    //         {
+    //             actorId: 'yielding_car_1',
+    //             type: ActionType.LIGHT,
+    //             lightType: 'brake',
+    //             enabled: true,
+    //             time: 0,
+    //             duration: 8
+    //         },
+    //         // 行人過馬路
+    //         {
+    //             actorId: 'crossing_pedestrian_1',
+    //             type: ActionType.ANIMATION,
+    //             name: 'Male_Walking_Animation',
+    //             loop: true,
+    //             time: 0
+    //         },
+    //         {
+    //             actorId: 'crossing_pedestrian_1',
+    //             type: ActionType.MOVEMENT,
+    //             path: [
+    //                 [2, 0, -55],
+    //                 [5, 0, -55],
+    //                 [10, 0, -55],
+    //                 [15, 0, -55]
+    //             ],
+    //             speed: 1.2,
+    //             time: 0,
+    //             duration: 10
+    //         }
+    //     ],
+    //     requiredPlayerResponse: {
+    //         type: PlayerResponseType.NONE
+    //     },
+    //     completionCriteria: {
+    //         playerPassed: true
+    //     },
+    //     priority: 4,
+    //     spawnRadius: 70,
+    //     feedback: {
+    //         hazard: '無危險 - 車輛正確禮讓行人',
+    //         safety: '前方駕駛展現正確的禮讓行為，請保持觀察即可。'
+    //     }
+    // },
+    // {
+    //     id: 'safe_parked_car_stationary',
+    //     name: '正常停放車輛',
+    //     description: '路邊正常停放的車輛，車門緊閉，車內無人，沒有任何移動跡象。',
+    //     category: EventCategory.SAFE,
+    //     trigger: {
+    //         type: TriggerType.PROXIMITY,
+    //         position: [12, 0, 70],
+    //         radius: 15
+    //     },
+    //     actors: [
+    //         {
+    //             id: 'parked_safe_car_1',
+    //             type: ActorType.VEHICLE,
+    //             model: '/src/assets/models/Car_Main2_Rigged.glb',
+    //             initialPosition: [12, 0, 70],
+    //             initialRotation: [0, Math.PI, 0],
+    //             color: '#808080'
+    //         }
+    //     ],
+    //     actions: [],
+    //     requiredPlayerResponse: {
+    //         type: PlayerResponseType.NONE
+    //     },
+    //     completionCriteria: {
+    //         playerPassed: true
+    //     },
+    //     priority: 2,
+    //     spawnRadius: 50,
+    //     feedback: {
+    //         hazard: '無危險 - 車輛正常停放',
+    //         safety: '路邊停放車輛無異常，可正常通過。'
+    //     }
+    // },
 ]

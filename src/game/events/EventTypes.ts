@@ -285,10 +285,19 @@ export interface PrepareInstruction {
 /**
  * Main game event interface
  */
+/**
+ * Event category types
+ */
+export enum EventCategory {
+    DANGER = 'danger',      // 危險事件 - 需要點擊識別
+    SAFE = 'safe'           // 正確行為事件 - 不應點擊，點擊會算 WRONG
+}
+
 export interface GameEvent {
     id: string
     name: string
     description?: string
+    category?: EventCategory // 事件類別，預設為 DANGER
     trigger: EventTrigger
     actors: EventActor[]
     actions: EventAction[]
@@ -299,8 +308,8 @@ export interface GameEvent {
     prepareConfig?: PrepareConfig // Auto-prepare when approaching in cruise mode
     spawnRadius?: number // Pre-spawn actors when player enters this radius (should be larger than trigger radius)
     feedback?: {
-        hazard: string
-        safety: string
+        hazard: string    // 危險原因說明
+        safety: string    // 安全駕駛建議
     }
 }
 

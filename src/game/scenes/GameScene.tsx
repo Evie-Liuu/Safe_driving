@@ -16,7 +16,7 @@ import { EventExecutor } from '../events/EventExecutor'
 import { EventActor } from '../components/EventActor'
 import { EventActorHandle } from '../components/EventActor'
 import { EventSystemUpdater } from '../components/EventSystemUpdater'
-import { PlayerState, ActionType, ScriptAction, PrepareInstruction, DangerClickJudgment, PrepareZoneStatus, GameEvent, ActorType, AnimationAction } from '../events/EventTypes'
+import { PlayerState, ActionType, ScriptAction, PrepareInstruction, DangerClickJudgment, PrepareZoneStatus, GameEvent, ActorType, AnimationAction, EventCategory } from '../events/EventTypes'
 import { AnimationManager } from '../animations/AnimationManager'
 import { getSharedLoader } from '../utils/SharedLoader'
 import { TrafficLight } from '../components/TrafficLight'
@@ -337,6 +337,39 @@ export function GameScene() {
 
     // Clear any existing judgment timer
     if (judgmentTimerRef.current) clearTimeout(judgmentTimerRef.current)
+
+    // Find the clicked event to check its category
+    const clickedEvent = riskEvents.find(e => e.id === clickedEventId)
+
+    // Check if clicked a SAFE event (正確行為事件) - this is always WRONG
+    if (clickedEvent?.category === EventCategory.SAFE) {
+      const newWrongCount = wrongClickCount + 1
+      setWrongClickCount(newWrongCount)
+
+      // Show feedback for clicking safe event
+      const feedbackName = clickedEvent.name || '安全行為'
+      setJudgmentResult({
+        judgment: DangerClickJudgment.WRONG,
+        eventName: `${feedbackName} - 這是正確行為，無需反應`
+      })
+      recordScore(clickedEventId, feedbackName, DangerClickJudgment.WRONG)
+
+      console.log(`[GameScene] ❌ Clicked SAFE event: ${clickedEventId} (${feedbackName})`)
+
+      if (newWrongCount >= MAX_WRONG_CLICKS) {
+        setIsClickDisabled(true)
+        console.log(`[GameScene] ❌ Exceeded wrong click limit (${MAX_WRONG_CLICKS})`)
+        if (clickCooldownRef.current) clearTimeout(clickCooldownRef.current)
+        clickCooldownRef.current = setTimeout(() => {
+          setIsClickDisabled(false)
+          setWrongClickCount(0)
+          setJudgmentResult(null)
+        }, 3000)
+      } else {
+        judgmentTimerRef.current = setTimeout(() => setJudgmentResult(null), 1500)
+      }
+      return
+    }
 
     // Check if clicked model belongs to the active danger event
     if (activeDanger && clickedEventId === activeDanger.eventId && !passedEventIds.current.has(activeDanger.eventId)) {
@@ -1557,7 +1590,19 @@ function ScorePanel({
   else if (percentage >= 50) { grade = 'D'; gradeColor = '#f97316'; gradeBg = 'rgba(249, 115, 22, 0.15)' }
 
   // 取得判定對應的樣式配置與安全駕駛建議
-  const getJudgmentConfig = (judgment: DangerClickJudgment) => {
+  const getJudgmentConfig = (judgment: DangerClickJudgment, isSafeEvent: boolean = false) => {
+    // 如果是點擊了正確行為事件（SAFE），使用特殊配置
+    if (isSafeEvent && judgment === DangerClickJudgment.WRONG) {
+      return {
+        label: '誤點',
+        color: '#06b6d4', // cyan
+        bgColor: 'rgba(6, 182, 212, 0.08)',
+        borderColor: 'rgba(6, 182, 212, 0.25)',
+        safetyAdvice: '這是正常/安全的情況，不需要特別反應。請學會區分危險與正常行為。',
+        isSafeEvent: true
+      }
+    }
+
     switch (judgment) {
       case DangerClickJudgment.FAST:
         return {
@@ -1565,7 +1610,8 @@ function ScorePanel({
           color: '#22c55e',
           bgColor: 'rgba(34, 197, 94, 0.08)',
           borderColor: 'rgba(34, 197, 94, 0.25)',
-          safetyAdvice: '您及時識別危險並採取正確行動，保持良好的駕駛習慣！'
+          safetyAdvice: '您及時識別危險並採取正確行動，保持良好的駕駛習慣！',
+          isSafeEvent: false
         }
       case DangerClickJudgment.SLOW:
         return {
@@ -1573,7 +1619,8 @@ function ScorePanel({
           color: '#fb923c',
           bgColor: 'rgba(251, 146, 60, 0.08)',
           borderColor: 'rgba(251, 146, 60, 0.25)',
-          safetyAdvice: '雖然有識別危險，但反應時間較長。建議提高警覺，保持更遠的安全距離。'
+          safetyAdvice: '雖然有識別危險，但反應時間較長。建議提高警覺，保持更遠的安全距離。',
+          isSafeEvent: false
         }
       case DangerClickJudgment.MISS:
         return {
@@ -1581,7 +1628,8 @@ function ScorePanel({
           color: '#ef4444',
           bgColor: 'rgba(239, 68, 68, 0.08)',
           borderColor: 'rgba(239, 68, 68, 0.25)',
-          safetyAdvice: '未能識別此危險情況。請加強觀察周遭環境，隨時注意可能的危險因子。'
+          safetyAdvice: '未能識別此危險情況。請加強觀察周遭環境，隨時注意可能的危險因子。',
+          isSafeEvent: false
         }
       default:
         return {
@@ -1589,7 +1637,8 @@ function ScorePanel({
           color: '#a855f7',
           bgColor: 'rgba(168, 85, 247, 0.08)',
           borderColor: 'rgba(168, 85, 247, 0.25)',
-          safetyAdvice: '誤判危險情況。請仔細觀察，避免不必要的緊急反應。'
+          safetyAdvice: '誤判危險情況。請仔細觀察，避免不必要的緊急反應。',
+          isSafeEvent: false
         }
     }
   }
@@ -1597,6 +1646,12 @@ function ScorePanel({
   // 根據 eventId 取得事件詳細資訊
   const getEventDetails = (eventId: string) => {
     return riskEvents.find(e => e.id === eventId)
+  }
+
+  // 檢查事件是否為正確行為事件
+  const isSafeEvent = (eventId: string) => {
+    const event = riskEvents.find(e => e.id === eventId)
+    return event?.category === EventCategory.SAFE
   }
 
   return (
@@ -1689,7 +1744,8 @@ function ScorePanel({
               </div>
             ) : (
               validEvents.map((event, index) => {
-                const config = getJudgmentConfig(event.judgment)
+                const isEventSafe = isSafeEvent(event.eventId)
+                const config = getJudgmentConfig(event.judgment, isEventSafe)
                 const eventDetails = getEventDetails(event.eventId)
                 return (
                   <div key={index} className="rounded-xl overflow-hidden"
@@ -1707,6 +1763,12 @@ function ScorePanel({
                             {index + 1}
                           </div>
                           <div className="flex-1 min-w-0">
+                            {/* 事件類型標籤 */}
+                            {/* {isEventSafe && (
+                              <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 mb-1">
+                                正確行為
+                              </span>
+                            )} */}
                             <div className="font-medium text-white text-sm leading-tight">{event.eventName}</div>
                             {/* 判定標籤與分數 */}
                             <div className="flex items-center gap-2 mt-2">
@@ -1727,16 +1789,27 @@ function ScorePanel({
                         </div>
                       </div>
 
-                      {/* 右側：危險原因與安全駕駛反饋 */}
+                      {/* 右側：情況說明與駕駛反饋 */}
                       <div className="flex-1 p-4 space-y-3">
-                        {/* 危險原因 */}
+                        {/* 情況說明 - 危險原因或正確行為說明 */}
                         {eventDetails?.feedback?.hazard && (
                           <div>
                             <div className="flex items-center gap-1.5 mb-1">
-                              <svg className="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                              </svg>
-                              <span className="text-xs font-medium text-amber-400">危險原因</span>
+                              {isEventSafe ? (
+                                <>
+                                  <svg className="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                  <span className="text-xs font-medium text-cyan-400">情況說明</span>
+                                </>
+                              ) : (
+                                <>
+                                  <svg className="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                  </svg>
+                                  <span className="text-xs font-medium text-amber-400">危險原因</span>
+                                </>
+                              )}
                             </div>
                             <p className="text-xs text-slate-300 leading-relaxed pl-5">
                               {eventDetails?.feedback?.hazard}
