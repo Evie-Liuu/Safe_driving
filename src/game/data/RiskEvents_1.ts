@@ -18,11 +18,12 @@ export const cruisePoints: [number, number, number][] = [
     // [10, 0, 0],  //E點
     // [10, 0, -60],
     // [10, 0, -106],
-    // [17, 0, -110], //B點右轉
+    [17, 0, -110], //B點右轉
     [52, 0, -110],
     [100.46, 0, -109],
-    [108.76, 0, -108.6], //C點右轉
-    [110.3, 0, -101.1],
+    [107.8, 0, -108.25], //C點右轉
+    [110.10, 0, -106.56], //C點右轉
+    [111.27, 0, -100.99],
     [109.1, 0, -66.4],
     [109.1, 0, 8],
     [111.34, 0, 46.56], //坑洞旁
@@ -43,7 +44,7 @@ export const events: GameEvent[] = [
         trigger: {
             type: TriggerType.PROXIMITY,
             position: [4.5, 0, 95],
-            radius: 11,
+            radius: 13,
             // requiredSpeed: {
             //     min: 10 // Only trigger if player is moving (36 km/h)
             // }
@@ -80,7 +81,7 @@ export const events: GameEvent[] = [
                 ],
                 speed: 12,
                 time: 0,
-                duration: 3
+                duration: 10
             }
         ],
         requiredPlayerResponse: {
@@ -180,7 +181,7 @@ export const events: GameEvent[] = [
             actions: [PrepareActionType.DECELERATE, PrepareActionType.LANE_SWITCH],
             targetSpeedFactor: 0.4,
             laneOffset: -3.0, // Shift left to avoid door
-            offsetHoldDistance: 10 // Maintain offset for 15m after passing trigger
+            offsetHoldDistance: 15 // Maintain offset for 15m after passing trigger
         },
         spawnRadius: 80 // Pre-spawn actors 50m away for smooth visual experience
     },
@@ -191,7 +192,7 @@ export const events: GameEvent[] = [
         trigger: {
             type: TriggerType.PROXIMITY,
             position: [9.5, 0, 20],
-            radius: 15,
+            radius: 18,
             // requiredSpeed: {
             //     min: 10 // Only trigger if player is moving (36 km/h)
             // }
@@ -259,7 +260,7 @@ export const events: GameEvent[] = [
         },
         priority: 10,
         prepareConfig: {
-            radius: 18, // Start preparing 35m away (trigger is 20m)
+            radius: 15, // Start preparing 35m away (trigger is 20m)
             actions: [PrepareActionType.DECELERATE],
             targetSpeedFactor: 0.3
         },
@@ -367,7 +368,7 @@ export const events: GameEvent[] = [
                 initialRotation: [0, Math.PI, 0],
                 scale: [1, 1, 1],
                 animationUrls: [
-                    '/src/assets/animations/character/Male_Walking_Remain_Animation.glb'
+                    '/src/assets/animations/character/Male_Walking_Animation.glb'
                 ]
             }
         ],
@@ -390,8 +391,7 @@ export const events: GameEvent[] = [
             {
                 actorId: 'pedestrian_1',
                 type: ActionType.ANIMATION,
-                // name: 'Male_Walking_Animation',
-                name: 'Take 001',
+                name: 'Male_Walking_Animation',
                 loop: true,
                 time: 0
             }
@@ -434,12 +434,12 @@ export const events: GameEvent[] = [
             {
                 id: 'intersection_pedestrian_1',
                 type: ActorType.PEDESTRIAN,
-                model: '/src/assets/models/Male2_Rigged.glb',
+                model: '/src/assets/models/Female2_Rigged.glb',
                 initialPosition: [105.9, 0, -104.9],
                 initialRotation: [0, Math.PI / 2, 0],
                 scale: [1, 1, 1],
                 animationUrls: [
-                    '/src/assets/animations/character/Male_Walking_Remain_Animation.glb'
+                    '/src/assets/animations/character/Female_Walking_Animation.glb'
                 ]
             }
         ],
@@ -457,7 +457,7 @@ export const events: GameEvent[] = [
             {
                 actorId: 'intersection_pedestrian_1',
                 type: ActionType.ANIMATION,
-                name: 'Take 001',
+                name: 'Female_Walking_Animation',
                 loop: true,
                 time: 0
             },
@@ -498,7 +498,7 @@ export const events: GameEvent[] = [
         },
         priority: 20, // 高優先級
         prepareConfig: {
-            radius: 4,
+            radius: 8,
             actions: [PrepareActionType.DECELERATE, PrepareActionType.STOP],
             targetSpeedFactor: 0.5,
             stopDuration: 2 // 停等 2 秒讓行人通過

@@ -241,9 +241,18 @@ export function GameScene() {
       }
 
       const shouldActivateStop = instruction.shouldStop &&
-        instruction.status === PrepareZoneStatus.INSIDE_TRIGGER &&
-        // instruction.status === PrepareZoneStatus.IN_PREPARE_ZONE &&
+        // instruction.status === PrepareZoneStatus.INSIDE_TRIGGER &&
+        instruction.status === PrepareZoneStatus.IN_PREPARE_ZONE &&
         !stopCompletedEventsRef.current.has(instruction.eventId)
+
+      // console.log(instruction.status);
+      // console.log(instruction.status === PrepareZoneStatus.IN_PREPARE_ZONE);
+      // console.log(!stopCompletedEventsRef.current.has(instruction.eventId));
+
+
+      // console.log('shouldActivateStop', shouldActivateStop);
+      // console.log('==================================');
+
 
       if (shouldActivateStop) {
         // Force speed to 0 for stop action

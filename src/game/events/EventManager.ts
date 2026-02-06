@@ -547,11 +547,16 @@ export class EventManager {
             if (priority <= bestPriority) continue
 
             let status: PrepareZoneStatus
-            if (distance <= triggerRadius) {
-                status = PrepareZoneStatus.INSIDE_TRIGGER
-            } else if (distance <= config.radius) {
-                status = PrepareZoneStatus.IN_PREPARE_ZONE
-            } else if (distance <= Math.max(config.radius, triggerRadius) + FAST_OUTER_BUFFER) {
+            const minRadius = Math.min(triggerRadius, config.radius)
+            const maxRadius = Math.max(triggerRadius, config.radius)
+
+            if (distance <= minRadius) {
+                // Inside both - status is the one with smaller radius (innermost)
+                status = triggerRadius <= config.radius ? PrepareZoneStatus.INSIDE_TRIGGER : PrepareZoneStatus.IN_PREPARE_ZONE
+            } else if (distance <= maxRadius) {
+                // Inside the outer one only
+                status = triggerRadius <= config.radius ? PrepareZoneStatus.IN_PREPARE_ZONE : PrepareZoneStatus.INSIDE_TRIGGER
+            } else if (distance <= maxRadius + FAST_OUTER_BUFFER) {
                 status = PrepareZoneStatus.IN_FAST_ZONE
             } else {
                 status = PrepareZoneStatus.OUTSIDE
@@ -561,15 +566,16 @@ export class EventManager {
             if (status === PrepareZoneStatus.OUTSIDE) continue
 
             bestPriority = priority
+            const inActionZone = distance <= config.radius
             bestInstruction = {
                 eventId: event.id,
                 eventName: event.name,
                 triggerPosition: event.trigger.position!,
-                shouldBrake: config.actions.includes(PrepareActionType.DECELERATE),
-                shouldStop: config.actions.includes(PrepareActionType.STOP),
+                shouldBrake: config.actions.includes(PrepareActionType.DECELERATE) && inActionZone,
+                shouldStop: config.actions.includes(PrepareActionType.STOP) && inActionZone,
                 stopDuration: config.stopDuration ?? 3,
                 targetSpeedFactor: config.targetSpeedFactor ?? 0.5,
-                laneOffset: config.actions.includes(PrepareActionType.LANE_SWITCH)
+                laneOffset: (config.actions.includes(PrepareActionType.LANE_SWITCH) && inActionZone)
                     ? (config.laneOffset ?? -1.5)
                     : 0,
                 clickDeadline: config.clickDeadline ?? 5,
@@ -599,18 +605,33 @@ export class EventManager {
             const distToTrigger = playerState.position.distanceTo(eventPos)
             const activeRadius = (event.trigger.radius || 0) + 5 // 5m buffer to prevent state flickering
 
+            // 須確認觸發範圍內的 準備範圍
+            let status: PrepareZoneStatus
+            const minRadius = Math.min(activeRadius, config.radius)
+            // const maxRadius = Math.max(activeRadius, config.radius)
+
+            if (distToTrigger <= minRadius) {
+                // Inside both - status is the one with smaller radius (innermost)
+                status = activeRadius <= config.radius ? PrepareZoneStatus.INSIDE_TRIGGER : PrepareZoneStatus.IN_PREPARE_ZONE
+            } else {
+                // Inside the outer one only
+                status = activeRadius <= config.radius ? PrepareZoneStatus.IN_PREPARE_ZONE : PrepareZoneStatus.INSIDE_TRIGGER
+            }
+
+
             if (isStopOrDecel && distToTrigger <= activeRadius) {
                 instruction = {
                     eventId: event.id,
                     eventName: event.name,
                     triggerPosition: event.trigger.position!,
                     shouldBrake: config.actions.includes(PrepareActionType.DECELERATE) && distToTrigger <= (event.prepareConfig.radius || 0),
-                    shouldStop: config.actions.includes(PrepareActionType.STOP),
+                    shouldStop: config.actions.includes(PrepareActionType.STOP) && distToTrigger <= (event.prepareConfig.radius || 0),
                     stopDuration: config.stopDuration ?? 3,
                     targetSpeedFactor: config.targetSpeedFactor ?? 0.5,
-                    laneOffset: isLaneSwitch ? (config.laneOffset ?? -1.5) : 0,
+                    laneOffset: (isLaneSwitch && distToTrigger <= (event.prepareConfig.radius || 0)) ? (config.laneOffset ?? -1.5) : 0,
                     clickDeadline: config.clickDeadline ?? 5,
-                    status: PrepareZoneStatus.INSIDE_TRIGGER
+                    // status: PrepareZoneStatus.INSIDE_TRIGGER
+                    status
                 }
             }
             // Check for Offset Hold (Recovery Phase)
