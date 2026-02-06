@@ -601,7 +601,7 @@ export class EventManager {
                     eventId: event.id,
                     eventName: event.name,
                     triggerPosition: event.trigger.position!,
-                    shouldBrake: config.actions.includes(PrepareActionType.DECELERATE),
+                    shouldBrake: config.actions.includes(PrepareActionType.DECELERATE) && distToTrigger <= (event.prepareConfig.radius || 0),
                     shouldStop: config.actions.includes(PrepareActionType.STOP),
                     stopDuration: config.stopDuration ?? 3,
                     targetSpeedFactor: config.targetSpeedFactor ?? 0.5,

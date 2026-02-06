@@ -13,16 +13,17 @@ export const cruisePoints: [number, number, number][] = [
     // [10, 0, 80],
     // [10, 0, 49],
     // [10, 0, 12],
-    [10, 0, 0],  //E點
-    [10, 0, -60],
-    [10, 0, -106],
-    [17, 0, -110], //B點右轉
-    [52, 0, -110],
-    [100.46, 0, -109],
-    [108.76, 0, -108.6], //C點右轉
+    // [10, 0, 0],  //E點
+    // [10, 0, -60],
+    // [10, 0, -106],
+    // [17, 0, -110], //B點右轉
+    // [52, 0, -110],
+    // [100.46, 0, -109],
+    // [108.76, 0, -108.6], //C點右轉
     [110.3, 0, -101.1],
     [109.1, 0, -66.4],
     [109.1, 0, 8],
+    [111.34, 0, 46.56], //坑洞旁
     [109.1, 0, 85]  //終點
 ]
 
@@ -348,9 +349,9 @@ export const events: GameEvent[] = [
         description: '行人從路邊穿越道路，玩家需要減速或停車',
         trigger: {
             type: TriggerType.PROXIMITY,
-            // position: [50, 0, -106.8],
-            position: [41.62, 0, -106.4],
-            radius: 15,
+            position: [50, 0, -106.8],
+            // position: [41.62, 0, -106.4],
+            radius: 17,
             // requiredSpeed: {
             //     min: 5
             // }
@@ -407,7 +408,7 @@ export const events: GameEvent[] = [
         },
         priority: 13, // Higher priority than taxi event
         prepareConfig: {
-            radius: 12, // Start preparing 25m away (trigger is 20m)
+            radius: 14, // Start preparing 25m away (trigger is 20m)
             actions: [PrepareActionType.DECELERATE],
             targetSpeedFactor: 0.3,
             // stopDuration: 3 // 停等 3 秒後繼續
@@ -421,7 +422,7 @@ export const events: GameEvent[] = [
         trigger: {
             type: TriggerType.PROXIMITY,
             position: [105.9, 0, -104.9],
-            radius: 8,
+            radius: 14,
             // requiredSpeed: {
             //     min: 5
             // }
@@ -494,7 +495,7 @@ export const events: GameEvent[] = [
         },
         priority: 20, // 高優先級
         prepareConfig: {
-            radius: 8,
+            radius: 3,
             actions: [PrepareActionType.DECELERATE, PrepareActionType.STOP],
             targetSpeedFactor: 0.5,
             stopDuration: 2 // 停等 2 秒讓行人通過
@@ -508,7 +509,7 @@ export const events: GameEvent[] = [
         trigger: {
             type: TriggerType.PROXIMITY,
             position: [117.6, 0, -71],
-            radius: 22,
+            radius: 19,
             // requiredSpeed: {
             //     min: 10 // Only trigger if player is moving (36 km/h)
             // }
@@ -588,7 +589,7 @@ export const events: GameEvent[] = [
         },
         priority: 10,
         prepareConfig: {
-            radius: 25, // Start preparing 35m away (trigger is 20m)
+            radius: 15, // Start preparing 35m away (trigger is 20m)
             actions: [PrepareActionType.DECELERATE],
             targetSpeedFactor: 0.5,
             stopDuration: 3
@@ -601,8 +602,8 @@ export const events: GameEvent[] = [
         description: '自行車突然偏移，玩家需要拉開側向距離，避免與自行車並行貼近',
         trigger: {
             type: TriggerType.PROXIMITY,
-            position: [107.5, 0, 28],
-            radius: 5,
+            position: [107.5, 0, 36],
+            radius: 15,
             // requiredSpeed: {
             //     min: 10 // Only trigger if player is moving (36 km/h)
             // }
@@ -700,10 +701,10 @@ export const events: GameEvent[] = [
         },
         priority: 10,
         prepareConfig: {
-            radius: 15, // Start preparing 35m away (trigger is 20m)
+            radius: 8, // Start preparing 35m away (trigger is 20m)
             actions: [PrepareActionType.DECELERATE],
             targetSpeedFactor: 0.2
         },
-        spawnRadius: 120
+        spawnRadius: 100
     },
 ]

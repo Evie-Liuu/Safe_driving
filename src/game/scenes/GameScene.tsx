@@ -44,7 +44,7 @@ export function GameScene() {
   }>>([])
   const vehicleIdCounter = useRef(0)
 
-  const debugflag = useRef(false)
+  const debugflag = useRef(true)
 
   // Event system
   const eventManagerRef = useRef<EventManager | null>(null)
@@ -1003,13 +1003,13 @@ export function GameScene() {
       })()}
 
       {/* 遊戲開始畫面 */}
-      {showStartScreen && (
+      {/* {showStartScreen && (
         <StartScreen
           onStart={() => {
             setShowStartScreen(false)
           }}
         />
-      )}
+      )} */}
 
       {/* 遊戲中的說明按鈕（右下角，不在開始畫面或結算時顯示） */}
       {!showStartScreen && !showScorePanel && (
