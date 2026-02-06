@@ -261,6 +261,7 @@ export enum DangerClickJudgment {
 export enum PrepareZoneStatus {
     IN_PREPARE_ZONE = 'in_prepare_zone',
     INSIDE_TRIGGER = 'inside_trigger',  // Player entered trigger radius (not a miss)
+    IN_FAST_ZONE = 'in_fast_zone',
     OUTSIDE = 'outside'                 // Player is beyond prepare radius (miss)
 }
 

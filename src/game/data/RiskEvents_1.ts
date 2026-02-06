@@ -1,5 +1,7 @@
 import { GameEvent, TriggerType, ActionType, ActorType, PlayerResponseType, PrepareActionType } from '../events/EventTypes'
 
+export const FAST_OUTER_BUFFER = 10
+
 /**
  * Cruise points for the route
  * A--B--C
@@ -13,13 +15,13 @@ export const cruisePoints: [number, number, number][] = [
     // [10, 0, 80],
     // [10, 0, 49],
     // [10, 0, 12],
-    // [10, 0, 0],  //E點
-    // [10, 0, -60],
-    // [10, 0, -106],
-    // [17, 0, -110], //B點右轉
-    // [52, 0, -110],
-    // [100.46, 0, -109],
-    // [108.76, 0, -108.6], //C點右轉
+    [10, 0, 0],  //E點
+    [10, 0, -60],
+    [10, 0, -106],
+    [17, 0, -110], //B點右轉
+    [52, 0, -110],
+    [100.46, 0, -109],
+    [108.76, 0, -108.6], //C點右轉
     [110.3, 0, -101.1],
     [109.1, 0, -66.4],
     [109.1, 0, 8],

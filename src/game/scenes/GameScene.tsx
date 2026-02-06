@@ -10,7 +10,7 @@ import { OncomingVehicle } from '../components/OncomingVehicle'
 import { PerformanceMonitor, PerformanceStats } from '../optimization/PerformanceMonitor'
 import { ModelLoader } from '../models/ModelLoader'
 import { MaleCharacter } from '../components/MaleCharacter'
-import { cruisePoints, events as riskEvents } from '@/game/data/RiskEvents_1'
+import { cruisePoints, events as riskEvents, FAST_OUTER_BUFFER } from '@/game/data/RiskEvents_1'
 import { EventManager } from '../events/EventManager'
 import { EventExecutor } from '../events/EventExecutor'
 import { EventActor } from '../components/EventActor'
@@ -44,7 +44,7 @@ export function GameScene() {
   }>>([])
   const vehicleIdCounter = useRef(0)
 
-  const debugflag = useRef(true)
+  const debugflag = useRef(false)
 
   // Event system
   const eventManagerRef = useRef<EventManager | null>(null)
@@ -341,11 +341,10 @@ export function GameScene() {
 
       // FAST range: based on the larger of trigger or prepare radius
       // This handles cases where trigger radius > prepare radius
-      const FAST_OUTER_BUFFER = 5 // meters
       const prepareRadius = activeDanger.prepareRadius
       const triggerRadius = activeDanger.triggerRadius
       const baseRadius = Math.max(prepareRadius, triggerRadius) // Use the larger radius
-      const fastRangeOuter = prepareRadius + FAST_OUTER_BUFFER
+      const fastRangeOuter = baseRadius + FAST_OUTER_BUFFER
       const fastRangeInner = baseRadius
 
       // Determine judgment based on distance:
@@ -392,7 +391,7 @@ export function GameScene() {
         judgmentTimerRef.current = setTimeout(() => setJudgmentResult(null), 1000)
       }
     }
-  }, [activeDanger, wrongClickCount, isClickDisabled])
+  }, [activeDanger, wrongClickCount, isClickDisabled, playerPosition.x, playerPosition.z])
 
   // Keep old function name for compatibility
   const handleDangerClick = handleScreenClick
@@ -1734,8 +1733,6 @@ function DebugRadiusVisualizer({
   visible?: boolean
 }) {
   if (!visible) return null
-
-  const FAST_OUTER_BUFFER = 5 // Same as in handleScreenClick
 
   return (
     <group>

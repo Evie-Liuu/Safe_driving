@@ -13,6 +13,7 @@ import {
     PrepareZoneStatus,
     ActionType
 } from './EventTypes'
+import { FAST_OUTER_BUFFER } from '@/game/data/RiskEvents_1'
 
 /**
  * Central event management system
@@ -550,6 +551,8 @@ export class EventManager {
                 status = PrepareZoneStatus.INSIDE_TRIGGER
             } else if (distance <= config.radius) {
                 status = PrepareZoneStatus.IN_PREPARE_ZONE
+            } else if (distance <= Math.max(config.radius, triggerRadius) + FAST_OUTER_BUFFER) {
+                status = PrepareZoneStatus.IN_FAST_ZONE
             } else {
                 status = PrepareZoneStatus.OUTSIDE
             }
