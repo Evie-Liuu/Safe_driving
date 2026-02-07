@@ -223,6 +223,29 @@ export class AnimationController {
   }
 
   /**
+   * 設置全局 mixer timeScale（影響所有動畫）
+   * @param speed 速度倍率
+   */
+  setMixerTimeScale(speed: number) {
+    this.mixer.timeScale = speed
+  }
+
+  /**
+   * 獲取全局 mixer timeScale
+   */
+  getMixerTimeScale(): number {
+    return this.mixer.timeScale
+  }
+
+  /**
+   * 手動更新 mixer（用於設置初始姿勢）
+   * @param deltaTime 時間增量
+   */
+  updateMixer(deltaTime: number) {
+    this.mixer.update(deltaTime)
+  }
+
+  /**
    * 銷毀動畫控制器
    */
   dispose() {

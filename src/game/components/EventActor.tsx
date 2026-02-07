@@ -70,6 +70,8 @@ interface EventActorProps extends EventActorType {
     initialLightAction?: LightConfig
     initialAnimationAction?: AnimationConfig
     enableDebug?: boolean
+    shouldCleanup?: boolean // Trigger cleanup of resources
+    onCleanupComplete?: () => void // Callback when cleanup is done
 }
 
 /**
@@ -93,7 +95,9 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
             onClick,
             initialLightAction,
             initialAnimationAction,
-            enableDebug = false
+            enableDebug = false,
+            shouldCleanup = false,
+            onCleanupComplete
         },
         ref
     ) => {
@@ -144,6 +148,84 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                 }
             }
         }, [])
+
+        // Cleanup resources when shouldCleanup is triggered
+        useEffect(() => {
+            if (shouldCleanup) {
+                console.log(`[EventActor] 🧹 Starting cleanup for actor ${id}`)
+
+                // Stop and dispose animation controller
+                if (animationControllerRef.current) {
+                    animationControllerRef.current.dispose()
+                    animationControllerRef.current = null
+                }
+
+                // Dispose model and all its resources
+                if (modelSceneRef.current && groupRef.current) {
+                    // Helper function to dispose Object3D recursively
+                    const disposeObject3D = (object: THREE.Object3D) => {
+                        if (object instanceof THREE.Mesh) {
+                            if (object.geometry) {
+                                object.geometry.dispose()
+                            }
+                            if (object.material) {
+                                if (Array.isArray(object.material)) {
+                                    object.material.forEach(mat => {
+                                        disposeMaterial(mat)
+                                    })
+                                } else {
+                                    disposeMaterial(object.material)
+                                }
+                            }
+                        }
+
+                        // Recursively dispose children
+                        object.children.forEach(child => disposeObject3D(child))
+                    }
+
+                    // Helper function to dispose material and its textures
+                    const disposeMaterial = (material: THREE.Material) => {
+                        const mat = material as any
+                        const textureProps = [
+                            'map', 'lightMap', 'bumpMap', 'normalMap',
+                            'specularMap', 'envMap', 'alphaMap', 'aoMap',
+                            'displacementMap', 'emissiveMap', 'gradientMap',
+                            'metalnessMap', 'roughnessMap'
+                        ]
+
+                        textureProps.forEach(prop => {
+                            if (mat[prop]?.dispose) {
+                                mat[prop].dispose()
+                            }
+                        })
+
+                        material.dispose()
+                    }
+
+                    // Dispose the model scene
+                    disposeObject3D(modelSceneRef.current)
+
+                    // Remove from parent
+                    groupRef.current.remove(modelSceneRef.current)
+                    modelSceneRef.current = null
+                }
+
+                // Clear light materials references
+                lightMaterialsRef.current = []
+
+                // Clear debug path
+                if (debugPath) {
+                    setDebugPath(null)
+                }
+
+                console.log(`[EventActor] ✅ Cleanup complete for actor ${id}`)
+
+                // Notify cleanup completion
+                if (onCleanupComplete) {
+                    onCleanupComplete()
+                }
+            }
+        }, [shouldCleanup, id, onCleanupComplete, debugPath])
 
         // Debug: Monitor debugPath changes
         // useEffect(() => {
@@ -266,7 +348,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
 
             resumeAnimation: () => {
                 if (animationControllerRef.current) {
-                    animationControllerRef.current.mixer.timeScale = 1
+                    animationControllerRef.current.setMixerTimeScale(1)
                     console.log(`[EventActor] ▶️ Actor ${id} resumed animation`)
                 }
             },
@@ -274,8 +356,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
             isPaused: () => {
                 // 檢查動畫是否處於暫停狀態（timeScale === 0 且有動畫在播放）
                 if (animationControllerRef.current) {
-                    const mixer = animationControllerRef.current.mixer
-                    return mixer.timeScale === 0
+                    return animationControllerRef.current.getMixerTimeScale() === 0
                 }
                 return false
             }
@@ -547,9 +628,9 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                                 fadeIn: 0
                             })
                             // Advance to a visible pose (0.1 seconds into animation)
-                            animController.mixer.update(0.1)
+                            animController.updateMixer(0.1)
                             // Then pause
-                            animController.mixer.timeScale = 0
+                            animController.setMixerTimeScale(0)
                             // console.log(`[EventActor] ✅ Initial animation pose applied for ${id}`)
                         } else {
                             // console.warn(`[EventActor] ⚠️ Animation '${initialAnimationAction.name}' not found for ${id}`)

@@ -1,4 +1,4 @@
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { EventManager } from '../events/EventManager'
 import { EventExecutor } from '../events/EventExecutor'
@@ -15,6 +15,8 @@ interface EventSystemUpdaterProps {
     isCruising: boolean
     actorRefsMap: Map<string, React.RefObject<EventActorHandle>>
     onPrepareInstruction?: (instruction: PrepareInstruction | null) => void
+    enablePerformanceMonitoring?: boolean
+    performanceLogInterval?: number // Log performance stats every N seconds (default: 30)
 }
 
 /**
@@ -29,10 +31,16 @@ export function EventSystemUpdater({
     playerRotation,
     isCruising,
     actorRefsMap,
-    onPrepareInstruction
+    onPrepareInstruction,
+    enablePerformanceMonitoring = true,
+    performanceLogInterval = 30
 }: EventSystemUpdaterProps) {
+    const { gl } = useThree()
     const lastUpdateTime = useRef(0)
     const eventToActorsMap = useRef<Map<string, string[]>>(new Map())
+    const lastPerformanceLogTime = useRef(0)
+    const frameCountRef = useRef(0)
+    const fpsAccumulatorRef = useRef(0)
 
     useFrame((state) => {
         if (!eventManager) return
@@ -70,6 +78,65 @@ export function EventSystemUpdater({
             currentTime,
             playerState
         )
+
+        // Update resource cleanup manager
+        const cleanupManager = eventManager.getResourceCleanupManager()
+        cleanupManager.update(currentTime)
+
+        // Performance monitoring
+        if (enablePerformanceMonitoring) {
+            frameCountRef.current++
+            fpsAccumulatorRef.current += state.clock.getDelta()
+
+            // Log performance stats periodically
+            if (currentTime - lastPerformanceLogTime.current >= performanceLogInterval) {
+                const fps = Math.round(frameCountRef.current / fpsAccumulatorRef.current)
+                const info = gl.info
+
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+                console.log('📊 Performance Stats')
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+                console.log(`🎮 FPS: ${fps}`)
+                console.log(`🎨 Draw Calls: ${info.render.calls}`)
+                console.log(`📐 Triangles: ${info.render.triangles.toLocaleString()}`)
+                console.log(`📦 Geometries: ${info.memory.geometries}`)
+                console.log(`🖼️ Textures: ${info.memory.textures}`)
+
+                // Memory (if available)
+                if ((performance as any).memory) {
+                    const memoryMB = Math.round((performance as any).memory.usedJSHeapSize / 1048576)
+                    console.log(`💾 Memory: ${memoryMB} MB`)
+                }
+
+                // Event system stats
+                const activeEventsCount = eventManager.getActiveEvents().length
+                console.log(`🎯 Active Events: ${activeEventsCount}`)
+
+                // Cleanup stats
+                const cleanupStats = cleanupManager.getStats()
+                console.log(`🧹 Cleanup Stats:`)
+                console.log(`   - Total Events Cleaned: ${cleanupStats.totalEvents}`)
+                console.log(`   - Pending Cleanup: ${cleanupManager.getPendingCount()}`)
+                console.log(`   - Geometries: ${cleanupStats.totalGeometries}`)
+                console.log(`   - Materials: ${cleanupStats.totalMaterials}`)
+                console.log(`   - Textures: ${cleanupStats.totalTextures}`)
+
+                // Auto-optimization triggers
+                if (fps < 30) {
+                    console.log('⚠️ Low FPS detected - enabling aggressive cleanup')
+                    cleanupManager.setAggressiveMode(true)
+                } else if (fps > 50) {
+                    cleanupManager.setAggressiveMode(false)
+                }
+
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+
+                // Reset counters
+                lastPerformanceLogTime.current = currentTime
+                frameCountRef.current = 0
+                fpsAccumulatorRef.current = 0
+            }
+        }
 
         // Update event executor timelines for each active event
         const activeEvents = eventManager.getActiveEvents()

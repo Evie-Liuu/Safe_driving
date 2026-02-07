@@ -14,6 +14,8 @@ import {
     ActionType
 } from './EventTypes'
 import { FAST_OUTER_BUFFER } from '@/game/data/RiskEvents_1'
+import { ResourceCleanupManager } from '../optimization/ResourceCleanupManager'
+import { CompletedEventsCache } from './CompletedEventsCache'
 
 /**
  * Central event management system
@@ -23,19 +25,30 @@ export class EventManager {
     private eventRegistry: Map<string, GameEvent> = new Map() // 儲存所有事件定義
     private pendingEvents: Map<string, GameEvent> = new Map()
     private activeEvents: Map<string, EventContext> = new Map()
-    private completedEvents: Set<string> = new Set()
+    private completedEventsCache: CompletedEventsCache
     private config: EventManagerConfig
     private callbacks: EventCallbacks
     private lastCheckTime: number = 0
+    private resourceCleanupManager: ResourceCleanupManager
 
     constructor(config: EventManagerConfig = {}) {
         this.config = {
             enableDebugVisualization: false,
             maxConcurrentEvents: 5,
             eventTriggerCheckInterval: 0.1, // Check every 100ms
+            maxCompletedEventsCache: 20,
+            enableEventRecycling: true,
             ...config
         }
         this.callbacks = config.callbacks || {}
+        this.resourceCleanupManager = new ResourceCleanupManager({
+            cleanupThreshold: 5,
+            cleanupInterval: 2000,
+            enableLogging: true
+        })
+        this.completedEventsCache = new CompletedEventsCache(
+            this.config.maxCompletedEventsCache
+        )
     }
 
     /**
@@ -214,6 +227,9 @@ export class EventManager {
 
         // Complete events that met their criteria
         eventsToComplete.forEach(eventId => this.completeEvent(eventId, true))
+
+        // Update resource cleanup manager
+        this.resourceCleanupManager.update(currentTime)
     }
 
     /**
@@ -389,21 +405,45 @@ export class EventManager {
 
         context.state = success ? EventState.COMPLETED : EventState.FAILED
 
+        // Collect actor IDs for cleanup
+        const actorIds = Array.from(context.activeActors.keys())
+
+        // Collect resources for cleanup (will be collected by actors themselves)
+        // Note: Resources are actually held by EventActor components,
+        // so we'll need to coordinate with them for actual cleanup
+        // For now, we schedule the cleanup task with empty resources
+        // and will populate it when we integrate with EventActor
+        this.resourceCleanupManager.scheduleCleanup(eventId, actorIds, {
+            geometries: [],
+            materials: [],
+            textures: [],
+            animationMixers: [],
+            sceneObjects: []
+        })
+
+        // Clear context internal references
+        context.activeActors.clear()
+        context.completedActions.clear()
+        context.actorPathsCompleted?.clear()
+
         this.activeEvents.delete(eventId)
-        this.completedEvents.add(eventId)
+
+        // Add to completed events cache with LRU management
+        this.completedEventsCache.add(eventId, success)
 
         console.log(`Event ${success ? 'completed' : 'failed'}: ${eventId}`)
+        console.log(`[EventManager] 📊 Completed events cache size: ${this.completedEventsCache.size()}/${this.config.maxCompletedEventsCache}`)
 
         // Trigger callback
         if (this.callbacks.onEventCompleted) {
             this.callbacks.onEventCompleted(eventId, success)
         }
 
-        // Re-register if repeatable
+        // Re-register if repeatable (Note: repeatable events won't be in completed cache)
         const event = this.getEventById(eventId)
         if (event && event.repeatable) {
             this.pendingEvents.set(eventId, event)
-            this.completedEvents.delete(eventId)
+            // Don't need to remove from cache as it will be naturally evicted by LRU
         }
     }
 
@@ -682,7 +722,7 @@ export class EventManager {
      */
     reset(): void {
         this.activeEvents.clear()
-        this.completedEvents.clear()
+        this.completedEventsCache.clear()
         // Note: pendingEvents are preserved to allow replay
     }
 
@@ -690,9 +730,24 @@ export class EventManager {
      * Dispose and cleanup
      */
     dispose(): void {
+        this.resourceCleanupManager.dispose()
         this.eventRegistry.clear()
         this.pendingEvents.clear()
         this.activeEvents.clear()
-        this.completedEvents.clear()
+        this.completedEventsCache.clear()
+    }
+
+    /**
+     * Get resource cleanup manager (for external control)
+     */
+    getResourceCleanupManager(): ResourceCleanupManager {
+        return this.resourceCleanupManager
+    }
+
+    /**
+     * Get cleanup statistics
+     */
+    getCleanupStats() {
+        return this.resourceCleanupManager.getStats()
     }
 }
