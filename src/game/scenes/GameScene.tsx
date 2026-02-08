@@ -6,6 +6,7 @@ import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import * as THREE from 'three'
 import { Environment } from '../components/Environment'
 import { PlayerController } from '../components/PlayerController'
+import { PlayerVehicle } from '../components/PlayerVehicle'
 import { OncomingVehicle } from '../components/OncomingVehicle'
 import { PerformanceMonitor, PerformanceStats } from '../optimization/PerformanceMonitor'
 import { ModelLoader } from '../models/ModelLoader'
@@ -28,7 +29,7 @@ import { trafficLights } from '../data/TrafficLights'
  */
 export function GameScene() {
   const [playerPosition, setPlayerPosition] = useState<THREE.Vector3>(
-    new THREE.Vector3(0, 0, 0)
+    () => new THREE.Vector3(...cruisePoints[0])
   )
   const [clickPoints, setClickPoints] = useState<THREE.Vector3[]>([])
   const [currentClick, setCurrentClick] = useState<THREE.Vector3 | null>(null)
@@ -44,7 +45,7 @@ export function GameScene() {
   }>>([])
   const vehicleIdCounter = useRef(0)
 
-  const debugflag = useRef(false)
+  const debugflag = useRef(true)
 
   // Event system
   const eventManagerRef = useRef<EventManager | null>(null)
@@ -806,7 +807,11 @@ export function GameScene() {
           targetSpeedFactor={autoSpeedFactor}
           onRotationChange={setPlayerRotation}
         >
-          {/* 玩家模型 */}
+          {/* 玩家模型（角色+機車） */}
+          {/* <PlayerVehicle
+            isMoving={isCruising && !gameEnded && !isPaused}
+            currentSpeed={currentSpeed}
+          /> */}
           <ModelLoader url="/src/assets/models/Scooter1_Rigged.glb" rotation={[0, 0, 0]} />
         </PlayerController>
 

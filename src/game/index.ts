@@ -24,6 +24,7 @@ export {
 
 // 遊戲組件
 export { PlayerController, useKeyboardControls } from './components/PlayerController'
+export { PlayerVehicle } from './components/PlayerVehicle'
 export { Environment, SkyBox, BasicLighting } from './components/Environment'
 
 // 工具函數

@@ -721,64 +721,64 @@ export const events: GameEvent[] = [
 
     // ===== 正確行為事件 (SAFE) - 點擊這些會算 WRONG =====
 
-    // {
-    //     id: 'safe_normal_driving_car',
-    //     name: '正常行駛車輛',
-    //     description: '前方車輛正常速限行駛，保持車道，無異常行為。這是正常的道路情況，不需要特別反應。',
-    //     category: EventCategory.SAFE,
-    //     trigger: {
-    //         type: TriggerType.PROXIMITY,
-    //         position: [8, 0, 60],
-    //         radius: 25
-    //     },
-    //     actors: [
-    //         {
-    //             id: 'normal_car_1',
-    //             type: ActorType.VEHICLE,
-    //             model: '/src/assets/models/Car2_Rigged.glb',
-    //             initialPosition: [8, 0, 60],
-    //             initialRotation: [0, Math.PI, 0],
-    //             animationUrls: [
-    //                 '/src/assets/animations/car/Car2_Moving_Animation.glb'
-    //             ]
-    //         }
-    //     ],
-    //     actions: [
-    //         {
-    //             actorId: 'normal_car_1',
-    //             type: ActionType.ANIMATION,
-    //             name: 'Car2_Moving_Animation',
-    //             loop: true,
-    //             time: 0
-    //         },
-    //         {
-    //             actorId: 'normal_car_1',
-    //             type: ActionType.MOVEMENT,
-    //             path: [
-    //                 [8, 0, 60],
-    //                 [8, 0, 40],
-    //                 [8, 0, 20],
-    //                 [8, 0, 0],
-    //                 [8, 0, -20]
-    //             ],
-    //             speed: 12,
-    //             time: 0,
-    //             duration: 15
-    //         }
-    //     ],
-    //     requiredPlayerResponse: {
-    //         type: PlayerResponseType.NONE
-    //     },
-    //     completionCriteria: {
-    //         playerPassed: true
-    //     },
-    //     priority: 5,
-    //     spawnRadius: 80,
-    //     feedback: {
-    //         hazard: '無危險 - 車輛正常行駛',
-    //         safety: '這是正確的駕駛行為，保持正常行駛即可。'
-    //     }
-    // },
+    {
+        id: 'safe_normal_driving_car',
+        name: '正常行駛車輛',
+        description: '前方車輛正常速限行駛，保持車道，無異常行為。這是正常的道路情況，不需要特別反應。',
+        category: EventCategory.SAFE,
+        trigger: {
+            type: TriggerType.PROXIMITY,
+            position: [8, 0, 60],
+            radius: 25
+        },
+        actors: [
+            {
+                id: 'normal_car_1',
+                type: ActorType.VEHICLE,
+                model: '/src/assets/models/Car2_Rigged.glb',
+                initialPosition: [8, 0, 60],
+                initialRotation: [0, Math.PI, 0],
+                animationUrls: [
+                    '/src/assets/animations/car/Car2_Moving_Animation.glb'
+                ]
+            }
+        ],
+        actions: [
+            {
+                actorId: 'normal_car_1',
+                type: ActionType.ANIMATION,
+                name: 'Car2_Moving_Animation',
+                loop: true,
+                time: 0
+            },
+            {
+                actorId: 'normal_car_1',
+                type: ActionType.MOVEMENT,
+                path: [
+                    [8, 0, 60],
+                    [8, 0, 40],
+                    [8, 0, 20],
+                    [8, 0, 0],
+                    [8, 0, -20]
+                ],
+                speed: 12,
+                time: 0,
+                duration: 15
+            }
+        ],
+        requiredPlayerResponse: {
+            type: PlayerResponseType.NONE
+        },
+        completionCriteria: {
+            playerPassed: true
+        },
+        priority: 5,
+        spawnRadius: 80,
+        feedback: {
+            hazard: '無危險 - 車輛正常行駛',
+            safety: '這是正確的駕駛行為，保持正常行駛即可。'
+        }
+    },
     // {
     //     id: 'safe_pedestrian_on_sidewalk',
     //     name: '人行道上的行人',

@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useLayoutEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 
@@ -323,8 +323,16 @@ export function PlayerController({
     }
   })
 
+  // Initial position and rotation setup
+  useLayoutEffect(() => {
+    if (groupRef.current) {
+      groupRef.current.position.set(position[0], position[1], position[2])
+      groupRef.current.rotation.set(0, -Math.PI, 0)
+    }
+  }, []) // Only run once on mount
+
   return (
-    <group ref={groupRef} position={position} rotation={[0, -Math.PI, 0]}>
+    <group ref={groupRef}>
       {children}
     </group>
   )
