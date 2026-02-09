@@ -187,7 +187,11 @@ export const events: GameEvent[] = [
             laneOffset: -3.0, // Shift left to avoid door
             offsetHoldDistance: 15 // Maintain offset for 15m after passing trigger
         },
-        spawnRadius: 80 // Pre-spawn actors 50m away for smooth visual experience
+        spawnRadius: 80, // Pre-spawn actors 50m away for smooth visual experience
+        feedback: {
+            hazard: '路邊車車門侵入車道',
+            safety: '減速、略偏左避開'
+        }
     },
     {
         id: 'bus_roadside_stop',
@@ -268,7 +272,11 @@ export const events: GameEvent[] = [
             actions: [PrepareActionType.DECELERATE],
             targetSpeedFactor: 0.3
         },
-        spawnRadius: 100
+        spawnRadius: 100,
+        feedback: {
+            hazard: '公車外拋掃到你',
+            safety: '不貼右、留外拋空間'
+        }
     },
     {
         id: 'car_distracted_turning',
@@ -348,7 +356,11 @@ export const events: GameEvent[] = [
             actions: [PrepareActionType.DECELERATE],
             targetSpeedFactor: 0.5
         },
-        spawnRadius: 80
+        spawnRadius: 80,
+        feedback: {
+            hazard: '前車壓線/忽快忽慢',
+            safety: '拉車距、盯輪胎、備煞'
+        }
     },
     {
         id: 'pedestrian_crossing',
@@ -419,7 +431,11 @@ export const events: GameEvent[] = [
             targetSpeedFactor: 0.3,
             // stopDuration: 3 // 停等 3 秒後繼續
         },
-        spawnRadius: 50
+        spawnRadius: 50,
+        feedback: {
+            hazard: '行人突然踏出車道',
+            safety: '先減速、直線穩住'
+        }
     },
     {
         id: 'pedestrian_crossing_intersection',
@@ -737,15 +753,15 @@ export const events: GameEvent[] = [
         category: EventCategory.SAFE,
         trigger: {
             type: TriggerType.PROXIMITY,
-            position: [8, 0, 60],
-            radius: 25
+            position: [3.6, 0, 60],
+            radius: 20
         },
         actors: [
             {
                 id: 'normal_car_1',
                 type: ActorType.VEHICLE,
                 model: '/src/assets/models/Car2_Rigged.glb',
-                initialPosition: [8, 0, 60],
+                initialPosition: [3.6, 0, 60],
                 initialRotation: [0, Math.PI, 0],
                 animationUrls: [
                     '/src/assets/animations/car/Car2_Moving_Animation.glb'
@@ -764,11 +780,11 @@ export const events: GameEvent[] = [
                 actorId: 'normal_car_1',
                 type: ActionType.MOVEMENT,
                 path: [
-                    [8, 0, 60],
-                    [8, 0, 40],
-                    [8, 0, 20],
-                    [8, 0, 0],
-                    [8, 0, -20]
+                    [3.6, 0, 60],
+                    [3.6, 0, 40],
+                    [3.6, 0, 20],
+                    [3.6, 0, 0],
+                    [3.6, 0, -20]
                 ],
                 speed: 12,
                 time: 0,
