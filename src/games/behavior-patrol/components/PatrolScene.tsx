@@ -3,8 +3,9 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three'
 import { Environment } from '@/game/components/Environment';
-import { ClickableObject } from './ClickableObject';
 import { PatrolScenario, DangerFactor } from '@/games/behavior-patrol/types';
+import { DangerGroup } from './DangerGroup';
+import { SafeObjectGroup } from './SafeObjectGroup';
 
 interface PatrolSceneProps {
   scenario: PatrolScenario;
@@ -51,35 +52,23 @@ export function PatrolScene({
 
         {/* 危險因子 */}
         {scenario.dangers.map((danger) => (
-          <ClickableObject
+          <DangerGroup
             key={danger.id}
-            id={danger.id}
-            model={danger.model}
-            position={danger.position}
-            rotation={danger.rotation}
-            scale={danger.scale}
-            behaviors={danger.behaviors}
-            animationUrls={danger.animationUrls}
-            accessoryNames={danger.accessoryNames}
+            danger={danger}
             onClick={() => onDangerClick(danger)}
-            disabled={disabled}
-            found={foundDangerIds.has(danger.id)}
+            disabled={disabled || foundDangerIds.has(danger.id)}
+            enableDebug={false}
           />
         ))}
 
         {/* 安全物件 */}
         {scenario.safeObjects.map((obj) => (
-          <ClickableObject
+          <SafeObjectGroup
             key={obj.id}
-            id={obj.id}
-            model={obj.model}
-            position={obj.position}
-            rotation={obj.rotation}
-            scale={obj.scale}
-            behaviors={obj.behaviors}
-            animationUrls={obj.animationUrls}
+            safeObject={obj}
             onClick={onSafeClick}
             disabled={disabled}
+            enableDebug={false}
           />
         ))}
 

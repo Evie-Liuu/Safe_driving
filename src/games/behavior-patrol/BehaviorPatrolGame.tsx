@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { GameProps } from '../types';
 import { GameHUD, QuizModal, FeedbackPanel, ResultScreen, PatrolScene } from './components';
 import { useGameState, useTimer } from './hooks';
-import { patrolScenario1 } from './data/PatrolScenario_1';
+import { patrolScenario1 } from './data/PatrolScenario_1_New';
 import { DangerFactor } from './types';
 
 export function BehaviorPatrolGame({ onExit }: GameProps) {

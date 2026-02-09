@@ -105,38 +105,78 @@ export const patrolScenario1: PatrolScenario = {
     {
       id: 'danger-4',
       name: '機車在公車後方搶快超車',
-      type: 'scooter',
-      // position: [37.6, 0, 9.35],
-      position: [37.6, 0, 9.35],
-      rotation: [0, Math.PI / 2, 0],
-      model: '/src/assets/models/Bus_Rigged.glb',
-      behaviors: [
+      description: '公車正常行駛，機車從後方視線死角高速超車，容易發生碰撞',
+      actors: [
         {
-          type: 'movement',
-          path: [
-            [37.6, 0, 9.35],
-            [95.23, 0, 8.62],
-            [106.6, 0, 7.7],  //F點
-            [109.21, 0, 8.04],  //F點
-            [111.73, 0, 11.7],  //F點
-            [112.51, 0, 17.17],
-            [110.52, 0, 93.51],
-            [113.74, 0, 106.27],  //I點
-            [113.55, 0, 108.89],  //I點
-            [111.66, 0, 111.89],  //I點
-            [106.98, 0, 112.88],  //I點
-            [20.29, 0, 112.54],
-            [13.44, 0, 113.83],  //H點
-            [10.5, 0, 113.83],  //H點
-            [7.81, 0, 111.28],  //H點
-            [7.87, 0, 106],
-            [9.11, 0, 22.89],
-            [8.03, 0, 13.7],
-            [7.41, 0, 11.7],  //E點
-            [8.52, 0, 8.7],
-            [13.93, 0, 7.84]
-
-          ], speed: 6, loop: true
+          id: 'bus_1',
+          name: '正常行駛公車',
+          type: 'vehicle',
+          model: '/src/assets/models/Bus_Rigged.glb',
+          position: [37.6, 0, 9.35],
+          rotation: [0, Math.PI / 2, 0],
+          animationUrls: ['/src/assets/animations/car/Bus_Moving_Animation.glb'],
+          behaviors: [
+            { type: 'animation', animation: 'Bus_Moving_Animation', animationLoop: true },
+            {
+              type: 'movement',
+              path: [
+                [37.6, 0, 9.35],
+                [95.23, 0, 8.62],
+                [106.6, 0, 7.7],  //F點
+                [109.21, 0, 8.04],
+                [111.73, 0, 11.7],
+                [112.51, 0, 17.17],
+                [110.52, 0, 93.51],
+                [113.74, 0, 106.27],  //I點
+                [113.55, 0, 108.89],
+                [111.66, 0, 111.89],
+                [106.98, 0, 112.88],
+                [20.29, 0, 112.54],
+                [13.44, 0, 113.83],  //H點
+                [10.5, 0, 113.83],
+                [7.81, 0, 111.28],
+                [7.87, 0, 106],
+                [9.11, 0, 22.89],
+                [8.03, 0, 13.7],
+                [7.41, 0, 11.7],  //E點
+                [8.52, 0, 8.7],
+                [13.93, 0, 7.84]
+              ],
+              speed: 6,
+              loop: true
+            },
+          ],
+        },
+        {
+          id: 'scooter_1',
+          name: '搶快超車機車',
+          type: 'scooter',
+          model: '/src/assets/models/Scooter2_Rigged.glb',
+          position: [28, 0, 9.35], // 在公車後方
+          rotation: [0, Math.PI / 2, 0],
+          behaviors: [
+            {
+              type: 'movement',
+              path: [
+                [28, 0, 9.35],      // 起點（公車後方）
+                [50, 0, 8.9],       // 跟隨階段
+                [65, 0, 6.5],       // 開始偏移超車
+                [80, 0, 5.5],       // 危險超車中
+                [100, 0, 7.2],      // 超過公車
+                [106.6, 0, 7.7],    // F點
+                [109.21, 0, 8.04],
+                [111.73, 0, 11.7],
+                [112.51, 0, 17.17],
+                [110.52, 0, 93.51],
+                [113.74, 0, 106.27],  //I點
+                [113.55, 0, 108.89],
+                [111.66, 0, 111.89],
+                [106.98, 0, 112.88]
+              ],
+              speed: 12, // 機車速度較快
+              loop: true
+            },
+          ],
         },
       ],
       questions: {
@@ -194,6 +234,78 @@ export const patrolScenario1: PatrolScenario = {
         },
       },
       feedback: ['危險原因：行人已合法通行，車輛搶行會造成碰撞；尤其無號誌路口更依賴駕駛主動停讓。', '替代行為：提前減速、停讓行人、確認行人完全通過再起步。'],
+      found: false,
+    },
+    {
+      id: 'danger-6',
+      name: '自行車突然偏移（閃避障礙物）',
+      description: '自行車騎士為了閃避路面坑洞突然向車道偏移，未注意後方來車',
+      actors: [
+        {
+          id: 'bicycle_1',
+          name: '自行車',
+          type: 'bicycle',
+          model: '/src/assets/models/Bicycle1_Rigged.glb',
+          position: [5, 0, 30],
+          rotation: [0, 0, 0],
+          animationUrls: ['/src/assets/animations/car/Bicycle_Moving_Animation.glb'],
+          behaviors: [
+            { type: 'animation', animation: 'Bicycle_Moving_Animation', animationLoop: true },
+            {
+              type: 'movement',
+              path: [
+                [5, 0, 30],
+                [5.5, 0, 40],
+                [7, 0, 45],      // 開始偏移（閃避坑洞）
+                [8.5, 0, 50],    // 危險偏移中
+                [8, 0, 55],      // 回正
+                [7, 0, 65]
+              ],
+              speed: 4,
+              loop: true
+            },
+          ],
+        },
+        {
+          id: 'rider_1',
+          name: '自行車騎士',
+          type: 'pedestrian',
+          model: '/src/assets/models/Male1_Rigged.glb',
+          position: [5, 0, 30],
+          rotation: [0, 0, 0],
+          scale: [1, 1, 1],
+          animationUrls: ['/src/assets/animations/character/Male_Riding_Bicycle_Animation.glb'],
+          behaviors: [
+            { type: 'animation', animation: 'Male_Riding_Bicycle_Animation', animationLoop: true },
+            {
+              type: 'movement',
+              path: [
+                [5, 0, 30],
+                [5.5, 0, 40],
+                [7, 0, 45],
+                [8.5, 0, 50],
+                [8, 0, 55],
+                [7, 0, 65]
+              ],
+              speed: 4,
+              loop: true
+            },
+          ],
+        },
+      ],
+      questions: {
+        q1: {
+          question: '這個情境中誰的行為最危險？',
+          options: ['自行車正常騎在路邊', '自行車突然偏移未注意後方車輛', '自行車騎太慢', '自行車戴安全帽'],
+          correctIndex: 1,
+        },
+        q2: {
+          question: '自行車騎士應該如何安全閃避障礙？',
+          options: ['直接偏移不用管後方', '先回頭確認後方無車再偏移，或下車牽行', '加速快速通過', '按鈴就可以偏移'],
+          correctIndex: 1,
+        },
+      },
+      feedback: ['危險原因：自行車突然橫移會進入汽機車路徑，後方車輛反應不及容易發生碰撞。', '安全行為：變換路線前先回頭確認後方，必要時下車牽行繞過障礙。'],
       found: false,
     },
   ],
