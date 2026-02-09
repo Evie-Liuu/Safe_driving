@@ -783,19 +783,28 @@ export const events: GameEvent[] = [
                     [3.6, 0, 60],
                     [3.6, 0, 40],
                     [3.6, 0, 20],
-                    [3.6, 0, 0],
-                    [3.6, 0, -20]
+                    [1.54, 0, 1.57]
                 ],
                 speed: 12,
                 time: 0,
-                duration: 15
-            }
+                duration: 8
+            },
+            {
+                actorId: 'normal_car_1',
+                type: ActionType.LIGHT,
+                lightType: 'turnLeft',
+                enabled: true,
+                blinkRate: 2,
+                time: 2,
+                duration: 2.5
+            },
         ],
         requiredPlayerResponse: {
             type: PlayerResponseType.NONE
         },
         completionCriteria: {
-            playerPassed: true
+            playerPassed: true,
+            requireActorPathComplete: true
         },
         priority: 5,
         spawnRadius: 80,
@@ -804,64 +813,65 @@ export const events: GameEvent[] = [
             safety: '這是正確的駕駛行為，保持正常行駛即可。'
         }
     },
-    // {
-    //     id: 'safe_pedestrian_on_sidewalk',
-    //     name: '人行道上的行人',
-    //     description: '行人正常在人行道上行走，沒有進入車道的跡象。這是安全的情況，不需要反應。',
-    //     category: EventCategory.SAFE,
-    //     trigger: {
-    //         type: TriggerType.PROXIMITY,
-    //         position: [15, 0, 30],
-    //         radius: 20
-    //     },
-    //     actors: [
-    //         {
-    //             id: 'safe_pedestrian_1',
-    //             type: ActorType.PEDESTRIAN,
-    //             model: '/src/assets/models/Female1_Rigged.glb',
-    //             initialPosition: [15, 0, 30],
-    //             initialRotation: [0, Math.PI / 2, 0],
-    //             scale: [1, 1, 1],
-    //             animationUrls: [
-    //                 '/src/assets/animations/character/Female_Walking_Animation.glb'
-    //             ]
-    //         }
-    //     ],
-    //     actions: [
-    //         {
-    //             actorId: 'safe_pedestrian_1',
-    //             type: ActionType.ANIMATION,
-    //             name: 'Female_Walking_Animation',
-    //             loop: true,
-    //             time: 0
-    //         },
-    //         {
-    //             actorId: 'safe_pedestrian_1',
-    //             type: ActionType.MOVEMENT,
-    //             path: [
-    //                 [15, 0, 30],
-    //                 [15, 0, 25],
-    //                 [15, 0, 20],
-    //                 [15, 0, 15]
-    //             ],
-    //             speed: 1.5,
-    //             time: 0,
-    //             duration: 10
-    //         }
-    //     ],
-    //     requiredPlayerResponse: {
-    //         type: PlayerResponseType.NONE
-    //     },
-    //     completionCriteria: {
-    //         playerPassed: true
-    //     },
-    //     priority: 3,
-    //     spawnRadius: 60,
-    //     feedback: {
-    //         hazard: '無危險 - 行人在人行道上',
-    //         safety: '行人在人行道上正常行走，不會影響行車安全。'
-    //     }
-    // },
+    {
+        id: 'safe_pedestrian_on_sidewalk',
+        name: '人行道上的行人',
+        description: '行人正常在人行道上行走，沒有進入車道的跡象。這是安全的情況，不需要反應。',
+        category: EventCategory.SAFE,
+        trigger: {
+            type: TriggerType.PROXIMITY,
+            position: [-14, 0, 67],
+            radius: 50
+        },
+        actors: [
+            {
+                id: 'safe_pedestrian_1',
+                type: ActorType.PEDESTRIAN,
+                model: '/src/assets/models/Female1_Rigged.glb',
+                initialPosition: [-14, 0, 67],
+                initialRotation: [0, 0, 0],
+                scale: [1, 1, 1],
+                animationUrls: [
+                    '/src/assets/animations/character/Female_Walking_Animation.glb'
+                ]
+            }
+        ],
+        actions: [
+            {
+                actorId: 'safe_pedestrian_1',
+                type: ActionType.ANIMATION,
+                name: 'Female_Walking_Remain_Animation',
+                loop: true,
+                time: 0
+            },
+            {
+                actorId: 'safe_pedestrian_1',
+                type: ActionType.MOVEMENT,
+                path: [
+                    [-14, 0, 67],
+                    [-14, 0, 89],
+                    // [15, 0, 20],
+                    // [15, 0, 15]
+                ],
+                speed: 1.5,
+                time: 0,
+                duration: 10
+            }
+        ],
+        requiredPlayerResponse: {
+            type: PlayerResponseType.NONE
+        },
+        completionCriteria: {
+            playerPassed: true,
+            requireActorPathComplete: true
+        },
+        priority: 3,
+        spawnRadius: 80,
+        feedback: {
+            hazard: '無危險 - 行人在人行道上',
+            safety: '行人在人行道上正常行走，不會影響行車安全。'
+        }
+    },
     // {
     //     id: 'safe_yielding_driver',
     //     name: '斑馬線前禮讓的車輛',

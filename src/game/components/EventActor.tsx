@@ -756,7 +756,7 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
 
                 {/* Path visualization - rendered in world space (outside group) */}
                 {enableDebug && debugPath && debugPath.map((point, idx) => (
-                    <mesh key={`path-${id}-${idx}`} position={point}>
+                    <mesh key={`path-${id}-${idx}`} position={[point[0], point[1] + 0.5, point[2]]}>
                         <sphereGeometry args={[0.2, 16, 16]} />
                         <meshBasicMaterial color="yellow" />
                     </mesh>
