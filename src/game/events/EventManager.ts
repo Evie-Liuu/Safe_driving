@@ -308,14 +308,25 @@ export class EventManager {
                 // 2. Distance is now INCREASING (moving away from event)
                 // 3. Player has moved past the closest point by a threshold (to ensure consistent trend)
                 const wasInsideTrigger = minDistance <= triggerRadius
-                const isMovingAway = currentDistance > prevDistance
-                const distanceIncreaseThreshold = 0.5 // Meters - ensures we're definitively moving away
+
+                // Use tolerance for isMovingAway to handle measurement fluctuations
+                const movementTolerance = 0.05 // 5cm tolerance for distance measurement noise
+                const isMovingAway = currentDistance > (prevDistance - movementTolerance)
+
+                // Reduced threshold for faster detection, especially important for high-speed events
+                const distanceIncreaseThreshold = 0.2 // Meters - ensures we're definitively moving away
                 const hasPassedClosestPoint = (currentDistance - minDistance) > distanceIncreaseThreshold
 
+                // Check if player has started moving away (more lenient for notification)
+                const isStartingToMoveAway = currentDistance > minDistance && (currentDistance - minDistance) > 0.1
+
+                // Main completion check
                 const playerPassedCheck = wasInsideTrigger && isMovingAway && hasPassedClosestPoint
                 checks.playerPassed = playerPassedCheck
 
-                if (playerPassedCheck && !context.playerPassedNotified) {
+                // Trigger onPlayerPassed notification as soon as player starts moving away
+                // This is more lenient than the full completion check
+                if (wasInsideTrigger && isStartingToMoveAway && !context.playerPassedNotified) {
                     context.playerPassedNotified = true
                     if (this.callbacks.onPlayerPassed) {
                         this.callbacks.onPlayerPassed(event.id)
