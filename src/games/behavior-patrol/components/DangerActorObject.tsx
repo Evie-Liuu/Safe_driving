@@ -55,6 +55,13 @@ export function DangerActorObject({
   // 追蹤已播放的動畫（避免重複觸發）
   const playedAnimationsRef = useRef<Set<string>>(new Set());
 
+  // 追蹤重複播放狀態
+  const repeatCountRef = useRef<Map<string, number>>(new Map()); // 記錄每個動畫的播放次數
+  const lastPlayTimeRef = useRef<Map<string, number>>(new Map()); // 記錄每個動畫最後播放時間
+
+  // 追蹤已啟動的移動動作（避免重複觸發）
+  const startedMovementsRef = useRef<Set<string>>(new Set());
+
   // Load model and animations
   useEffect(() => {
     let isMounted = true;
@@ -139,6 +146,12 @@ export function DangerActorObject({
       animControllerRef.current?.stopAll();
       animControllerRef.current = null;
 
+      // 清空追蹤狀態
+      playedAnimationsRef.current.clear();
+      repeatCountRef.current.clear();
+      lastPlayTimeRef.current.clear();
+      startedMovementsRef.current.clear();
+
       if (modelSceneRef.current) {
         modelSceneRef.current.traverse((child) => {
           if (child instanceof THREE.Mesh) {
@@ -171,28 +184,42 @@ export function DangerActorObject({
     animationActions.forEach((action) => {
       // 創建唯一的動畫 key（避免重複播放）
       const animKey = `${action.name}_${action.time}`;
+      const playCount = repeatCountRef.current.get(animKey) || 0;
+      const lastPlayTime = lastPlayTimeRef.current.get(animKey) || 0;
 
-      // 檢查是否應該開始播放（時間已到且尚未播放）
-      if (currentTime >= action.time && !playedAnimationsRef.current.has(animKey)) {
-        if (animControllerRef.current) {
-          console.log(`[DangerActorObject] Starting animation: ${action.name} for ${actor.id} at ${currentTime.toFixed(2)}s`);
+      // 檢查是否應該播放（首次播放或重複播放）
+      const shouldPlayFirst = currentTime >= action.time && playCount === 0;
+      const shouldRepeat =
+        action.repeatInterval &&
+        playCount > 0 &&
+        currentTime >= lastPlayTime + action.repeatInterval &&
+        (!action.repeatCount || playCount < action.repeatCount);
 
-          // 構建動畫配置
-          const animConfig: any = {
-            loop: action.loop ? THREE.LoopRepeat : THREE.LoopOnce,
-            clampWhenFinished: action.clampWhenFinished ?? !action.loop, // 默認：非循環動畫保持最後姿勢
-          };
+      const shouldPlay = shouldPlayFirst || shouldRepeat;
 
-          // 可選參數
-          if (action.fadeIn !== undefined) animConfig.fadeIn = action.fadeIn;
-          if (action.fadeOut !== undefined) animConfig.fadeOut = action.fadeOut;
-          if (action.timeScale !== undefined) animConfig.timeScale = action.timeScale;
+      if (shouldPlay && animControllerRef.current) {
+        const isRepeat = playCount > 0;
+        console.log(
+          `[DangerActorObject] ${isRepeat ? 'Repeating' : 'Starting'} animation: ${action.name} for ${actor.id} at ${currentTime.toFixed(2)}s (play #${playCount + 1})`
+        );
 
-          animControllerRef.current.play(action.name, animConfig);
+        // 構建動畫配置
+        const animConfig: any = {
+          loop: action.loop ? THREE.LoopRepeat : THREE.LoopOnce,
+          clampWhenFinished: action.clampWhenFinished ?? !action.loop, // 默認：非循環動畫保持最後姿勢
+        };
 
-          // 標記為已播放
-          playedAnimationsRef.current.add(animKey);
-        }
+        // 可選參數
+        if (action.fadeIn !== undefined) animConfig.fadeIn = action.fadeIn;
+        if (action.fadeOut !== undefined) animConfig.fadeOut = action.fadeOut;
+        if (action.timeScale !== undefined) animConfig.timeScale = action.timeScale;
+
+        animControllerRef.current.play(action.name, animConfig);
+
+        // 更新追蹤狀態
+        repeatCountRef.current.set(animKey, playCount + 1);
+        lastPlayTimeRef.current.set(animKey, currentTime);
+        playedAnimationsRef.current.add(animKey);
       }
 
       // 檢查是否應該停止（如果有設定 duration）
@@ -206,20 +233,27 @@ export function DangerActorObject({
 
     // Check and start movement actions
     movementActions.forEach((action) => {
+      const movementKey = `${action.actorId}_movement_${action.time}`;
+
+      // ✅ 改用狀態追蹤，不依賴單幀時間窗口
       if (
         currentTime >= action.time &&
-        currentTime < action.time + delta &&
+        !startedMovementsRef.current.has(movementKey) &&
         (!activeMovement || activeMovement !== action)
       ) {
-        console.log(`[DangerActorObject] Starting movement for ${actor.id}`);
+        console.log(`[DangerActorObject] Starting movement for ${actor.id} at ${currentTime.toFixed(2)}s`);
         setActiveMovement(action);
         pathProgressRef.current = 0;
         currentPathIndexRef.current = 0;
+
+        // 標記為已啟動
+        startedMovementsRef.current.add(movementKey);
       }
 
       // Check if movement should end
       if (action.duration && currentTime >= action.time + action.duration) {
         if (activeMovement === action) {
+          console.log(`[DangerActorObject] Stopping movement after duration for ${actor.id}`);
           setActiveMovement(null);
         }
       }

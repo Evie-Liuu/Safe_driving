@@ -75,6 +75,8 @@ export interface AnimationAction extends BaseAction {
   fadeIn?: number; // 淡入時間（秒）
   fadeOut?: number; // 淡出時間（秒）
   timeScale?: number; // 播放速度倍率（1.0 = 正常速度）
+  repeatInterval?: number; // 重複播放間隔（秒）- 動畫播放完畢後等待此時間再重新播放
+  repeatCount?: number; // 重複次數（undefined = 無限重複）
 }
 
 /**
