@@ -1924,11 +1924,9 @@ function PerformanceDisplay({ stats }: { stats: PerformanceStats | null }) {
           <div>Frame Time: {stats.frameTime}ms</div>
           <div>Draw Calls: {stats.drawCalls}</div>
           <div>Triangles: {stats.triangles.toLocaleString()}</div>
-          <div>Geometries: {stats.geometries.toLocaleString()}</div>
+          {/* <div>Geometries: {stats.geometries.toLocaleString()}</div>
           <div>Textures: {stats.textures.toLocaleString()}</div>
-          <div>Programs: {stats.programs.toLocaleString()}</div>
-
-
+          <div>Programs: {stats.programs.toLocaleString()}</div> */}
         </>
       )}
     </div>
