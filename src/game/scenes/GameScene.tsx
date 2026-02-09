@@ -762,7 +762,7 @@ export function GameScene() {
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
       {/* 性能顯示 */}
-      {/* <PerformanceDisplay stats={stats} /> */}
+      <PerformanceDisplay stats={stats} />
 
       {/* 3D 畫布 */}
       <Canvas shadows>
@@ -777,6 +777,9 @@ export function GameScene() {
           fogNear={50}
           fogFar={200}
         />
+
+        {/* 性能監控 */}
+        <PerformanceMonitor onStats={handleStatsUpdate} />
 
         {/* Event system updater */}
         <EventSystemUpdater

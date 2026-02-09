@@ -178,7 +178,7 @@ export const patrolScenario1: PatrolScenario = {
             [-11.77, 0, 119.41],  //
             [-9.45, 0, 118.29],  //H點
             [-6.21, 0, 114.89]
-          ], speed: 6, loop: true
+          ], speed: 10, loop: true
         },
       ],
       questions: {
