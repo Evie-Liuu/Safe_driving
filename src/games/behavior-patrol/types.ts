@@ -70,7 +70,11 @@ export interface MovementAction extends BaseAction {
 export interface AnimationAction extends BaseAction {
   type: ActionType.ANIMATION;
   name: string; // 動畫名稱
-  loop?: boolean;
+  loop?: boolean; // 是否循環播放
+  clampWhenFinished?: boolean; // 播放完畢後是否保持最後姿勢（loop=false 時默認為 true）
+  fadeIn?: number; // 淡入時間（秒）
+  fadeOut?: number; // 淡出時間（秒）
+  timeScale?: number; // 播放速度倍率（1.0 = 正常速度）
 }
 
 /**

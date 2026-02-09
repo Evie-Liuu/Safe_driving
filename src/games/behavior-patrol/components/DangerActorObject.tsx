@@ -52,6 +52,9 @@ export function DangerActorObject({
   const pathProgressRef = useRef(0);
   const currentPathIndexRef = useRef(0);
 
+  // 追蹤已播放的動畫（避免重複觸發）
+  const playedAnimationsRef = useRef<Set<string>>(new Set());
+
   // Load model and animations
   useEffect(() => {
     let isMounted = true;
@@ -166,15 +169,38 @@ export function DangerActorObject({
 
     // Check and start animation actions
     animationActions.forEach((action) => {
-      if (
-        currentTime >= action.time &&
-        currentTime < action.time + delta &&
-        animControllerRef.current
-      ) {
-        console.log(`[DangerActorObject] Starting animation: ${action.name} for ${actor.id}`);
-        animControllerRef.current.play(action.name, {
-          loop: action.loop ? THREE.LoopRepeat : THREE.LoopOnce,
-        });
+      // 創建唯一的動畫 key（避免重複播放）
+      const animKey = `${action.name}_${action.time}`;
+
+      // 檢查是否應該開始播放（時間已到且尚未播放）
+      if (currentTime >= action.time && !playedAnimationsRef.current.has(animKey)) {
+        if (animControllerRef.current) {
+          console.log(`[DangerActorObject] Starting animation: ${action.name} for ${actor.id} at ${currentTime.toFixed(2)}s`);
+
+          // 構建動畫配置
+          const animConfig: any = {
+            loop: action.loop ? THREE.LoopRepeat : THREE.LoopOnce,
+            clampWhenFinished: action.clampWhenFinished ?? !action.loop, // 默認：非循環動畫保持最後姿勢
+          };
+
+          // 可選參數
+          if (action.fadeIn !== undefined) animConfig.fadeIn = action.fadeIn;
+          if (action.fadeOut !== undefined) animConfig.fadeOut = action.fadeOut;
+          if (action.timeScale !== undefined) animConfig.timeScale = action.timeScale;
+
+          animControllerRef.current.play(action.name, animConfig);
+
+          // 標記為已播放
+          playedAnimationsRef.current.add(animKey);
+        }
+      }
+
+      // 檢查是否應該停止（如果有設定 duration）
+      if (action.duration && currentTime >= action.time + action.duration) {
+        if (animControllerRef.current && playedAnimationsRef.current.has(animKey)) {
+          console.log(`[DangerActorObject] Stopping animation: ${action.name} after duration`);
+          animControllerRef.current.stop(action.name);
+        }
       }
     });
 
