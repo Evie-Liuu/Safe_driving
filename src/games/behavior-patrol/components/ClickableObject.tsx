@@ -18,6 +18,7 @@ interface ClickableObjectProps {
   onClick: () => void;
   disabled?: boolean;
   found?: boolean;
+  enableDebug?: boolean;
 }
 
 export function ClickableObject({
@@ -32,6 +33,7 @@ export function ClickableObject({
   onClick,
   disabled = false,
   found = false,
+  enableDebug = true,
 }: ClickableObjectProps) {
   const groupRef = useRef<THREE.Group>(null);
   const modelSceneRef = useRef<THREE.Object3D | null>(null);
@@ -40,6 +42,11 @@ export function ClickableObject({
   const currentPathIndexRef = useRef(0);
   const [isReady, setIsReady] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [hitBoxArgs, setHitBoxArgs] = useState<{ size: [number, number, number]; center: [number, number, number] } | null>(null);
+
+  // Debug path visualization state
+  const [debugPath, setDebugPath] = useState<[number, number, number][] | null>(null)
+
 
   // Extract behaviors with useMemo to avoid recalculation
   const animBehavior = useMemo(
@@ -72,13 +79,18 @@ export function ClickableObject({
 
         // Configure accessories and shadows
         clonedScene.traverse((child) => {
-          if (child instanceof THREE.Mesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
+          if (child instanceof THREE.Mesh || child instanceof THREE.Group) {
+            if (child instanceof THREE.Mesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+            }
 
             // Handle accessory visibility
-            if (accessoryNames && child.name.includes('Accessory')) {
-              child.visible = !accessoryNames.includes(child.name);
+            const childAccessoryName = child.name.toLocaleLowerCase().split('_')[1];
+            console.log(childAccessoryName);
+
+            if (accessoryNames && childAccessoryName && child.name.includes('Accessory')) {
+              child.visible = accessoryNames.includes(childAccessoryName);
             }
           }
         });
@@ -110,6 +122,10 @@ export function ClickableObject({
         if (isMounted) {
           setIsReady(true);
           console.log(`[ClickableObject] Successfully loaded: ${id}`);
+
+          if (enableDebug && movementBehavior?.path) {
+            setDebugPath(movementBehavior.path)
+          }
         }
       } catch (error) {
         if (isMounted) {
@@ -234,30 +250,76 @@ export function ClickableObject({
     );
   }
 
+  // Calculate hit box when scene changes
+  useEffect(() => {
+    if (!modelSceneRef.current) return;
+
+    // Ensure matrices are up to date for accurate box calculation
+    modelSceneRef.current.updateWorldMatrix(true, true);
+
+    const box = new THREE.Box3().setFromObject(modelSceneRef.current);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+
+    // Ensure minimum size for clickability
+    size.max(new THREE.Vector3(1, 1, 1));
+
+    // Scale up slightly for better UX
+    size.multiplyScalar(1.2);
+
+    setHitBoxArgs({
+      size: [size.x, size.y, size.z],
+      center: [center.x, center.y, center.z]
+    });
+  }, [modelSceneRef]);
+
   // Don't render until ready
   if (!modelSceneRef.current || !isReady) {
     return null;
   }
 
   return (
-    <group
-      ref={groupRef}
-      position={position}
-      rotation={rotation}
-      scale={scale}
-      onClick={handleClick}
-      onPointerOver={handlePointerOver}
-      onPointerOut={handlePointerOut}
-    >
-      <primitive object={modelSceneRef.current} />
+    <>
+      <group
+        ref={groupRef}
+        position={position}
+        rotation={rotation}
+        scale={scale}
+        onClick={handleClick}
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
+      >
+        <primitive object={modelSceneRef.current} />
 
-      {/* Visual indicator when found */}
-      {found && (
-        <mesh position={[0, 2, 0]}>
-          <sphereGeometry args={[0.3, 16, 16]} />
-          <meshBasicMaterial color="#4CAF50" transparent opacity={0.8} />
+
+        {/* HitBox for better clicking */}
+        {/* {hitBoxArgs && (
+        <mesh position={hitBoxArgs.center}>
+          <boxGeometry args={hitBoxArgs.size} />
+          <meshBasicMaterial transparent opacity={2} depthWrite={false} />
         </mesh>
-      )}
-    </group>
+      )} */}
+
+        {/* Visual indicator when found */}
+        {found && (
+          <mesh position={[0, 2, 0]}>
+            <sphereGeometry args={[0.3, 16, 16]} />
+            <meshBasicMaterial color="#4CAF50" transparent opacity={0.8} />
+          </mesh>
+        )}
+      </group>
+
+      {/* Path visualization - rendered in world space (outside group) */}
+      {
+        enableDebug && debugPath && debugPath.map((point, idx) => (
+          <mesh key={`path-${id}-${idx}`} position={[point[0], point[1] + 0.5, point[2]]}>
+            <sphereGeometry args={[0.2, 16, 16]} />
+            <meshBasicMaterial color="yellow" />
+          </mesh>
+        ))
+      }
+    </>
   );
 }

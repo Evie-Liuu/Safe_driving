@@ -787,7 +787,7 @@ export const events: GameEvent[] = [
                 ],
                 speed: 12,
                 time: 0,
-                duration: 8
+                duration: 15
             },
             {
                 actorId: 'normal_car_1',

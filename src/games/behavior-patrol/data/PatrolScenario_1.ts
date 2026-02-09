@@ -18,14 +18,14 @@ export const patrolScenario1: PatrolScenario = {
       id: 'danger-1',
       name: '行人邊走邊滑手機',
       type: 'pedestrian',
-      position: [-92.17, 0, -15.64],
+      position: [-92.17, 0.15, -15.64],
       rotation: [0, Math.PI / 2, 0],
       model: '/src/assets/models/Male1_CnH_Rigged.glb',
-      accessoryNames: ['Phone'],
-      animationUrls: ['/src/assets/animations/character/Male_Walking_Remain_Animation.glb'],
+      accessoryNames: ['phone'],
+      animationUrls: ['/src/assets/animations/character/Male_Walking_Phone_Animation.glb'],
       behaviors: [
-        { type: 'animation', animation: 'Take 001', animationLoop: true },
-        { type: 'movement', path: [[-92.17, 0, -15.64], [-82.48, 0, -15.54], [-71.69, 0, -15.25]], speed: 1.5, loop: true },
+        { type: 'animation', animation: 'Male_Walking_Phone_Animation', animationLoop: true },
+        { type: 'movement', path: [[-92.17, 0.15, -15.64], [-82.48, 0.15, -15.54], [-71.69, 0.15, -15.25]], speed: 1.5, loop: true },
       ],
       questions: {
         q1: {
@@ -46,11 +46,13 @@ export const patrolScenario1: PatrolScenario = {
       id: 'danger-2',
       name: '不走斑馬線任意穿越',
       type: 'pedestrian',
-      position: [-15, 0, 3],
-      rotation: [0, 0, 0],
+      position: [-124.6, 0.15, 79],
+      rotation: [0, Math.PI / 2, 0],
       model: '/src/assets/models/Female1_Rigged.glb',
+      animationUrls: ['/src/assets/animations/character/Female_Walking_Animation.glb'],
       behaviors: [
-        { type: 'movement', path: [[-15, 0, 3], [15, 0, -1]], speed: 6, loop: true },
+        { type: 'animation', animation: 'Female_Walking_Remain_Animation', animationLoop: true },
+        { type: 'movement', path: [[-124.6, 0.15, 79], [-113.66, 0, 79.8], [-100.44, 0.15, 80.6]], speed: 4, loop: true },
       ],
       questions: {
         q1: {
