@@ -45,7 +45,7 @@ export function GameScene() {
   }>>([])
   const vehicleIdCounter = useRef(0)
 
-  const debugflag = useRef(true)
+  const debugflag = useRef(false)
 
   // Event system
   const eventManagerRef = useRef<EventManager | null>(null)
@@ -809,7 +809,7 @@ export function GameScene() {
         >
           {/* 玩家模型（角色+機車） */}
           {/* <PlayerVehicle
-            isMoving={isCruising && !gameEnded && !isPaused}
+            isMoving={currentSpeed > 0.1 && !gameEnded && !isPaused}
             currentSpeed={currentSpeed}
           /> */}
           <ModelLoader url="/src/assets/models/Scooter1_Rigged.glb" rotation={[0, 0, 0]} />

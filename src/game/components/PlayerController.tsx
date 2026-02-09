@@ -301,7 +301,8 @@ export function PlayerController({
     // 更新相機位置（機車騎士第一人稱視角）
     if (enableCameraFollow) {
       // 騎士眼睛位置：高度約 1.5m，稍微前方 0.3m
-      const eyeOffset = new THREE.Vector3(0, 2.5, -1.0)
+      // const eyeOffset = new THREE.Vector3(0, 3, -0.35)
+      const eyeOffset = new THREE.Vector3(0, 3, -1.65)
       eyeOffset.applyQuaternion(groupRef.current.quaternion)
       camera.position.copy(groupRef.current.position).add(eyeOffset)
 

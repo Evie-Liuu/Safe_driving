@@ -507,7 +507,11 @@ export const events: GameEvent[] = [
             targetSpeedFactor: 0.5,
             stopDuration: 2 // 停等 2 秒讓行人通過
         },
-        spawnRadius: 100
+        spawnRadius: 100,
+        feedback: {
+            hazard: '行人穿越路口，必須停讓行人',
+            safety: '提前降速、停讓再走'
+        }
     },
     {
         id: 'oncoming_car_turn',
@@ -601,7 +605,12 @@ export const events: GameEvent[] = [
             targetSpeedFactor: 0.5,
             stopDuration: 3
         },
-        spawnRadius: 100
+        spawnRadius: 100,
+        feedback: {
+            hazard: '對向車跨入你車道',
+            safety: '先降速、必要停讓'
+
+        }
     },
     {
         id: 'bicycle_dodging_pothole',

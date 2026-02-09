@@ -2,6 +2,7 @@ import { useAnimations, useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useRef, useMemo } from 'react'
 import * as THREE from 'three'
+import { SkeletonUtils } from 'three-stdlib'
 
 interface PlayerVehicleProps {
   isMoving?: boolean
@@ -20,7 +21,7 @@ export function PlayerVehicle({
   isMoving = true,
   isFalling = false,
   currentSpeed = 0,
-  characterModel = '/src/assets/models/Male1_Rigged.glb',
+  characterModel = '/src/assets/models/Player_Rigged.glb',
   scooterModel = '/src/assets/models/Scooter3_Rigged.glb'
 }: PlayerVehicleProps) {
   const characterGroupRef = useRef<THREE.Group>(null)
@@ -188,9 +189,9 @@ export function PlayerVehicle({
     }
   }, [characterActions, scooterActions])
 
-  // 克隆場景以避免共享問題
-  const scooterScene = useMemo(() => scooterGltf.scene.clone(), [scooterGltf.scene])
-  const characterScene = useMemo(() => characterGltf.scene.clone(), [characterGltf.scene])
+  // 克隆場景以避免共享問題 - 使用 SkeletonUtils 以支持骨骼動畫
+  const scooterScene = useMemo(() => SkeletonUtils.clone(scooterGltf.scene), [scooterGltf.scene])
+  const characterScene = useMemo(() => SkeletonUtils.clone(characterGltf.scene), [characterGltf.scene])
 
   // 檢查模型是否載入完成
   if (!characterGltf.scene || !scooterGltf.scene || !scooterScene || !characterScene) {
