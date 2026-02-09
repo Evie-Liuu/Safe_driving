@@ -1,5 +1,13 @@
 import { PatrolScenario } from '../types';
 
+/**
+ * Cruise points for the route
+ * A--B--C
+ * |  |  |
+ * D--E--F
+ * |  |  |
+ * G--H--I
+ */
 export const patrolScenario1: PatrolScenario = {
   id: 'scenario-1',
   name: '十字路口場景',
@@ -52,7 +60,7 @@ export const patrolScenario1: PatrolScenario = {
       animationUrls: ['/src/assets/animations/character/Female_Walking_Animation.glb'],
       behaviors: [
         { type: 'animation', animation: 'Female_Walking_Remain_Animation', animationLoop: true },
-        { type: 'movement', path: [[-124.6, 0.15, 79], [-113.66, 0, 79.8], [-100.44, 0.15, 80.6]], speed: 4, loop: true },
+        { type: 'movement', path: [[-124.6, 0.15, 79], [-113.66, 0, 79.8], [-100.44, 0.15, 80.6]], speed: 2, loop: true },
       ],
       questions: {
         q1: {
@@ -73,12 +81,11 @@ export const patrolScenario1: PatrolScenario = {
       id: 'danger-3',
       name: '機車超速到斑馬線迴轉',
       type: 'scooter',
-      position: [5, 0, -10],
+      position: [4.26, 0, -60],
       rotation: [0, Math.PI, 0],
-      scale: [0.8, 0.8, 0.8],
-      model: '/src/assets/models/Car1_Rigged.glb',
+      model: '/src/assets/models/Scooter2_Rigged.glb',
       behaviors: [
-        { type: 'movement', path: [[5, 0, -10], [-5, 0, -8], [5, 0, -6], [-5, 0, -4]], speed: 8, loop: true },
+        { type: 'movement', path: [[4.26, 0, -60], [3.5, 0, -99], [1.89, 0, -103.23], [0.29, 0, -104], [-1.1, 0, -102.5], [-1.88, 0, -88.2], [-1.77, 0, 24.75]], speed: 17, loop: true },
       ],
       questions: {
         q1: {
@@ -99,10 +106,39 @@ export const patrolScenario1: PatrolScenario = {
       id: 'danger-4',
       name: '機車在公車後方搶快超車',
       type: 'scooter',
-      position: [-8, 0, 8],
+      // position: [37.6, 0, 9.35],
+      position: [37.6, 0, 9.35],
       rotation: [0, Math.PI / 2, 0],
-      model: '/src/assets/models/Scooter2_Rigged.glb',
-      behaviors: [],
+      model: '/src/assets/models/Bus_Rigged.glb',
+      behaviors: [
+        {
+          type: 'movement',
+          path: [
+            [37.6, 0, 9.35],
+            [95.23, 0, 8.62],
+            [106.6, 0, 7.7],  //F點
+            [109.21, 0, 8.04],  //F點
+            [111.73, 0, 11.7],  //F點
+            [112.51, 0, 17.17],
+            [110.52, 0, 93.51],
+            [113.74, 0, 106.27],  //I點
+            [113.55, 0, 108.89],  //I點
+            [111.66, 0, 111.89],  //I點
+            [106.98, 0, 112.88],  //I點
+            [20.29, 0, 112.54],
+            [13.44, 0, 113.83],  //H點
+            [10.5, 0, 113.83],  //H點
+            [7.81, 0, 111.28],  //H點
+            [7.87, 0, 106],
+            [9.11, 0, 22.89],
+            [8.03, 0, 13.7],
+            [7.41, 0, 11.7],  //E點
+            [8.52, 0, 8.7],
+            [13.93, 0, 7.84]
+
+          ], speed: 6, loop: true
+        },
+      ],
       questions: {
         q1: {
           question: '這個情境最大的危險是？',
@@ -122,14 +158,28 @@ export const patrolScenario1: PatrolScenario = {
       id: 'danger-5',
       name: '汽車不禮讓斑馬線行人',
       type: 'vehicle',
-      position: [12, 0, -3],
+      position: [-7.84, 0, 110.9],
       rotation: [0, -Math.PI / 2, 0],
-      scale: [0.7, 0.7, 0.7],
-      model: '/src/assets/models/Car1_Rigged.glb',
-      animationUrls: ['/src/assets/animations/car/Car1_Moving_Animation.glb'],
+      model: '/src/assets/models/Car2_Rigged.glb',
+      animationUrls: ['/src/assets/animations/car/Car2_Moving_Animation.glb'],
       behaviors: [
-        { type: 'animation', animation: 'Car1_Moving_Animation', animationLoop: true },
-        { type: 'movement', path: [[12, 0, -3], [12, 0, 3]], speed: 3, loop: false },
+        { type: 'animation', animation: 'Car2_Moving_Animation', animationLoop: true },
+        {
+          type: 'movement',
+          path: [
+            [-7.84, 0, 110.9],
+            [-12, 0, 110.21],
+            [-96.34, 0, 110.77], //斑馬線
+            [-109.13, 0, 111.58],  //G點
+            [-111.74, 0, 114.86],
+            [-110.14, 0, 117.73],
+            [-103.58, 0, 119.06],  //斑馬線
+            [-18.7, 0, 119.21],
+            [-11.77, 0, 119.41],  //
+            [-9.45, 0, 118.29],  //H點
+            [-6.21, 0, 114.89]
+          ], speed: 6, loop: true
+        },
       ],
       questions: {
         q1: {
@@ -149,23 +199,33 @@ export const patrolScenario1: PatrolScenario = {
   ],
 
   safeObjects: [
-    {
-      id: 'safe-1',
-      name: '正常行駛車輛',
-      position: [-20, 0, 0],
-      rotation: [0, 0, 0],
-      model: '/src/assets/models/Car1_Rigged.glb',
-      behaviors: [
-        { type: 'movement', path: [[-20, 0, 0], [20, 0, 0]], speed: 5, loop: true },
-      ],
-    },
+    // {
+    //   id: 'safe-1',
+    //   name: '正常行駛車輛',
+    //   position: [-20, 0, 0],
+    //   rotation: [0, 0, 0],
+    //   model: '/src/assets/models/Car1_Rigged.glb',
+    //   behaviors: [
+    //     { type: 'movement', path: [[-20, 0, 0], [20, 0, 0]], speed: 5, loop: true },
+    //   ],
+    // },
     {
       id: 'safe-2',
       name: '等紅燈行人',
-      position: [-6, 0, 6],
+      position: [-14.49, 0, -13.87],
       rotation: [0, 0, 0],
-      model: '/src/assets/models/Male1_Rigged.glb',
+      model: '/src/assets/models/Male3_Rigged.glb',
       behaviors: [],
+    },
+    {
+      id: 'safe-3',
+      name: 'B_E段正常行駛機車',
+      position: [-9.39, 0, -100.78],
+      rotation: [0, 0, 0],
+      model: '/src/assets/models/Scooter1_Rigged.glb',
+      behaviors: [
+        { type: 'movement', path: [[-9.39, 0, -100.78], [-9.15, 0, -19.52]], speed: 8, loop: false },
+      ],
     },
   ],
 };

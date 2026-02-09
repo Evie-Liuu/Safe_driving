@@ -37,7 +37,8 @@ export function PatrolScene({
           // enablePan={false}
           // enableZoom={true}
           minDistance={15}
-          maxDistance={100}
+          // maxDistance={100}
+          maxDistance={400}
           maxPolarAngle={Math.PI / 2.2}
         // mouseButtons={{
         //   LEFT: THREE.MOUSE.PAN,

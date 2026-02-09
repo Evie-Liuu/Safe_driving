@@ -252,7 +252,7 @@ export function ClickableObject({
 
   // Calculate hit box when scene changes
   useEffect(() => {
-    if (!modelSceneRef.current) return;
+    if (!modelSceneRef.current || !isReady) return;
 
     // Ensure matrices are up to date for accurate box calculation
     modelSceneRef.current.updateWorldMatrix(true, true);
@@ -269,11 +269,15 @@ export function ClickableObject({
     // Scale up slightly for better UX
     size.multiplyScalar(1.2);
 
+    console.log(size);
+    console.log(center);
+
+
     setHitBoxArgs({
       size: [size.x, size.y, size.z],
       center: [center.x, center.y, center.z]
     });
-  }, [modelSceneRef]);
+  }, [isReady]);
 
   // Don't render until ready
   if (!modelSceneRef.current || !isReady) {
@@ -295,12 +299,12 @@ export function ClickableObject({
 
 
         {/* HitBox for better clicking */}
-        {/* {hitBoxArgs && (
-        <mesh position={hitBoxArgs.center}>
-          <boxGeometry args={hitBoxArgs.size} />
-          <meshBasicMaterial transparent opacity={2} depthWrite={false} />
-        </mesh>
-      )} */}
+        {hitBoxArgs && (
+          <mesh position={[0, 0, 0]}>
+            <boxGeometry args={hitBoxArgs.size} />
+            <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+          </mesh>
+        )}
 
         {/* Visual indicator when found */}
         {found && (
@@ -312,14 +316,12 @@ export function ClickableObject({
       </group>
 
       {/* Path visualization - rendered in world space (outside group) */}
-      {
-        enableDebug && debugPath && debugPath.map((point, idx) => (
-          <mesh key={`path-${id}-${idx}`} position={[point[0], point[1] + 0.5, point[2]]}>
-            <sphereGeometry args={[0.2, 16, 16]} />
-            <meshBasicMaterial color="yellow" />
-          </mesh>
-        ))
-      }
+      {enableDebug && debugPath && debugPath.map((point, idx) => (
+        <mesh key={`path-${id}-${idx}`} position={[point[0], point[1] + 0.5, point[2]]}>
+          <sphereGeometry args={[0.2, 16, 16]} />
+          <meshBasicMaterial color="yellow" />
+        </mesh>
+      ))}
     </>
   );
 }
