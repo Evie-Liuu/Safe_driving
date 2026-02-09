@@ -110,7 +110,14 @@ export function FeedbackPanel({ danger, result, onContinue }: FeedbackPanelProps
           <p style={{ fontWeight: 'bold', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span>💡</span> 說明：
           </p>
-          <p style={{ lineHeight: 1.6 }}>{danger.feedback}</p>
+          <ul>
+            {danger.feedback.map((feedback, index) => (
+              <li key={index} style={{ lineHeight: 1.6 }} className='flex items-start gap-1'>
+                <span className='text-md'>●</span>
+                <span>{feedback}</span>
+              </li>
+            ))}
+          </ul>
         </div>
 
         {/* 繼續按鈕 */}

@@ -7,16 +7,78 @@ interface QuizModalProps {
 }
 
 export function QuizModal({ danger, onSubmit }: QuizModalProps) {
+  const [currentStep, setCurrentStep] = useState<0 | 1>(0);
   const [q1Answer, setQ1Answer] = useState<number | null>(null);
   const [q2Answer, setQ2Answer] = useState<number | null>(null);
+  const [showingResult, setShowingResult] = useState(false);
 
-  const handleSubmit = () => {
+  // currentQuestion logic
+  const currentQuestion = currentStep === 0 ? danger.questions.q1 : danger.questions.q2;
+  const currentAnswer = currentStep === 0 ? q1Answer : q2Answer;
+  const setAnswer = (val: number) => {
+    if (showingResult) return; // Prevent changing answer after submission
+    if (currentStep === 0) setQ1Answer(val);
+    else setQ2Answer(val);
+  };
+
+  const handleConfirm = () => {
+    if (currentAnswer !== null) {
+      setShowingResult(true);
+    }
+  };
+
+  const handleNext = () => {
+    setShowingResult(false);
+    setCurrentStep(1);
+  };
+
+  const handleFinish = () => {
     if (q1Answer !== null && q2Answer !== null) {
       onSubmit(q1Answer, q2Answer);
     }
   };
 
+  const handleAction = () => {
+    if (!showingResult) {
+      handleConfirm();
+    } else {
+      if (currentStep === 0) {
+        handleNext();
+      } else {
+        handleFinish();
+      }
+    }
+  };
+
   const optionLabels = ['A', 'B', 'C', 'D'];
+
+  const getOptionStyles = (index: number) => {
+    const isSelected = currentAnswer === index;
+    const isCorrect = index === currentQuestion.correctIndex;
+
+    let background = 'rgba(255,255,255,0.1)';
+    let border = '2px solid transparent';
+    let icon = null;
+
+    if (showingResult) {
+      if (isCorrect) {
+        background = 'rgba(76, 175, 80, 0.3)';
+        border = '2px solid #4CAF50';
+        icon = <span style={{ marginLeft: 'auto', color: '#4CAF50', fontWeight: 'bold' }}>✓ 正確</span>;
+      } else if (isSelected) {
+        background = 'rgba(244, 67, 54, 0.3)';
+        border = '2px solid #F44336';
+        icon = <span style={{ marginLeft: 'auto', color: '#F44336', fontWeight: 'bold' }}>✕ 錯誤</span>;
+      }
+    } else {
+      if (isSelected) {
+        background = 'rgba(76, 175, 80, 0.3)';
+        border = '2px solid #4CAF50';
+      }
+    }
+
+    return { background, border, icon };
+  };
 
   return (
     <div style={{
@@ -52,90 +114,57 @@ export function QuizModal({ danger, onSubmit }: QuizModalProps) {
           <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>發現危險：{danger.name}</span>
         </div>
 
-        {/* Q1 */}
+        {/* 題目區域 */}
         <div style={{ marginBottom: '25px' }}>
           <p style={{ fontSize: '1.1rem', marginBottom: '15px', fontWeight: 'bold' }}>
-            Q1: {danger.questions.q1.question}
+            {currentStep === 0 ? 'Q1' : 'Q2'}: {currentQuestion.question}
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {danger.questions.q1.options.map((option, index) => (
-              <label
-                key={index}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '12px 15px',
-                  background: q1Answer === index ? 'rgba(76, 175, 80, 0.3)' : 'rgba(255,255,255,0.1)',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  border: q1Answer === index ? '2px solid #4CAF50' : '2px solid transparent',
-                  transition: 'all 0.2s',
-                }}
-              >
-                <input
-                  type="radio"
-                  name="q1"
-                  checked={q1Answer === index}
-                  onChange={() => setQ1Answer(index)}
-                  style={{ marginRight: '12px', width: '18px', height: '18px' }}
-                />
-                <span>{optionLabels[index]}. {option}</span>
-              </label>
-            ))}
+            {currentQuestion.options.map((option, index) => {
+              const { background, border, icon } = getOptionStyles(index);
+              return (
+                <div
+                  key={index}
+                  onClick={() => setAnswer(index)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '12px 15px',
+                    background,
+                    borderRadius: '8px',
+                    cursor: showingResult ? 'default' : 'pointer',
+                    border,
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <span>{optionLabels[index]}. {option}</span>
+                  {icon}
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Q2 */}
-        <div style={{ marginBottom: '25px' }}>
-          <p style={{ fontSize: '1.1rem', marginBottom: '15px', fontWeight: 'bold' }}>
-            Q2: {danger.questions.q2.question}
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {danger.questions.q2.options.map((option, index) => (
-              <label
-                key={index}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '12px 15px',
-                  background: q2Answer === index ? 'rgba(76, 175, 80, 0.3)' : 'rgba(255,255,255,0.1)',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  border: q2Answer === index ? '2px solid #4CAF50' : '2px solid transparent',
-                  transition: 'all 0.2s',
-                }}
-              >
-                <input
-                  type="radio"
-                  name="q2"
-                  checked={q2Answer === index}
-                  onChange={() => setQ2Answer(index)}
-                  style={{ marginRight: '12px', width: '18px', height: '18px' }}
-                />
-                <span>{optionLabels[index]}. {option}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* 送出按鈕 */}
+        {/* 按鈕 */}
         <button
-          onClick={handleSubmit}
-          disabled={q1Answer === null || q2Answer === null}
+          onClick={handleAction}
+          disabled={currentAnswer === null}
           style={{
             width: '100%',
             padding: '15px',
             fontSize: '1.1rem',
             fontWeight: 'bold',
-            background: q1Answer !== null && q2Answer !== null ? '#4CAF50' : '#666',
+            background: currentAnswer !== null ? '#4CAF50' : '#666',
             color: 'white',
             border: 'none',
             borderRadius: '8px',
-            cursor: q1Answer !== null && q2Answer !== null ? 'pointer' : 'not-allowed',
+            cursor: currentAnswer !== null ? 'pointer' : 'not-allowed',
             transition: 'background 0.2s',
           }}
         >
-          確認送出
+          {!showingResult
+            ? '確認'
+            : currentStep === 0 ? '下一題' : '完成'}
         </button>
       </div>
     </div>

@@ -30,7 +30,7 @@ export interface DangerFactor {
     q1: QuizQuestion;
     q2: QuizQuestion;
   };
-  feedback: string;
+  feedback: string[];
   found: boolean;
 }
 
