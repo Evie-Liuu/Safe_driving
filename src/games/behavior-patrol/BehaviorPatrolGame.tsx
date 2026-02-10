@@ -215,8 +215,10 @@ function PatrolInstructionsPanel({
         {/* Close Button */}
         <button
           onClick={showStartButton ? onExit : onClose}
-          className="absolute top-4 right-4 bg-[#FF6B6B] hover:bg-[#FF5252] text-red-500 rounded-full w-10 h-10 flex items-center justify-center shadow-md transition-colors z-10 cursor-pointer"
+          className="absolute top-4 right-4 text-white bg-[#FF6B6B] rounded-full w-10 h-10 flex items-center justify-center shadow-md transition-colors z-10 cursor-pointer"
           title={showStartButton ? "退出" : "關閉"}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#FF5252')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#FF6B6B')}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -226,9 +228,12 @@ function PatrolInstructionsPanel({
 
         {/* Title */}
         <div className="flex flex-col items-center mb-8 w-full">
-          <h1 className="text-[#3CB4E7] text-3xl md:text-4xl font-black mb-3 tracking-wide drop-shadow-sm font-sans flex items-center gap-2">
+          <h2
+            className="text-4xl md:text-5xl font-black mb-3 tracking-wide drop-shadow-sm font-sans flex items-center gap-2"
+            style={{ color: '#3CB4E7' }}
+          >
             <span>遊戲說明</span>
-          </h1>
+          </h2>
           <div className="w-24 h-1.5 bg-[#FFD700] rounded-full"></div>
         </div>
 
@@ -288,7 +293,7 @@ function PatrolInstructionsPanel({
         {/* Play Button */}
         <button
           onClick={showStartButton ? onStart : onClose}
-          className="bg-yellow-400 hover:bg-[#FFC107] text-[#5D4037] font-black text-2xl py-4 px-16 rounded-full shadow-[0_4px_14px_rgba(255,215,0,0.5)] transform transition hover:scale-105 active:scale-95 mb-6 tracking-wide cursor-pointer"
+          className="bg-yellow-400 hover:bg-[#FFC107] text-[#5D4037] font-black text-2xl py-4 px-16 rounded-full shadow-[0_6px_0_#CA8A04,0_12px_4px_rgba(0,0,0,0.4)] border-2 border-white/30 transform transition hover:scale-105 active:scale-95 mb-6 tracking-wide cursor-pointer"
         >
           {showStartButton ? '開始遊戲' : '繼續遊戲'}
         </button>
