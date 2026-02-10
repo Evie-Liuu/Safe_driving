@@ -439,47 +439,72 @@ export const patrolScenario1: PatrolScenario = {
     {
       id: 'danger-5',
       name: '汽車不禮讓斑馬線行人',
-      description: '汽車不禮讓斑馬線行人',
+      description: '行人正在穿越斑馬線，汽車未減速、不禮讓直接通過',
       actors: [
         {
           id: 'car_not_yield_1',
-          name: '汽車',
+          name: '不禮讓汽車',
           type: ActorType.VEHICLE,
           model: '/src/assets/models/Car2_Rigged.glb',
           initialPosition: [-7.84, 0, 110.9],
           initialRotation: [0, -Math.PI / 2, 0],
           animationUrls: ['/src/assets/animations/car/Car_Moving_Animation.glb'],
+          replayInterval: 12, // 完成後等待12秒再重播
         },
         {
           id: 'pedestrian_crossing_1',
-          name: '行人',
+          name: '穿越斑馬線行人',
           type: ActorType.PEDESTRIAN,
           model: '/src/assets/models/Male3_Rigged.glb',
           initialPosition: [-13.22, 0, 123.71],
           initialRotation: [0, 0, 0],
-          accessoryNames: ['helmet'],
           animationUrls: ['/src/assets/animations/character/Male_Walking_Animation.glb'],
+          replayInterval: 12, // 與汽車同步重播
         },
       ],
       actions: [
-        {
-          actorId: 'car_not_yield_1',
-          type: ActionType.ANIMATION,
-          name: 'Car_Moving_Animation',
-          time: 0,
-          loop: true,
-        },
+        // 行人動作 - 先開始穿越斑馬線
         {
           actorId: 'pedestrian_crossing_1',
           type: ActionType.ANIMATION,
           name: 'Male_Walking_Animation',
-          time: 0,
+          time: 0, // 行人先開始
+          duration: 5, // 行人穿越時間
+          loop: true,
+        },
+        {
+          actorId: 'pedestrian_crossing_1',
+          type: ActionType.MOVEMENT,
+          path: [
+            [-13.22, 0, 123.71],  // 斑馬線起點(路邊)
+            [-13.47, 0, 114.5],   // 斑馬線中間(危險點) ⚠️
+            [-13.72, 0, 105.12],  // 斑馬線終點
+          ],
+          speed: 3.5, // 正常行人速度
+          time: 0, // 立即開始
+          duration: 5.3, // 約5.3秒穿越
+        },
+
+        // 汽車動作 - 延遲啟動,製造不禮讓的危險時刻
+        {
+          actorId: 'car_not_yield_1',
+          type: ActionType.ANIMATION,
+          name: 'Car_Moving_Animation',
+          time: 1.0, // 延遲1秒,當行人已在斑馬線上
+          duration: 12, // 汽車行駛時間
           loop: true,
         },
         {
           actorId: 'car_not_yield_1',
           type: ActionType.MOVEMENT,
           path: [
+            // [-7.84, 0, 110.9],     // 起點
+            // [-12, 0, 111.5],       // 接近斑馬線
+            // [-13.5, 0, 113.5],     // 斑馬線危險交會點 ⚠️ (與行人在此交叉)
+            // [-15, 0, 115.5],       // 穿過斑馬線
+            // [-20, 0, 117],         // 繼續行駛
+            // [-96.34, 0, 110.77],   // 後段路徑
+            // [-109.13, 0, 111.58],  // G點
             [-7.84, 0, 110.9],
             [-12, 0, 110.21],
             [-96.34, 0, 110.77], //斑馬線
@@ -492,20 +517,10 @@ export const patrolScenario1: PatrolScenario = {
             [-9.45, 0, 118.29],  //H點
             [-6.21, 0, 114.89]
           ],
-          speed: 10,
-          time: 0,
-          loop: true,
-        },
-        {
-          actorId: 'pedestrian_crossing_1',
-          type: ActionType.MOVEMENT,
-          path: [
-            [-13.22, 0, 123.71],
-            [-13.72, 0, 105.12],
-          ],
-          speed: 4,
-          time: 0,
-          loop: false,
+          speed: 11, // 較快速度,表現"不禮讓"
+          time: 1.0, // 延遲1秒啟動 (當行人已走到斑馬線上)
+          duration: 11, // 約11秒完成
+          // ⚠️ 危險時刻: 約在 1.8-2.2 秒時,汽車與行人在斑馬線交會
         },
       ],
       questions: {
