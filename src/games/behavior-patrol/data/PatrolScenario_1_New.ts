@@ -83,7 +83,172 @@ export const patrolScenario1: PatrolScenario = {
       ],
       found: false,
     },
-
+    {
+      id: 'danger-2',
+      name: '不走斑馬線任意穿越',
+      description: '行人不走斑馬線任意穿越道路',
+      actors: [
+        {
+          id: 'pedestrian_crossing_1',
+          name: '行人',
+          type: ActorType.PEDESTRIAN,
+          model: '/src/assets/models/Female1_Rigged.glb',
+          initialPosition: [-92.17, 0.15, -15.64],
+          initialRotation: [0, Math.PI / 2, 0],
+          animationUrls: ['/src/assets/animations/character/Female_Walking_Animation.glb'],
+        },
+      ],
+      actions: [
+        {
+          actorId: 'pedestrian_crossing_1',
+          type: ActionType.ANIMATION,
+          name: 'Female_Walking_Remain_Animation',
+          time: 0,
+          loop: true,
+        },
+        {
+          actorId: 'pedestrian_crossing_1',
+          type: ActionType.MOVEMENT,
+          path: [
+            [-124.6, 0.15, 79],
+            [-113.66, 0, 79.8],
+            [-100.44, 0.15, 80.6]
+          ],
+          speed: 2,
+          time: 0,
+          loop: true,
+        },
+      ],
+      questions: {
+        q1: {
+          question: '畫面中發生了什麼危險行為？',
+          options: [
+            '行人在斑馬線上正常通行',
+            '行人闖紅燈',
+            '行人未走斑馬線任意穿越',
+            '行人站在路邊等候'
+          ],
+          correctIndex: 2,
+        },
+        q2: {
+          question: '此情境應採取哪個更安全的行為？',
+          options: [
+            '趁車少就直接衝過去',
+            '走到最近的斑馬線（或行穿線）再過馬路',
+            '從兩台車中間穿越更省時間',
+            '只要小跑步就很安全'
+          ],
+          correctIndex: 1,
+        },
+      },
+      feedback: [
+        '危險原因：駕駛預期行人會在斑馬線出現；任意穿越容易進入視線死角，造成緊急煞車或碰撞。',
+        '安全行為：走斑馬線、停看聽，與車保持安全距離後再通過。'
+      ],
+      found: false,
+    },
+    {
+      id: 'danger-3',
+      name: '機車超速到斑馬線迴轉',
+      description: '機車超速到斑馬線迴轉',
+      actors: [
+        {
+          id: 'scooter_speeding_1',
+          name: '超速回轉機車',
+          type: ActorType.SCOOTER,
+          model: '/src/assets/models/Scooter3_Rigged.glb',
+          initialPosition: [4.26, 0, -60],
+          initialRotation: [0, Math.PI / 2, 0],
+          animationUrls: ['/src/assets/animations/car/Scooter_Moving_Animation.glb'],
+        },
+        {
+          id: 'scooter_speeding_driver_1',
+          name: '超速回轉機車騎士',
+          type: ActorType.PEDESTRIAN,
+          model: '/src/assets/models/Male3_CnH_Rigged.glb',
+          initialPosition: [4.26, 0, -60],
+          initialRotation: [0, Math.PI / 2, 0],
+          accessoryNames: ['helmet'],
+          animationUrls: ['/src/assets/animations/pedestrian/Male_Riding_Scooter_Animation.glb'],
+        },
+      ],
+      actions: [
+        {
+          actorId: 'scooter_speeding_1',
+          type: ActionType.ANIMATION,
+          name: 'Scooter_Moving_Animation',
+          time: 0,
+          loop: true,
+        },
+        {
+          actorId: 'scooter_speeding_driver_1',
+          type: ActionType.ANIMATION,
+          name: 'Male_Riding_Scooter_Animation',
+          time: 0,
+          loop: true,
+        },
+        // 機車移動
+        {
+          actorId: 'scooter_speeding_1',
+          type: ActionType.MOVEMENT,
+          path: [
+            [4.26, 0, -60],
+            [3.5, 0, -99],
+            [1.89, 0, -103.23],
+            [0.29, 0, -104],
+            [-1.1, 0, -102.5],
+            [-1.88, 0, -88.2],
+            [-1.77, 0, 24.75]
+          ],
+          speed: 6,
+          time: 0,
+          loop: true,
+        },
+        {
+          actorId: 'scooter_speeding_driver_1',
+          type: ActionType.MOVEMENT,
+          path: [
+            [4.26, 0, -60],
+            [3.5, 0, -99],
+            [1.89, 0, -103.23],
+            [0.29, 0, -104],
+            [-1.1, 0, -102.5],
+            [-1.88, 0, -88.2],
+            [-1.77, 0, 24.75]
+          ],
+          speed: 6,
+          time: 0,
+          loop: true,
+        },
+      ],
+      questions: {
+        q1: {
+          question: '這台機車做了什麼危險行為？',
+          options: [
+            '在路口不禮讓行人',
+            '行駛速度過快',
+            '邊騎邊抽菸',
+            '未戴安全帽'
+          ],
+          correctIndex: 1,
+        },
+        q2: {
+          question: '安全做法應該是？',
+          options: [
+            '保持車距, 並遵守限速',
+            '加速搶過去，避免被後車按喇叭',
+            '直接在人群旁邊迴轉',
+            '迴轉前不用看後方'
+          ],
+          correctIndex: 2,
+        },
+      },
+      feedback: [
+        '危險原因：斑馬線是行人高出現區；超速會增加路口衝突，反應距離不足容易撞上行人或側向車流。',
+        '保持與前後車輛的安全距離，並依照速限行駛；在一般市區道路，常見速限約為 40 km/h'
+      ],
+      found: false,
+    },
     {
       id: 'danger-4',
       name: '機車在公車後方搶快超車',
@@ -105,7 +270,18 @@ export const patrolScenario1: PatrolScenario = {
           model: '/src/assets/models/Scooter2_Rigged.glb',
           initialPosition: [28, 0, 9.35],
           initialRotation: [0, Math.PI / 2, 0],
+          animationUrls: ['/src/assets/animations/car/Scooter_Moving_Animation.glb'],
         },
+        {
+          id: 'scooter_driver_1',
+          name: '搶快超車機車騎士',
+          type: ActorType.PEDESTRIAN,
+          model: '/src/assets/models/Male3_CnH_Rigged.glb',
+          initialPosition: [28, 0, 9.35],
+          initialRotation: [0, Math.PI / 2, 0],
+          animationUrls: ['/src/assets/animations/pedestrian/Male_Riding_Scooter_Animation.glb'],
+        },
+
       ],
       actions: [
         // 公車動畫
@@ -116,6 +292,20 @@ export const patrolScenario1: PatrolScenario = {
           time: 0,
           loop: true,
         },
+        {
+          actorId: 'scooter_1',
+          type: ActionType.ANIMATION,
+          name: 'Scooter_Moving_Animation',
+          time: 0,
+          loop: true,
+        },
+        {
+          actorId: 'scooter_driver_1',
+          type: ActionType.ANIMATION,
+          name: 'Male_Riding_Scooter_Animation',
+          time: 0,
+          loop: true,
+        },
         // 公車移動
         {
           actorId: 'bus_1',
@@ -123,12 +313,25 @@ export const patrolScenario1: PatrolScenario = {
           path: [
             [37.6, 0, 9.35],
             [95.23, 0, 8.62],
-            [106.6, 0, 7.7],
+            [106.6, 0, 7.7],  //F點
             [109.21, 0, 8.04],
             [111.73, 0, 11.7],
             [112.51, 0, 17.17],
             [110.52, 0, 93.51],
-            [113.74, 0, 106.27],
+            [113.74, 0, 106.27],  //I點
+            [113.55, 0, 108.89],
+            [111.66, 0, 111.89],
+            [106.98, 0, 112.88],
+            [20.29, 0, 112.54],
+            [13.44, 0, 113.83],  //H點
+            [10.5, 0, 113.83],
+            [7.81, 0, 111.28],
+            [7.87, 0, 106],
+            [9.11, 0, 22.89],
+            [8.03, 0, 13.7],
+            [7.41, 0, 11.7],  //E點
+            [8.52, 0, 8.7],
+            [13.93, 0, 7.84]
           ],
           speed: 6,
           time: 0,
@@ -139,14 +342,57 @@ export const patrolScenario1: PatrolScenario = {
           actorId: 'scooter_1',
           type: ActionType.MOVEMENT,
           path: [
-            [28, 0, 9.35],
-            [50, 0, 8.9],
-            [65, 0, 6.5],
-            [80, 0, 5.5],
-            [100, 0, 7.2],
-            [106.6, 0, 7.7],
+            [37.6, 0, 9.35],
+            [95.23, 0, 8.62],
+            [106.6, 0, 7.7],  //F點
             [109.21, 0, 8.04],
             [111.73, 0, 11.7],
+            [112.51, 0, 17.17],
+            [110.52, 0, 93.51],
+            [113.74, 0, 106.27],  //I點
+            [113.55, 0, 108.89],
+            [111.66, 0, 111.89],
+            [106.98, 0, 112.88],
+            [20.29, 0, 112.54],
+            [13.44, 0, 113.83],  //H點
+            [10.5, 0, 113.83],
+            [7.81, 0, 111.28],
+            [7.87, 0, 106],
+            [9.11, 0, 22.89],
+            [8.03, 0, 13.7],
+            [7.41, 0, 11.7],  //E點
+            [8.52, 0, 8.7],
+            [13.93, 0, 7.84]
+          ],
+          speed: 12,
+          time: 0,
+          loop: true,
+        },
+        {
+          actorId: 'scooter_driver_1',
+          type: ActionType.MOVEMENT,
+          path: [
+            [37.6, 0, 9.35],
+            [95.23, 0, 8.62],
+            [106.6, 0, 7.7],  //F點
+            [109.21, 0, 8.04],
+            [111.73, 0, 11.7],
+            [112.51, 0, 17.17],
+            [110.52, 0, 93.51],
+            [113.74, 0, 106.27],  //I點
+            [113.55, 0, 108.89],
+            [111.66, 0, 111.89],
+            [106.98, 0, 112.88],
+            [20.29, 0, 112.54],
+            [13.44, 0, 113.83],  //H點
+            [10.5, 0, 113.83],
+            [7.81, 0, 111.28],
+            [7.87, 0, 106],
+            [9.11, 0, 22.89],
+            [8.03, 0, 13.7],
+            [7.41, 0, 11.7],  //E點
+            [8.52, 0, 8.7],
+            [13.93, 0, 7.84]
           ],
           speed: 12,
           time: 0,
@@ -181,112 +427,221 @@ export const patrolScenario1: PatrolScenario = {
       ],
       found: false,
     },
-
     {
-      id: 'danger-6',
-      name: '自行車突然偏移（閃避障礙物）',
-      description: '自行車騎士為了閃避路面坑洞突然向車道偏移',
+      id: 'danger-5',
+      name: '汽車不禮讓斑馬線行人',
+      description: '汽車不禮讓斑馬線行人',
       actors: [
         {
-          id: 'bicycle_1',
-          name: '自行車',
-          type: ActorType.BICYCLE,
-          model: '/src/assets/models/Bicycle1_Rigged.glb',
-          initialPosition: [107.5, 0, 36],
-          initialRotation: [0, 0, 0],
-          animationUrls: ['/src/assets/animations/car/Bicycle_Moving_Animation.glb'],
+          id: 'car_not_yield_1',
+          name: '汽車',
+          type: ActorType.VEHICLE,
+          model: '/src/assets/models/Car2_Rigged.glb',
+          initialPosition: [-7.84, 0, 110.9],
+          initialRotation: [0, -Math.PI / 2, 0],
+          animationUrls: ['/src/assets/animations/car/Car_Moving_Animation.glb'],
         },
         {
-          id: 'rider_1',
-          name: '自行車騎士',
+          id: 'pedestrian_crossing_1',
+          name: '行人',
           type: ActorType.PEDESTRIAN,
-          model: '/src/assets/models/Male1_Rigged.glb',
-          initialPosition: [107.5, 0, 36],
-          initialRotation: [0, 0, 0],
-          scale: [1, 1, 1],
-          animationUrls: ['/src/assets/animations/character/Male_Riding_Bicycle_Animation.glb'],
+          model: '/src/assets/models/Male3_Rigged.glb',
+          initialPosition: [-7.84, 0, 110.9],
+          initialRotation: [0, -Math.PI / 2, 0],
+          accessoryNames: ['helmet'],
+          animationUrls: ['/src/assets/animations/pedestrian/Male_Riding_Scooter_Animation.glb'],
         },
       ],
       actions: [
-        // 自行車動畫
         {
-          actorId: 'bicycle_1',
+          actorId: 'car_not_yield_1',
           type: ActionType.ANIMATION,
-          name: 'Bicycle_Moving_Animation',
+          name: 'Car_Moving_Animation',
           time: 0,
           loop: true,
         },
-        // 自行車移動
         {
-          actorId: 'bicycle_1',
+          actorId: 'pedestrian_crossing_1',
+          type: ActionType.ANIMATION,
+          name: 'Male_Walking_Animation',
+          time: 0,
+          loop: true,
+        },
+        {
+          actorId: 'car_not_yield_1',
           type: ActionType.MOVEMENT,
           path: [
-            [107.5, 0, 36],
-            [108.3, 0, 41],
-            [110.3, 0, 44],
-            [110.44, 0, 49.95],
-            [109.13, 0, 53.19],
-            [107.5, 0, 60],
+            [-7.84, 0, 110.9],
+            [-12, 0, 110.21],
+            [-96.34, 0, 110.77], //斑馬線
+            [-109.13, 0, 111.58],  //G點
+            [-111.74, 0, 114.86],
+            [-110.14, 0, 117.73],
+            [-103.58, 0, 119.06],  //斑馬線
+            [-18.7, 0, 119.21],
+            [-11.77, 0, 119.41],  //
+            [-9.45, 0, 118.29],  //H點
+            [-6.21, 0, 114.89]
           ],
-          speed: 5,
-          time: 0,
-          duration: 8,
-          loop: true,
-        },
-        // 騎士動畫
-        {
-          actorId: 'rider_1',
-          type: ActionType.ANIMATION,
-          name: 'Male_Riding_Bicycle_Animation',
+          speed: 10,
           time: 0,
           loop: true,
         },
-        // 騎士移動（與自行車同步）
         {
-          actorId: 'rider_1',
+          actorId: 'pedestrian_crossing_1',
           type: ActionType.MOVEMENT,
           path: [
-            [107.5, 0, 36],
-            [108.3, 0, 41],
-            [110.3, 0, 44],
-            [110.44, 0, 49.95],
-            [109.13, 0, 53.19],
-            [107.5, 0, 60],
+            [-7.84, 0, 110.9],
+            // [-12, 0, 110.21],
+            // [-96.34, 0, 110.77], //斑馬線
+            // [-109.13, 0, 111.58],  //G點
+            // [-111.74, 0, 114.86],
+            // [-110.14, 0, 117.73],
+            // [-103.58, 0, 119.06],  //斑馬線
+            // [-18.7, 0, 119.21],
+            // [-11.77, 0, 119.41],  //
+            // [-9.45, 0, 118.29],  //H點
+            // [-6.21, 0, 114.89]
           ],
-          speed: 5,
+          speed: 6,
           time: 0,
-          duration: 8,
           loop: true,
         },
       ],
       questions: {
         q1: {
-          question: '這個情境中誰的行為最危險？',
+          question: '畫面中哪個行為違規且危險？',
           options: [
-            '自行車正常騎在路邊',
-            '自行車突然偏移未注意後方車輛',
-            '自行車騎太慢',
-            '自行車戴安全帽',
+            '行人未行走斑馬線',
+            '汽車在斑馬線前未減速、不禮讓行人',
+            '汽車為打右轉燈',
+            '汽車逆向行駛'
           ],
           correctIndex: 1,
         },
         q2: {
-          question: '自行車騎士應該如何安全閃避障礙？',
+          question: '汽車駕駛應該怎麼做？',
           options: [
-            '直接偏移不用管後方',
-            '先回頭確認後方無車再偏移，或下車牽行',
-            '加速快速通過',
-            '按鈴就可以偏移',
+            '看到行人就加速通過比較安全',
+            '按喇叭請行人讓路',
+            '斑馬線前減速、停讓行人先通過',
+            '貼近行人邊緣通過即可'
           ],
-          correctIndex: 1,
+          correctIndex: 2,
         },
       },
       feedback: [
-        '危險原因：自行車突然橫移會進入汽機車路徑，後方車輛反應不及容易發生碰撞。',
-        '安全行為：變換路線前先回頭確認後方，必要時下車牽行繞過障礙。',
+        '危險原因：行人已合法通行，車輛搶行會造成碰撞；尤其無號誌路口更依賴駕駛主動停讓。',
+        '替代行為：提前減速、停讓行人、確認行人完全通過再起步。',
       ],
       found: false,
     },
+
+    // {
+    //   id: 'danger-6',
+    //   name: '自行車突然偏移（閃避障礙物）',
+    //   description: '自行車騎士為了閃避路面坑洞突然向車道偏移',
+    //   actors: [
+    //     {
+    //       id: 'bicycle_1',
+    //       name: '自行車',
+    //       type: ActorType.BICYCLE,
+    //       model: '/src/assets/models/Bicycle1_Rigged.glb',
+    //       initialPosition: [107.5, 0, 36],
+    //       initialRotation: [0, 0, 0],
+    //       animationUrls: ['/src/assets/animations/car/Bicycle_Moving_Animation.glb'],
+    //     },
+    //     {
+    //       id: 'rider_1',
+    //       name: '自行車騎士',
+    //       type: ActorType.PEDESTRIAN,
+    //       model: '/src/assets/models/Male1_Rigged.glb',
+    //       initialPosition: [107.5, 0, 36],
+    //       initialRotation: [0, 0, 0],
+    //       scale: [1, 1, 1],
+    //       animationUrls: ['/src/assets/animations/character/Male_Riding_Bicycle_Animation.glb'],
+    //     },
+    //   ],
+    //   actions: [
+    //     // 自行車動畫
+    //     {
+    //       actorId: 'bicycle_1',
+    //       type: ActionType.ANIMATION,
+    //       name: 'Bicycle_Moving_Animation',
+    //       time: 0,
+    //       loop: true,
+    //     },
+    //     // 自行車移動
+    //     {
+    //       actorId: 'bicycle_1',
+    //       type: ActionType.MOVEMENT,
+    //       path: [
+    //         [107.5, 0, 36],
+    //         [108.3, 0, 41],
+    //         [110.3, 0, 44],
+    //         [110.44, 0, 49.95],
+    //         [109.13, 0, 53.19],
+    //         [107.5, 0, 60],
+    //       ],
+    //       speed: 5,
+    //       time: 0,
+    //       duration: 8,
+    //       loop: true,
+    //     },
+    //     // 騎士動畫
+    //     {
+    //       actorId: 'rider_1',
+    //       type: ActionType.ANIMATION,
+    //       name: 'Male_Riding_Bicycle_Animation',
+    //       time: 0,
+    //       loop: true,
+    //     },
+    //     // 騎士移動（與自行車同步）
+    //     {
+    //       actorId: 'rider_1',
+    //       type: ActionType.MOVEMENT,
+    //       path: [
+    //         [107.5, 0, 36],
+    //         [108.3, 0, 41],
+    //         [110.3, 0, 44],
+    //         [110.44, 0, 49.95],
+    //         [109.13, 0, 53.19],
+    //         [107.5, 0, 60],
+    //       ],
+    //       speed: 5,
+    //       time: 0,
+    //       duration: 8,
+    //       loop: true,
+    //     },
+    //   ],
+    //   questions: {
+    //     q1: {
+    //       question: '這個情境中誰的行為最危險？',
+    //       options: [
+    //         '自行車正常騎在路邊',
+    //         '自行車突然偏移未注意後方車輛',
+    //         '自行車騎太慢',
+    //         '自行車戴安全帽',
+    //       ],
+    //       correctIndex: 1,
+    //     },
+    //     q2: {
+    //       question: '自行車騎士應該如何安全閃避障礙？',
+    //       options: [
+    //         '直接偏移不用管後方',
+    //         '先回頭確認後方無車再偏移，或下車牽行',
+    //         '加速快速通過',
+    //         '按鈴就可以偏移',
+    //       ],
+    //       correctIndex: 1,
+    //     },
+    //   },
+    //   feedback: [
+    //     '危險原因：自行車突然橫移會進入汽機車路徑，後方車輛反應不及容易發生碰撞。',
+    //     '安全行為：變換路線前先回頭確認後方，必要時下車牽行繞過障礙。',
+    //   ],
+    //   found: false,
+    // },
   ],
 
   safeObjects: [
@@ -304,6 +659,41 @@ export const patrolScenario1: PatrolScenario = {
         },
       ],
       actions: [],
+    },
+    {
+      id: 'safe-3',
+      name: 'B_E段正常行駛機車',
+      actors: [
+        {
+          id: 'scooter_1',
+          name: 'B_E段正常行駛機車',
+          type: ActorType.SCOOTER,
+          model: '/src/assets/models/Scooter1_Rigged.glb',
+          initialPosition: [-9.39, 0, -100.78],
+          initialRotation: [0, 0, 0],
+          animationUrls: ['/src/assets/animations/car/Scooter_Moving_Animation.glb'],
+        },
+      ],
+      actions: [
+        {
+          actorId: 'scooter_1',
+          type: ActionType.ANIMATION,
+          name: 'Scooter_Moving_Animation',
+          time: 0,
+          loop: true,
+        },
+        {
+          actorId: 'scooter_1',
+          type: ActionType.MOVEMENT,
+          path: [
+            [-9.39, 0, -100.78],
+            [-9.15, 0, -19.52]
+          ],
+          speed: 8,
+          time: 0,
+          loop: false,
+        },
+      ],
     },
   ],
 };
