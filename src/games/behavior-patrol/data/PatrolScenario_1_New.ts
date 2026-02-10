@@ -261,7 +261,7 @@ export const patrolScenario1: PatrolScenario = {
     {
       id: 'danger-4',
       name: '機車在公車後方搶快超車',
-      description: '公車正常行駛，機車從後方視線死角高速超車',
+      description: '公車正常行駛,多台機車從後方視線死角連續高速超車',
       actors: [
         {
           id: 'bus_1',
@@ -271,41 +271,95 @@ export const patrolScenario1: PatrolScenario = {
           initialPosition: [37.6, 0, 9.35],
           initialRotation: [0, Math.PI / 2, 0],
           animationUrls: ['/src/assets/animations/car/Bus_Moving_Animation.glb'],
+          replayInterval: 20, // 完成後等待20秒再重播
         },
+
+        // 機車1號 - 最激進的超車
         {
           id: 'scooter_1',
-          name: '搶快超車機車',
+          name: '激進超車機車1',
           type: ActorType.SCOOTER,
           model: '/src/assets/models/Scooter2_Rigged.glb',
-          initialPosition: [28, 0, 9.35],
+          initialPosition: [20, 0, 9.35], // 公車後方較遠位置
           initialRotation: [0, Math.PI / 2, 0],
           animationUrls: ['/src/assets/animations/car/Scooter_Moving_Animation.glb'],
+          replayInterval: 20,
         },
         {
           id: 'scooter_driver_1',
-          name: '搶快超車機車騎士',
+          name: '激進騎士1',
           type: ActorType.PEDESTRIAN,
           model: '/src/assets/models/Male3_CnH_Rigged.glb',
-          initialPosition: [28, 0, 9.35],
+          initialPosition: [20, 0, 9.35],
           initialRotation: [0, Math.PI / 2, 0],
           animationUrls: ['/src/assets/animations/character/Male_Riding_Scooter_Animation.glb'],
+          replayInterval: 20,
         },
 
+        // 機車2號 - 跟隨超車
+        {
+          id: 'scooter_2',
+          name: '跟隨超車機車2',
+          type: ActorType.SCOOTER,
+          model: '/src/assets/models/Scooter3_Rigged.glb', // 不同款式
+          initialPosition: [15, 0, 8.5], // 稍微偏移,更後方
+          initialRotation: [0, Math.PI / 2, 0],
+          animationUrls: ['/src/assets/animations/car/Scooter_Moving_Animation.glb'],
+          replayInterval: 20,
+        },
+        {
+          id: 'scooter_driver_2',
+          name: '跟隨騎士2',
+          type: ActorType.PEDESTRIAN,
+          model: '/src/assets/models/Male2_CnH_Rigged.glb', // 不同模型
+          initialPosition: [15, 0, 8.5],
+          initialRotation: [0, Math.PI / 2, 0],
+          accessoryNames: ['helmet'],
+          animationUrls: ['/src/assets/animations/character/Male_Riding_Scooter_Animation.glb'],
+          replayInterval: 20,
+        },
+
+        // 機車3號 - 第三波超車
+        {
+          id: 'scooter_3',
+          name: '連續超車機車3',
+          type: ActorType.SCOOTER,
+          model: '/src/assets/models/Scooter2_Rigged.glb',
+          initialPosition: [10, 0, 10.0], // 最後方
+          initialRotation: [0, Math.PI / 2, 0],
+          animationUrls: ['/src/assets/animations/car/Scooter_Moving_Animation.glb'],
+          replayInterval: 20,
+        },
+        {
+          id: 'scooter_driver_3',
+          name: '連續騎士3',
+          type: ActorType.PEDESTRIAN,
+          model: '/src/assets/models/Male1_CnH_Rigged.glb',
+          initialPosition: [10, 0, 10.0],
+          initialRotation: [0, Math.PI / 2, 0],
+          accessoryNames: ['helmet'],
+          animationUrls: ['/src/assets/animations/character/Male_Riding_Scooter_Animation.glb'],
+          replayInterval: 20,
+        },
       ],
       actions: [
-        // 公車動畫
+        // ========== 公車動作 ==========
         {
           actorId: 'bus_1',
           type: ActionType.ANIMATION,
           name: 'Bus_Moving_Animation',
           time: 0,
+          duration: 40, // 公車行駛時間
           loop: true,
         },
+
+        // ========== 機車1號動作 (立即開始,最激進) ==========
         {
           actorId: 'scooter_1',
           type: ActionType.ANIMATION,
           name: 'Scooter_Moving_Animation',
-          time: 0,
+          time: 0, // 立即開始
+          duration: 22, // 較快完成
           loop: true,
         },
         {
@@ -313,21 +367,59 @@ export const patrolScenario1: PatrolScenario = {
           type: ActionType.ANIMATION,
           name: 'Male_Riding_Scooter_Animation',
           time: 0,
+          duration: 22,
           loop: true,
         },
-        // 公車移動
+
+        // ========== 機車2號動作 (延遲2秒) ==========
+        {
+          actorId: 'scooter_2',
+          type: ActionType.ANIMATION,
+          name: 'Scooter_Moving_Animation',
+          time: 2.0, // 延遲2秒
+          duration: 22,
+          loop: true,
+        },
+        {
+          actorId: 'scooter_driver_2',
+          type: ActionType.ANIMATION,
+          name: 'Male_Riding_Scooter_Animation',
+          time: 2.0,
+          duration: 22,
+          loop: true,
+        },
+
+        // ========== 機車3號動作 (延遲4秒) ==========
+        {
+          actorId: 'scooter_3',
+          type: ActionType.ANIMATION,
+          name: 'Scooter_Moving_Animation',
+          time: 4.0, // 延遲4秒
+          duration: 22,
+          loop: true,
+        },
+        {
+          actorId: 'scooter_driver_3',
+          type: ActionType.ANIMATION,
+          name: 'Male_Riding_Scooter_Animation',
+          time: 4.0,
+          duration: 22,
+          loop: true,
+        },
+
+        // 公車移動路徑
         {
           actorId: 'bus_1',
           type: ActionType.MOVEMENT,
           path: [
             [37.6, 0, 9.35],
             [95.23, 0, 8.62],
-            [106.6, 0, 7.7],  //F點
+            [106.6, 0, 7.7],  //F點 - 轉角(危險超車點) ⚠️
             [109.21, 0, 8.04],
             [111.73, 0, 11.7],
             [112.51, 0, 17.17],
             [110.52, 0, 93.51],
-            [113.74, 0, 106.27],  //I點
+            [113.74, 0, 106.27],  //I點 - 第二個轉角 ⚠️
             [113.55, 0, 108.89],
             [111.66, 0, 111.89],
             [106.98, 0, 112.88],
@@ -342,70 +434,117 @@ export const patrolScenario1: PatrolScenario = {
             [8.52, 0, 8.7],
             [13.93, 0, 7.84]
           ],
-          speed: 6,
+          speed: 6, // 公車穩定速度
           time: 0,
-          loop: true,
+          duration: 40, // 約40秒完成
         },
-        // 機車移動（速度更快，超車）
+
+        // ========== 機車1號移動 (立即開始,最快) ==========
         {
           actorId: 'scooter_1',
           type: ActionType.MOVEMENT,
           path: [
-            [37.6, 0, 9.35],
+            [20, 0, 9.35],     // 從後方開始
+            [37.6, 0, 9.35],   // 追上公車
             [95.23, 0, 8.62],
-            [106.6, 0, 7.7],  //F點
+            [106.6, 0, 7.7],   // F點 - 在轉角超越公車 ⚠️
             [109.21, 0, 8.04],
             [111.73, 0, 11.7],
             [112.51, 0, 17.17],
             [110.52, 0, 93.51],
-            [113.74, 0, 106.27],  //I點
-            [113.55, 0, 108.89],
-            [111.66, 0, 111.89],
-            [106.98, 0, 112.88],
-            [20.29, 0, 112.54],
-            [13.44, 0, 113.83],  //H點
-            [10.5, 0, 113.83],
-            [7.81, 0, 111.28],
-            [7.87, 0, 106],
-            [9.11, 0, 22.89],
-            [8.03, 0, 13.7],
-            [7.41, 0, 11.7],  //E點
-            [8.52, 0, 8.7],
-            [13.93, 0, 7.84]
+            [113.74, 0, 106.27], // I點 - 遠離公車
           ],
-          speed: 12,
+          speed: 14, // 最快速度
           time: 0,
-          loop: true,
+          duration: 22,
         },
         {
           actorId: 'scooter_driver_1',
           type: ActionType.MOVEMENT,
           path: [
+            [20, 0, 9.35],
             [37.6, 0, 9.35],
             [95.23, 0, 8.62],
-            [106.6, 0, 7.7],  //F點
+            [106.6, 0, 7.7],
             [109.21, 0, 8.04],
             [111.73, 0, 11.7],
             [112.51, 0, 17.17],
             [110.52, 0, 93.51],
-            [113.74, 0, 106.27],  //I點
-            [113.55, 0, 108.89],
-            [111.66, 0, 111.89],
-            [106.98, 0, 112.88],
-            [20.29, 0, 112.54],
-            [13.44, 0, 113.83],  //H點
-            [10.5, 0, 113.83],
-            [7.81, 0, 111.28],
-            [7.87, 0, 106],
-            [9.11, 0, 22.89],
-            [8.03, 0, 13.7],
-            [7.41, 0, 11.7],  //E點
-            [8.52, 0, 8.7],
-            [13.93, 0, 7.84]
+            [113.74, 0, 106.27],
+          ],
+          speed: 14,
+          time: 0,
+          duration: 22,
+        },
+
+        // ========== 機車2號移動 (延遲2秒,跟隨超車) ==========
+        {
+          actorId: 'scooter_2',
+          type: ActionType.MOVEMENT,
+          path: [
+            [15, 0, 8.5],      // 更後方開始
+            [20, 0, 9.0],
+            [37.6, 0, 9.35],
+            [95.23, 0, 8.62],
+            [106.6, 0, 7.7],   // F點 - 跟隨超車 ⚠️
+            [109.21, 0, 8.04],
+            [111.73, 0, 11.7],
+            [112.51, 0, 17.17],
+          ],
+          speed: 13, // 稍慢但仍很快
+          time: 2.0, // 延遲2秒
+          duration: 20,
+        },
+        {
+          actorId: 'scooter_driver_2',
+          type: ActionType.MOVEMENT,
+          path: [
+            [15, 0, 8.5],
+            [20, 0, 9.0],
+            [37.6, 0, 9.35],
+            [95.23, 0, 8.62],
+            [106.6, 0, 7.7],
+            [109.21, 0, 8.04],
+            [111.73, 0, 11.7],
+            [112.51, 0, 17.17],
+          ],
+          speed: 13,
+          time: 2.0,
+          duration: 20,
+        },
+
+        // ========== 機車3號移動 (延遲4秒,連續超車) ==========
+        {
+          actorId: 'scooter_3',
+          type: ActionType.MOVEMENT,
+          path: [
+            [10, 0, 10.0],     // 最後方
+            [15, 0, 9.5],
+            [37.6, 0, 9.35],
+            [95.23, 0, 8.62],
+            [106.6, 0, 7.7],   // F點 - 第三波超車 ⚠️
+            [109.21, 0, 8.04],
+            [111.73, 0, 11.7],
+          ],
+          speed: 12, // 快速但稍慢
+          time: 4.0, // 延遲4秒
+          duration: 20,
+        },
+        {
+          actorId: 'scooter_driver_3',
+          type: ActionType.MOVEMENT,
+          path: [
+            [10, 0, 10.0],
+            [15, 0, 9.5],
+            [37.6, 0, 9.35],
+            [95.23, 0, 8.62],
+            [106.6, 0, 7.7],
+            [109.21, 0, 8.04],
+            [111.73, 0, 11.7],
           ],
           speed: 12,
-          time: 0,
-          loop: true,
+          time: 4.0,
+          duration: 20,
         },
       ],
       questions: {
