@@ -203,6 +203,8 @@ export const patrolScenario1: PatrolScenario = {
           speed: 6,
           time: 0,
           loop: true,
+          // repeatInterval: 5, // ✅ 每5秒重複一次
+          // clampWhenFinished: false, // 播放完回到初始
         },
         {
           actorId: 'scooter_speeding_driver_1',
@@ -673,6 +675,16 @@ export const patrolScenario1: PatrolScenario = {
           initialRotation: [0, 0, 0],
           animationUrls: ['/src/assets/animations/car/Scooter_Moving_Animation.glb'],
         },
+        {
+          id: 'scooter_driver_1',
+          name: 'B_E段正常行駛機車騎士',
+          type: ActorType.PEDESTRIAN,
+          model: '/src/assets/models/Female3_CnH_Rigged.glb',
+          initialPosition: [-9.39, 0, -100.78],
+          initialRotation: [0, 0, 0],
+          accessoryNames: ['helmet'],
+          animationUrls: ['/src/assets/animations/pedestrian/Female_Riding_Scooter_Animation.glb'],
+        },
       ],
       actions: [
         {
@@ -683,7 +695,25 @@ export const patrolScenario1: PatrolScenario = {
           loop: true,
         },
         {
+          actorId: 'scooter_driver_1',
+          type: ActionType.ANIMATION,
+          name: 'Female_Riding_Scooter_Animation',
+          time: 0,
+          loop: true,
+        },
+        {
           actorId: 'scooter_1',
+          type: ActionType.MOVEMENT,
+          path: [
+            [-9.39, 0, -100.78],
+            [-9.15, 0, -19.52]
+          ],
+          speed: 8,
+          time: 0,
+          loop: false,
+        },
+        {
+          actorId: 'scooter_driver_1',
           type: ActionType.MOVEMENT,
           path: [
             [-9.39, 0, -100.78],
