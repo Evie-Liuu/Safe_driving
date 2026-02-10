@@ -57,7 +57,7 @@ export function PatrolScene({
             danger={danger}
             onClick={() => onDangerClick(danger)}
             disabled={disabled || foundDangerIds.has(danger.id)}
-            enableDebug={false}
+            enableDebug={true}
           />
         ))}
 
@@ -68,7 +68,7 @@ export function PatrolScene({
             safeObject={obj}
             onClick={onSafeClick}
             disabled={disabled}
-            enableDebug={false}
+            enableDebug={true}
           />
         ))}
 

@@ -114,7 +114,7 @@ export const patrolScenario1: PatrolScenario = {
             [-113.66, 0, 79.8],
             [-100.44, 0.15, 80.6]
           ],
-          speed: 2,
+          speed: 4,
           time: 0,
           loop: true,
         },
@@ -169,7 +169,7 @@ export const patrolScenario1: PatrolScenario = {
           initialPosition: [4.26, 0, -60],
           initialRotation: [0, Math.PI / 2, 0],
           accessoryNames: ['helmet'],
-          animationUrls: ['/src/assets/animations/pedestrian/Male_Riding_Scooter_Animation.glb'],
+          animationUrls: ['/src/assets/animations/character/Male_Riding_Scooter_Animation.glb'],
         },
       ],
       actions: [
@@ -185,7 +185,7 @@ export const patrolScenario1: PatrolScenario = {
           type: ActionType.ANIMATION,
           name: 'Male_Riding_Scooter_Animation',
           time: 0,
-          loop: true,
+          loop: false,
         },
         // 機車移動
         {
@@ -200,7 +200,7 @@ export const patrolScenario1: PatrolScenario = {
             [-1.88, 0, -88.2],
             [-1.77, 0, 24.75]
           ],
-          speed: 6,
+          speed: 17,
           time: 0,
           loop: true,
           // repeatInterval: 5, // ✅ 每5秒重複一次
@@ -218,7 +218,7 @@ export const patrolScenario1: PatrolScenario = {
             [-1.88, 0, -88.2],
             [-1.77, 0, 24.75]
           ],
-          speed: 6,
+          speed: 17,
           time: 0,
           loop: true,
         },
@@ -242,7 +242,7 @@ export const patrolScenario1: PatrolScenario = {
             '直接在人群旁邊迴轉',
             '迴轉前不用看後方'
           ],
-          correctIndex: 2,
+          correctIndex: 0,
         },
       },
       feedback: [
@@ -281,7 +281,7 @@ export const patrolScenario1: PatrolScenario = {
           model: '/src/assets/models/Male3_CnH_Rigged.glb',
           initialPosition: [28, 0, 9.35],
           initialRotation: [0, Math.PI / 2, 0],
-          animationUrls: ['/src/assets/animations/pedestrian/Male_Riding_Scooter_Animation.glb'],
+          animationUrls: ['/src/assets/animations/character/Male_Riding_Scooter_Animation.glb'],
         },
 
       ],
@@ -448,10 +448,10 @@ export const patrolScenario1: PatrolScenario = {
           name: '行人',
           type: ActorType.PEDESTRIAN,
           model: '/src/assets/models/Male3_Rigged.glb',
-          initialPosition: [-7.84, 0, 110.9],
-          initialRotation: [0, -Math.PI / 2, 0],
+          initialPosition: [-13.22, 0, 123.71],
+          initialRotation: [0, 0, 0],
           accessoryNames: ['helmet'],
-          animationUrls: ['/src/assets/animations/pedestrian/Male_Riding_Scooter_Animation.glb'],
+          animationUrls: ['/src/assets/animations/character/Male_Walking_Animation.glb'],
         },
       ],
       actions: [
@@ -493,21 +493,12 @@ export const patrolScenario1: PatrolScenario = {
           actorId: 'pedestrian_crossing_1',
           type: ActionType.MOVEMENT,
           path: [
-            [-7.84, 0, 110.9],
-            // [-12, 0, 110.21],
-            // [-96.34, 0, 110.77], //斑馬線
-            // [-109.13, 0, 111.58],  //G點
-            // [-111.74, 0, 114.86],
-            // [-110.14, 0, 117.73],
-            // [-103.58, 0, 119.06],  //斑馬線
-            // [-18.7, 0, 119.21],
-            // [-11.77, 0, 119.41],  //
-            // [-9.45, 0, 118.29],  //H點
-            // [-6.21, 0, 114.89]
+            [-13.22, 0, 123.71],
+            [-13.72, 0, 105.12],
           ],
-          speed: 6,
+          speed: 4,
           time: 0,
-          loop: true,
+          loop: false,
         },
       ],
       questions: {
@@ -648,6 +639,70 @@ export const patrolScenario1: PatrolScenario = {
 
   safeObjects: [
     {
+      id: 'safe-1',
+      name: '自行車',
+      actors: [
+        {
+          id: 'bicycle_rider_1',
+          name: '自行車騎士',
+          type: ActorType.PEDESTRIAN,
+          model: '/src/assets/models/Male2_Rigged.glb',
+          initialPosition: [-21.31, 0, -17.56],
+          initialRotation: [0, -Math.PI / 2, 0],
+          animationUrls: ['/src/assets/animations/character/Male_Riding_Bicycle_Animation.glb'],
+        },
+        {
+          id: 'bicycle_1',
+          name: '自行車',
+          type: ActorType.BICYCLE,
+          model: '/src/assets/models/Bicycle2_Rigged.glb',
+          initialPosition: [-21.31, 0, -17.56],
+          initialRotation: [0, -Math.PI / 2, 0],
+          animationUrls: ['/src/assets/animations/car/Bicycle_Moving_Animation.glb'],
+        },
+      ],
+      actions: [
+        {
+          actorId: 'bicycle_rider_1',
+          type: ActionType.ANIMATION,
+          name: 'Male_Riding_Bicycle_Animation',
+          time: 0,
+          loop: true,
+        },
+        {
+          actorId: 'bicycle_1',
+          type: ActionType.ANIMATION,
+          name: 'Bicycle_Moving_Animation',
+          time: 0,
+          loop: true,
+        },
+        {
+          actorId: 'bicycle_rider_1',
+          type: ActionType.MOVEMENT,
+          path: [
+            [-21.31, 0.15, -17.56],
+            [-98, 0.15, -18.82],
+          ],
+          speed: 5,
+          time: 0,
+          // duration: 15,
+          loop: true,
+        },
+        {
+          actorId: 'bicycle_1',
+          type: ActionType.MOVEMENT,
+          path: [
+            [-21.31, 0.15, -17.56],
+            [-98, 0.15, -18.82],
+          ],
+          speed: 5,
+          time: 0,
+          // duration: 15,
+          loop: true,
+        },
+      ],
+    },
+    {
       id: 'safe-2',
       name: '等紅燈行人',
       actors: [
@@ -683,7 +738,7 @@ export const patrolScenario1: PatrolScenario = {
           initialPosition: [-9.39, 0, -100.78],
           initialRotation: [0, 0, 0],
           accessoryNames: ['helmet'],
-          animationUrls: ['/src/assets/animations/pedestrian/Female_Riding_Scooter_Animation.glb'],
+          animationUrls: ['/src/assets/animations/character/Female_Riding_Scooter_Animation.glb'],
         },
       ],
       actions: [

@@ -322,43 +322,44 @@ export function DangerActorObject({
   }
 
   return (
-    <group
-      ref={groupRef}
-      position={actor.initialPosition}
-      rotation={actor.initialRotation || [0, 0, 0]}
-      scale={actor.scale || [1, 1, 1]}
-      onClick={(e) => {
-        e.stopPropagation();
-        if (!disabled && !found && onClick) {
-          onClick();
-        }
-      }}
-      onPointerOver={(e) => {
-        e.stopPropagation();
-        if (!disabled && !found && onClick) {
-          document.body.style.cursor = 'pointer';
-        }
-      }}
-      onPointerOut={() => {
-        document.body.style.cursor = 'default';
-      }}
-    >
-      <primitive object={modelSceneRef.current} />
+    <>
+      <group
+        ref={groupRef}
+        position={actor.initialPosition}
+        rotation={actor.initialRotation || [0, 0, 0]}
+        scale={actor.scale || [1, 1, 1]}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (!disabled && !found && onClick) {
+            onClick();
+          }
+        }}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          if (!disabled && !found && onClick) {
+            document.body.style.cursor = 'pointer';
+          }
+        }}
+        onPointerOut={() => {
+          document.body.style.cursor = 'default';
+        }}
+      >
+        <primitive object={modelSceneRef.current} />
 
-      {/* Invisible hitbox for better clicking */}
-      <mesh position={[0, 1, 0]}>
-        <boxGeometry args={[2, 2, 2]} />
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-      </mesh>
-
-      {/* Visual indicator when found */}
-      {found && (
-        <mesh position={[0, 2.5, 0]}>
-          <sphereGeometry args={[0.3, 16, 16]} />
-          <meshBasicMaterial color="#4CAF50" transparent opacity={0.8} />
+        {/* Invisible hitbox for better clicking */}
+        <mesh position={[0, 1, 0]}>
+          <boxGeometry args={[2, 2, 2]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
         </mesh>
-      )}
 
+        {/* Visual indicator when found */}
+        {found && (
+          <mesh position={[0, 2.5, 0]}>
+            <sphereGeometry args={[0.3, 16, 16]} />
+            <meshBasicMaterial color="#4CAF50" transparent opacity={0.8} />
+          </mesh>
+        )}
+      </group>
       {/* Debug: Show path */}
       {enableDebug &&
         movementActions.map((action, idx) =>
@@ -372,6 +373,6 @@ export function DangerActorObject({
             </mesh>
           ))
         )}
-    </group>
+    </>
   );
 }
