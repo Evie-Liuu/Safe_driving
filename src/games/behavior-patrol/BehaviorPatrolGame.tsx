@@ -206,331 +206,122 @@ function PatrolInstructionsPanel({
   onClose?: () => void
   onExit?: () => void
 }) {
+  const [soundOn, setSoundOn] = useState(true);
+
   return (
-    <div style={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(20,20,40,0.95) 100%)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1000,
-      animation: 'fadeIn 0.3s ease-in'
-    }}>
-      <div style={{
-        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-        borderRadius: '20px',
-        padding: '40px',
-        maxWidth: '700px',
-        width: '90%',
-        maxHeight: '90vh',
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: '0 0 60px rgba(74, 144, 217, 0.4)',
-        border: '2px solid rgba(100, 150, 255, 0.3)'
-      }}>
-        {/* 標題 */}
-        <div style={{ marginBottom: '25px', textAlign: 'center' }}>
-          <h1 style={{
-            fontSize: '36px',
-            fontFamily: 'monospace',
-            color: '#fff',
-            margin: '0 0 10px 0',
-            textShadow: '0 0 20px rgba(74, 144, 217, 0.8)'
-          }}>
-            🔍 行為糾察隊
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn font-sans">
+      <div className="relative w-[90%] max-w-4xl bg-white rounded-[30px] border-4 border-[#3CB4E7] p-8 shadow-2xl flex flex-col items-center">
+
+        {/* Close Button */}
+        <button
+          onClick={showStartButton ? onExit : onClose}
+          className="absolute top-4 right-4 bg-[#FF6B6B] hover:bg-[#FF5252] text-red-500 rounded-full w-10 h-10 flex items-center justify-center shadow-md transition-colors z-10 cursor-pointer"
+          title={showStartButton ? "退出" : "關閉"}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        {/* Title */}
+        <div className="flex flex-col items-center mb-8 w-full">
+          <h1 className="text-[#3CB4E7] text-3xl md:text-4xl font-black mb-3 tracking-wide drop-shadow-sm font-sans flex items-center gap-2">
+            <span>遊戲說明</span>
           </h1>
-          <div style={{
-            fontSize: '18px',
-            color: '#4a90d9',
-            fontFamily: 'monospace',
-            fontWeight: 'bold'
-          }}>
-            {scenario.name}
-          </div>
-          <div style={{
-            fontSize: '14px',
-            color: 'rgba(255, 255, 255, 0.6)',
-            marginTop: '5px'
-          }}>
-            {scenario.description}
-          </div>
+          <div className="w-24 h-1.5 bg-[#FFD700] rounded-full"></div>
         </div>
 
-        {/* 內容區（可滾動） */}
-        <div style={{
-          flex: 1,
-          overflowY: 'auto',
-          fontFamily: 'monospace',
-          color: '#fff',
-          fontSize: '14px',
-          paddingRight: '10px'
-        }}>
-          {/* 遊戲資訊 */}
-          <div style={{
-            background: 'rgba(0, 0, 0, 0.3)',
-            borderRadius: '10px',
-            padding: '20px',
-            marginBottom: '15px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: '10px',
-              background: 'rgba(255, 165, 0, 0.1)',
-              borderRadius: '8px',
-              borderLeft: '4px solid #ffa500'
-            }}>
-              <span style={{ fontSize: '20px', marginRight: '10px' }}>⏱️</span>
-              <div>
-                <div style={{ fontWeight: 'bold', color: '#ffa500' }}>時間限制</div>
-                <div style={{ fontSize: '12px', color: '#ddd' }}>{scenario.timeLimit} 秒</div>
-              </div>
+        {/* Cards Container */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-10 px-4">
+
+          {/* Card 1: Watch Carefully */}
+          <div className="bg-white rounded-3xl p-6 flex flex-col items-center text-center shadow-[0_10px_30px_rgba(0,0,0,0.08)] hover:shadow-[0_15px_35px_rgba(0,0,0,0.12)] transition-all hover:-translate-y-1 border border-gray-100 group">
+            <div className="w-20 h-20 rounded-full bg-[#E0FFEB] text-[#00C853] flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform duration-300">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
             </div>
-
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: '10px',
-              background: 'rgba(68, 255, 68, 0.1)',
-              borderRadius: '8px',
-              borderLeft: '4px solid #44ff44'
-            }}>
-              <span style={{ fontSize: '20px', marginRight: '10px' }}>🔍</span>
-              <div>
-                <div style={{ fontWeight: 'bold', color: '#44ff44' }}>危險因子</div>
-                <div style={{ fontSize: '12px', color: '#ddd' }}>共 {scenario.dangers.length} 個需要找出</div>
-              </div>
-            </div>
-
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: '10px',
-              background: 'rgba(255, 68, 68, 0.1)',
-              borderRadius: '8px',
-              borderLeft: '4px solid #ff4444'
-            }}>
-              <span style={{ fontSize: '20px', marginRight: '10px' }}>❤️</span>
-              <div>
-                <div style={{ fontWeight: 'bold', color: '#ff4444' }}>錯誤機會</div>
-                <div style={{ fontSize: '12px', color: '#ddd' }}>{scenario.maxLives} 次（點錯會扣生命）</div>
-              </div>
-            </div>
-          </div>
-
-          {/* 遊戲玩法 */}
-          <div style={{
-            background: 'rgba(0, 0, 0, 0.3)',
-            borderRadius: '10px',
-            padding: '20px',
-            marginBottom: '15px',
-            lineHeight: '1.8'
-          }}>
-            <h2 style={{ color: '#4a90d9', marginTop: 0, marginBottom: '15px', fontSize: '18px' }}>
-              🎮 遊戲玩法
-            </h2>
-            <ol style={{ margin: 0, paddingLeft: '20px' }}>
-              <li style={{ marginBottom: '10px' }}>
-                <strong style={{ color: '#44ff44' }}>觀察場景</strong>：仔細查看 3D 場景中的各種物品和設施
-              </li>
-              <li style={{ marginBottom: '10px' }}>
-                <strong style={{ color: '#ffa500' }}>點擊危險物</strong>：發現危險因子後，用滑鼠點擊它
-              </li>
-              <li style={{ marginBottom: '10px' }}>
-                <strong style={{ color: '#4a90d9' }}>回答問題</strong>：點擊後會出現問答題，選擇正確答案
-              </li>
-              <li>
-                <strong style={{ color: '#ff6666' }}>注意生命值</strong>：點錯物品或答錯題目會扣生命
-              </li>
-            </ol>
-          </div>
-
-          {/* 操作說明 */}
-          <div style={{
-            background: 'rgba(0, 0, 0, 0.3)',
-            borderRadius: '10px',
-            padding: '20px',
-            marginBottom: '15px'
-          }}>
-            <h2 style={{ color: '#4a90d9', marginTop: 0, marginBottom: '15px', fontSize: '18px' }}>
-              🖱️ 操作說明
-            </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ display: 'flex', alignItems: 'start' }}>
-                <span style={{ fontSize: '18px', marginRight: '10px', minWidth: '30px' }}>🖱️</span>
-                <div>
-                  <strong>滑鼠拖曳</strong>：旋轉視角
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'start' }}>
-                <span style={{ fontSize: '18px', marginRight: '10px', minWidth: '30px' }}>🔍</span>
-                <div>
-                  <strong>滾輪</strong>：縮放視角
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'start' }}>
-                <span style={{ fontSize: '18px', marginRight: '10px', minWidth: '30px' }}>👆</span>
-                <div>
-                  <strong>左鍵點擊</strong>：選擇物品
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 計分說明 */}
-          <div style={{
-            background: 'rgba(0, 0, 0, 0.3)',
-            borderRadius: '10px',
-            padding: '20px',
-            marginBottom: '15px'
-          }}>
-            <h2 style={{ color: '#4a90d9', marginTop: 0, marginBottom: '15px', fontSize: '18px' }}>
-              💯 計分說明
-            </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{
-                background: 'rgba(68, 255, 68, 0.1)',
-                padding: '10px',
-                borderRadius: '5px',
-                borderLeft: '3px solid #44ff44'
-              }}>
-                <strong style={{ color: '#44ff44' }}>找到危險因子</strong>：+10 分
-              </div>
-              <div style={{
-                background: 'rgba(74, 144, 217, 0.1)',
-                padding: '10px',
-                borderRadius: '5px',
-                borderLeft: '3px solid #4a90d9'
-              }}>
-                <strong style={{ color: '#4a90d9' }}>答對問題</strong>：+5 分
-              </div>
-              <div style={{
-                background: 'rgba(255, 68, 68, 0.1)',
-                padding: '10px',
-                borderRadius: '5px',
-                borderLeft: '3px solid #ff4444'
-              }}>
-                <strong style={{ color: '#ff4444' }}>點錯/答錯</strong>：-1 生命值
-              </div>
-            </div>
-          </div>
-
-          {/* 勝利條件 */}
-          <div style={{
-            background: 'rgba(255, 215, 0, 0.1)',
-            borderRadius: '10px',
-            padding: '20px',
-            border: '2px solid rgba(255, 215, 0, 0.3)'
-          }}>
-            <h2 style={{ color: '#ffd700', marginTop: 0, marginBottom: '12px', fontSize: '18px' }}>
-              🏆 勝利條件
-            </h2>
-            <p style={{ margin: 0, lineHeight: '1.6' }}>
-              在時間限制內找出<strong style={{ color: '#ffd700' }}>所有危險因子</strong>，且生命值不歸零，即可過關！
+            <h3 className="text-xl font-bold text-gray-800 mb-3">仔細觀察</h3>
+            <p className="text-gray-500 font-medium leading-relaxed">
+              觀察街道場景，尋找危險行為。
             </p>
           </div>
+
+          {/* Card 2: Click Hazards */}
+          <div className="bg-white rounded-3xl p-6 flex flex-col items-center text-center shadow-[0_10px_30px_rgba(0,0,0,0.08)] hover:shadow-[0_15px_35px_rgba(0,0,0,0.12)] transition-all hover:-translate-y-1 border border-gray-100 group">
+            <div className="w-20 h-20 rounded-full bg-[#FFEBEE] text-[#FF5252] flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform duration-300">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
+                <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
+                <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
+                <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-3">點擊危險</h3>
+            <p className="text-gray-500 font-medium leading-relaxed">
+              在時間結束前點擊危險行為並回答對應的情境理解！
+            </p>
+          </div>
+
+          {/* Card 3: Score Points */}
+          <div className="bg-white rounded-3xl p-6 flex flex-col items-center text-center shadow-[0_10px_30px_rgba(0,0,0,0.08)] hover:shadow-[0_15px_35px_rgba(0,0,0,0.12)] transition-all hover:-translate-y-1 border border-gray-100 group">
+            <div className="w-20 h-20 rounded-full bg-[#FFF9C4] text-[#FBC02D] flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform duration-300">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 21h8" />
+                <path d="M12 17v4" />
+                <path d="M7 4h10" />
+                <path d="M17 4v8a5 5 0 0 1-10 0V4" />
+                <path d="M5 9v2a2 2 0 0 0 2 2" />
+                <path d="M19 9v2a2 2 0 0 1-2 2" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-3">獲得分數</h3>
+            <p className="text-gray-500 font-medium leading-relaxed">
+              找出正確危險即可得分。
+            </p>
+          </div>
+
         </div>
 
-        {/* 底部按鈕 */}
-        <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-          {onClose && (
-            <button
-              onClick={onClose}
-              style={{
-                flex: 1,
-                padding: '15px',
-                fontSize: '16px',
-                fontFamily: 'monospace',
-                fontWeight: 'bold',
-                color: '#fff',
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: '2px solid rgba(255, 255, 255, 0.3)',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-              }}
-            >
-              關閉說明
-            </button>
-          )}
+        {/* Play Button */}
+        <button
+          onClick={showStartButton ? onStart : onClose}
+          className="bg-yellow-400 hover:bg-[#FFC107] text-[#5D4037] font-black text-2xl py-4 px-16 rounded-full shadow-[0_4px_14px_rgba(255,215,0,0.5)] transform transition hover:scale-105 active:scale-95 mb-6 tracking-wide cursor-pointer"
+        >
+          {showStartButton ? '開始遊戲' : '繼續遊戲'}
+        </button>
 
-          {showStartButton && onStart && (
-            <button
-              onClick={onStart}
-              style={{
-                flex: 2,
-                padding: '15px',
-                fontSize: '20px',
-                fontFamily: 'monospace',
-                fontWeight: 'bold',
-                color: '#fff',
-                background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
-                border: 'none',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                boxShadow: '0 6px 20px rgba(76, 175, 80, 0.5)',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'scale(1.03)'
-                e.currentTarget.style.boxShadow = '0 8px 25px rgba(76, 175, 80, 0.7)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)'
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(76, 175, 80, 0.5)'
-              }}
-            >
-              🚀 開始遊戲
-            </button>
+        {/* Sound Toggle */}
+        {/* <div className="flex items-center gap-3 text-gray-500 font-medium cursor-pointer" onClick={() => setSoundOn(!soundOn)}>
+          {soundOn ? (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <line x1="23" y1="9" x2="17" y2="15"></line>
+              <line x1="17" y1="9" x2="23" y2="15"></line>
+            </svg>
           )}
+          <span className="text-sm">音效 {soundOn ? '開啟' : '關閉'}</span>
+          <div className={`w-10 h-6 rounded-full p-1 transition-colors duration-300 ${soundOn ? 'bg-[#2ECC71]' : 'bg-gray-300'}`}>
+            <div className={`w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform duration-300 ${soundOn ? 'translate-x-4' : ''}`}></div>
+          </div>
+        </div> */}
 
-          {showStartButton && onExit && (
-            <button
-              onClick={onExit}
-              style={{
-                flex: 1,
-                padding: '15px',
-                fontSize: '16px',
-                fontFamily: 'monospace',
-                fontWeight: 'bold',
-                color: '#fff',
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: '2px solid rgba(255, 255, 255, 0.3)',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-              }}
-            >
-              返回選單
-            </button>
-          )}
-        </div>
       </div>
-
       <style>
         {`
           @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
+          }
+          .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out forwards;
           }
         `}
       </style>

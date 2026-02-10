@@ -45,7 +45,7 @@ export function GameScene() {
   }>>([])
   const vehicleIdCounter = useRef(0)
 
-  const debugflag = useRef(false)
+  const debugflag = useRef(true)
 
   // Event system
   const eventManagerRef = useRef<EventManager | null>(null)
