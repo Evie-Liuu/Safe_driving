@@ -53,10 +53,20 @@ export interface DangerActor {
 - 動畫狀態: 停止所有動畫
 - 移動狀態: 清空路徑進度和索引
 - 追蹤狀態: 清空已播放動畫、已啟動移動的記錄
+- 可見性: 恢復物件可見性
 
 ### 4. 自動停止
 
 當危險因子被找到 (`found = true`) 時,重播功能會自動停止。
+
+### 5. 等待期間隱藏
+
+在重播等待期間,角色物件會自動隱藏,只有在重新播放時才會重新出現。這讓重播效果更加自然,避免物件停留在終點位置的尷尬感。
+
+**行為流程**:
+```
+動作執行 → 序列完成 → 隱藏物件 → 等待 replayInterval → 重置並顯示 → 重新播放
+```
 
 ## 使用方法
 
@@ -147,10 +157,12 @@ actions: [
 
 控制台輸出示例:
 ```
-[DangerActorObject] Sequence completed for scooter_speeding_1 at 8.00s, waiting 10s before replay
+[DangerActorObject] Sequence completed for scooter_speeding_1 at 8.00s, waiting 10s before replay (hidden)
 [DangerActorObject] Replaying sequence for scooter_speeding_1 (replay #1)
 [DangerActorObject] Sequence reset for scooter_speeding_1
 ```
+
+**注意**: 當序列完成時,物件會自動隱藏,日誌中會顯示 "(hidden)" 標記。
 
 ## 技術細節
 

@@ -46,6 +46,7 @@ export function DangerActorObject({
   const waitingForReplayRef = useRef(false); // 標記是否正在等待重播
   const replayWaitStartRef = useRef(0); // 重播等待開始時間
   const totalReplaysRef = useRef(0); // 已重播次數
+  const [isVisible, setIsVisible] = useState(true); // 控制物件可見性
 
   // Extract movement and animation actions
   const movementActions = useMemo(
@@ -98,6 +99,9 @@ export function DangerActorObject({
         groupRef.current.rotation.set(...actor.initialRotation);
       }
     }
+
+    // 恢復可見性
+    setIsVisible(true);
 
     console.log(`[DangerActorObject] Sequence reset for ${actor.id}`);
   };
@@ -221,6 +225,8 @@ export function DangerActorObject({
       waitingForReplayRef.current = false;
       sequenceCompletedRef.current = true;
       animControllerRef.current?.stopAll();
+      // 確保物件可見(可能正在等待重播而被隱藏)
+      setIsVisible(true);
     }
   }, [found]);
 
@@ -381,8 +387,12 @@ export function DangerActorObject({
         sequenceCompletedRef.current = true;
         waitingForReplayRef.current = true;
         replayWaitStartRef.current = currentTime;
+
+        // 隱藏物件,等待重播
+        setIsVisible(false);
+
         console.log(
-          `[DangerActorObject] Sequence completed for ${actor.id} at ${currentTime.toFixed(2)}s, waiting ${replayInterval}s before replay`
+          `[DangerActorObject] Sequence completed for ${actor.id} at ${currentTime.toFixed(2)}s, waiting ${replayInterval}s before replay (hidden)`
         );
       }
     }
@@ -436,15 +446,16 @@ export function DangerActorObject({
         position={actor.initialPosition}
         rotation={actor.initialRotation || [0, 0, 0]}
         scale={actor.scale || [1, 1, 1]}
+        visible={isVisible} // 控制可見性
         onClick={(e) => {
           e.stopPropagation();
-          if (!disabled && !found && onClick) {
+          if (!disabled && !found && onClick && isVisible) {
             onClick();
           }
         }}
         onPointerOver={(e) => {
           e.stopPropagation();
-          if (!disabled && !found && onClick) {
+          if (!disabled && !found && onClick && isVisible) {
             document.body.style.cursor = 'pointer';
           }
         }}

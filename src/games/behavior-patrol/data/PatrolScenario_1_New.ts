@@ -32,7 +32,7 @@ export const patrolScenario1: PatrolScenario = {
           initialRotation: [0, Math.PI / 2, 0],
           accessoryNames: ['phone'],
           animationUrls: ['/src/assets/animations/character/Male_Walking_Phone_Animation.glb'],
-          replayInterval: 18, // 完成後等待18秒再重播
+          replayInterval: 5, // 完成後等待18秒再重播
         },
       ],
       actions: [
