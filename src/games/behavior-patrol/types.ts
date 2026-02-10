@@ -42,6 +42,10 @@ export interface DangerActor {
   color?: string; // 顏色（可選）
   accessoryNames?: string[]; // 配件名稱（例如手機）
   animationUrls?: string[]; // 動畫 URL 列表
+
+  // 整個行為序列重播設定
+  replayInterval?: number; // 所有動作完成後等待多久再重播（秒），undefined = 不重播
+  replayCount?: number; // 重播次數，undefined = 無限重播
 }
 
 /**

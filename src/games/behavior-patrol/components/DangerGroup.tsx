@@ -34,6 +34,8 @@ export function DangerGroup({
             disabled={disabled}
             found={danger.found}
             enableDebug={enableDebug}
+            replayInterval={actor.replayInterval}
+            replayCount={actor.replayCount}
           />
         );
       })}

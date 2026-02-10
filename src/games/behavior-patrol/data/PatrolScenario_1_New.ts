@@ -32,6 +32,7 @@ export const patrolScenario1: PatrolScenario = {
           initialRotation: [0, Math.PI / 2, 0],
           accessoryNames: ['phone'],
           animationUrls: ['/src/assets/animations/character/Male_Walking_Phone_Animation.glb'],
+          replayInterval: 18, // 完成後等待18秒再重播
         },
       ],
       actions: [
@@ -40,7 +41,8 @@ export const patrolScenario1: PatrolScenario = {
           type: ActionType.ANIMATION,
           name: 'Male_Walking_Phone_Animation',
           time: 0,
-          loop: true,
+          // duration: 14, // 估計行走時間
+          loop: true, // 動畫本身循環播放
         },
         {
           actorId: 'pedestrian_1',
@@ -50,9 +52,11 @@ export const patrolScenario1: PatrolScenario = {
             [-82.48, 0.15, -15.54],
             [-71.69, 0.15, -15.25],
           ],
-          speed: 1.5,
+          speed: 3,
           time: 0,
-          loop: true,
+          loop: false,
+          duration: 8, // 約8秒完成路徑
+          // 使用 actor 的 replayInterval 來控制重播
         },
       ],
       questions: {
@@ -160,6 +164,8 @@ export const patrolScenario1: PatrolScenario = {
           initialPosition: [4.26, 0, -60],
           initialRotation: [0, Math.PI / 2, 0],
           animationUrls: ['/src/assets/animations/car/Scooter_Moving_Animation.glb'],
+          replayInterval: 10, // 完成後等待10秒再重播
+          // replayCount: 3, // 可選：限制重播次數
         },
         {
           id: 'scooter_speeding_driver_1',
@@ -170,6 +176,7 @@ export const patrolScenario1: PatrolScenario = {
           initialRotation: [0, Math.PI / 2, 0],
           accessoryNames: ['helmet'],
           animationUrls: ['/src/assets/animations/character/Male_Riding_Scooter_Animation.glb'],
+          replayInterval: 10, // 與機車同步重播
         },
       ],
       actions: [
@@ -202,9 +209,9 @@ export const patrolScenario1: PatrolScenario = {
           ],
           speed: 17,
           time: 0,
-          loop: true,
-          // repeatInterval: 5, // ✅ 每5秒重複一次
-          // clampWhenFinished: false, // 播放完回到初始
+          loop: false,
+          duration: 8, // 約8秒完成路徑
+          // 使用 actor 的 replayInterval 來控制重播
         },
         {
           actorId: 'scooter_speeding_driver_1',
@@ -220,7 +227,7 @@ export const patrolScenario1: PatrolScenario = {
           ],
           speed: 17,
           time: 0,
-          loop: true,
+          duration: 8, // 與機車同步
         },
       ],
       questions: {

@@ -19,6 +19,9 @@ interface DangerActorObjectProps {
   disabled?: boolean;
   found?: boolean;
   enableDebug?: boolean;
+  // 整個行為序列重播設定
+  replayInterval?: number; // 所有動作完成後等待多久再重播(秒),undefined = 不重播
+  replayCount?: number; // 重播次數,undefined = 無限重播
 }
 
 export function DangerActorObject({
@@ -28,6 +31,8 @@ export function DangerActorObject({
   disabled = false,
   found = false,
   enableDebug = false,
+  replayInterval,
+  replayCount,
 }: DangerActorObjectProps) {
   const groupRef = useRef<THREE.Group>(null);
   const modelSceneRef = useRef<THREE.Object3D | null>(null);
@@ -35,6 +40,12 @@ export function DangerActorObject({
   const [isReady, setIsReady] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const elapsedTimeRef = useRef(0);
+
+  // 重播狀態追蹤
+  const sequenceCompletedRef = useRef(false); // 標記整個序列是否已完成
+  const waitingForReplayRef = useRef(false); // 標記是否正在等待重播
+  const replayWaitStartRef = useRef(0); // 重播等待開始時間
+  const totalReplaysRef = useRef(0); // 已重播次數
 
   // Extract movement and animation actions
   const movementActions = useMemo(
@@ -61,6 +72,35 @@ export function DangerActorObject({
 
   // 追蹤已啟動的移動動作（避免重複觸發）
   const startedMovementsRef = useRef<Set<string>>(new Set());
+
+  // 重置序列狀態函數
+  const resetSequence = () => {
+    elapsedTimeRef.current = 0;
+    sequenceCompletedRef.current = false;
+    waitingForReplayRef.current = false;
+    pathProgressRef.current = 0;
+    currentPathIndexRef.current = 0;
+    setActiveMovement(null);
+
+    // 清空所有追蹤狀態
+    playedAnimationsRef.current.clear();
+    repeatCountRef.current.clear();
+    lastPlayTimeRef.current.clear();
+    startedMovementsRef.current.clear();
+
+    // 停止所有動畫
+    animControllerRef.current?.stopAll();
+
+    // 重置位置和旋轉
+    if (groupRef.current) {
+      groupRef.current.position.set(...actor.initialPosition);
+      if (actor.initialRotation) {
+        groupRef.current.rotation.set(...actor.initialRotation);
+      }
+    }
+
+    console.log(`[DangerActorObject] Sequence reset for ${actor.id}`);
+  };
 
   // Load model and animations
   useEffect(() => {
@@ -152,6 +192,11 @@ export function DangerActorObject({
       lastPlayTimeRef.current.clear();
       startedMovementsRef.current.clear();
 
+      // 清空重播狀態
+      sequenceCompletedRef.current = false;
+      waitingForReplayRef.current = false;
+      totalReplaysRef.current = 0;
+
       if (modelSceneRef.current) {
         modelSceneRef.current.traverse((child) => {
           if (child instanceof THREE.Mesh) {
@@ -169,6 +214,15 @@ export function DangerActorObject({
       }
     };
   }, [actor]);
+
+  // 當被找到時停止重播
+  useEffect(() => {
+    if (found) {
+      waitingForReplayRef.current = false;
+      sequenceCompletedRef.current = true;
+      animControllerRef.current?.stopAll();
+    }
+  }, [found]);
 
   // Handle actions based on elapsed time
   useFrame((_, delta) => {
@@ -299,6 +353,60 @@ export function DangerActorObject({
         if (direction.lengthSq() > 0.001) {
           const angle = Math.atan2(direction.x, direction.z);
           groupRef.current.rotation.y = angle;
+        }
+      }
+    }
+
+    // 處理整個序列的重播邏輯
+    if (replayInterval !== undefined && !sequenceCompletedRef.current) {
+      // 檢測所有動作是否已完成
+      const allActionsComplete = actions.every((action) => {
+        if (action.duration) {
+          return currentTime >= action.time + action.duration;
+        }
+        // 對於沒有 duration 的動作,檢查是否已經開始
+        if (action.type === ActionType.MOVEMENT) {
+          const movementKey = `${action.actorId}_movement_${action.time}`;
+          return startedMovementsRef.current.has(movementKey);
+        }
+        if (action.type === ActionType.ANIMATION) {
+          const animAction = action as AnimationAction;
+          const animKey = `${animAction.name}_${animAction.time}`;
+          return playedAnimationsRef.current.has(animKey);
+        }
+        return currentTime >= action.time;
+      });
+
+      if (allActionsComplete && actions.length > 0) {
+        sequenceCompletedRef.current = true;
+        waitingForReplayRef.current = true;
+        replayWaitStartRef.current = currentTime;
+        console.log(
+          `[DangerActorObject] Sequence completed for ${actor.id} at ${currentTime.toFixed(2)}s, waiting ${replayInterval}s before replay`
+        );
+      }
+    }
+
+    // 處理重播等待和執行
+    if (waitingForReplayRef.current && replayInterval !== undefined) {
+      const waitElapsed = currentTime - replayWaitStartRef.current;
+
+      if (waitElapsed >= replayInterval) {
+        // 檢查是否達到重播次數限制
+        const shouldReplay = replayCount === undefined || totalReplaysRef.current < replayCount;
+
+        if (shouldReplay) {
+          totalReplaysRef.current += 1;
+          console.log(
+            `[DangerActorObject] Replaying sequence for ${actor.id} (replay #${totalReplaysRef.current})`
+          );
+          resetSequence();
+        } else {
+          // 達到重播次數限制,停止等待
+          waitingForReplayRef.current = false;
+          console.log(
+            `[DangerActorObject] Replay limit reached for ${actor.id} (${totalReplaysRef.current} replays)`
+          );
         }
       }
     }

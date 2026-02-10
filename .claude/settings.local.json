@@ -26,7 +26,9 @@
       "Bash(echo:*)",
       "Bash(git worktree:*)",
       "Bash(npm run lint:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run:*)"
     ]
   }
 }
