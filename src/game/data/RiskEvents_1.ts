@@ -13,7 +13,7 @@ export const FAST_OUTER_BUFFER = 7
 export const cruisePoints: [number, number, number][] = [
     [10, 0, 120], //起點 
     [10, 0, 80],
-    [10, 0, 49],
+    [8.5, 0, 49],
     [10, 0, 12],
     [10, 0, 0],  //E點
     [10, 0, -60],
@@ -67,7 +67,7 @@ export const events: GameEvent[] = [
                 enabled: true,
                 blinkRate: 2,
                 time: 0,
-                duration: 10
+                duration: 5
             },
             // Move to roadside (slow pull-over)
             {
@@ -81,7 +81,7 @@ export const events: GameEvent[] = [
                 ],
                 speed: 12,
                 time: 0,
-                duration: 8
+                duration: 5
             }
         ],
         requiredPlayerResponse: {
@@ -155,7 +155,7 @@ export const events: GameEvent[] = [
                 enabled: true,
                 blinkRate: 1.5,
                 time: 0,
-                duration: 8
+                duration: 4
             },
             {
                 actorId: 'parked_car_1',
@@ -170,6 +170,17 @@ export const events: GameEvent[] = [
                 name: 'Male_OpenCarLeftDoor_Inside_Animation',
                 loop: false,
                 time: 0
+            },
+            {
+                actorId: 'parked_car_1',
+                type: ActionType.MOVEMENT,
+                path: [
+                    [11, 0, 43.5],
+                    [11, 0, 43.5],
+                ],
+                speed: 0,
+                time: 0,
+                duration: 3
             }
         ],
         requiredPlayerResponse: {
@@ -177,14 +188,15 @@ export const events: GameEvent[] = [
             validationRadius: 12
         },
         completionCriteria: {
-            playerPassed: true
+            playerPassed: true,
+            requireActorPathComplete: true
         },
-        priority: 8,
+        priority: 12,
         prepareConfig: {
             radius: 15, // Start preparing 25m away (trigger is 18m)
             actions: [PrepareActionType.DECELERATE, PrepareActionType.LANE_SWITCH],
             targetSpeedFactor: 0.4,
-            laneOffset: -3.0, // Shift left to avoid door
+            laneOffset: -2.5, // Shift left to avoid door
             offsetHoldDistance: 15 // Maintain offset for 15m after passing trigger
         },
         spawnRadius: 80, // Pre-spawn actors 50m away for smooth visual experience

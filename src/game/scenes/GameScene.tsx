@@ -45,7 +45,7 @@ export function GameScene() {
   }>>([])
   const vehicleIdCounter = useRef(0)
 
-  const debugflag = useRef(true)
+  const debugflag = useRef(false)
 
   // Event system
   const eventManagerRef = useRef<EventManager | null>(null)
@@ -697,9 +697,9 @@ export function GameScene() {
             // console.log(`[GameScene] 💡 Found initial light action for ${actor.id}:`, initialLightAction)
           }
 
-          // 檢查 PEDESTRIAN 是否有初始動畫動作 (ActionType.ANIMATION at time: 0)
+          // 檢查 PEDESTRIAN 和 VEHICLE 是否有初始動畫動作 (ActionType.ANIMATION at time: 0)
           let initialAnimationAction = null
-          if (actor.type === ActorType.PEDESTRIAN) {
+          if (actor.type === ActorType.PEDESTRIAN || actor.type === ActorType.VEHICLE) {
             const animAction = event.actions.find(a =>
               a.type === ActionType.ANIMATION &&
               a.actorId === actor.id &&
@@ -714,7 +714,7 @@ export function GameScene() {
                 fadeIn: aa.fadeIn ?? 0.3,
                 fadeOut: aa.fadeOut ?? 0.3
               }
-              console.log(`[GameScene] 🎭 Found initial animation action for ${actor.id}:`, initialAnimationAction)
+              console.log(`[GameScene] 🎭 Found initial animation action for ${actor.id} (${actor.type}):`, initialAnimationAction)
             }
           }
 

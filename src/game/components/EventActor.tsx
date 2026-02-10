@@ -614,9 +614,9 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                         pendingAnimationRef.current = null
                     }
 
-                    // Handle initial animation for PEDESTRIAN (pause at initial pose)
+                    // Handle initial animation for PEDESTRIAN and VEHICLE (pause at initial pose)
                     const currentInitialAnimationAction = initialAnimationActionRef.current
-                    if (currentInitialAnimationAction && type === ActorType.PEDESTRIAN) {
+                    if (currentInitialAnimationAction && (type === ActorType.PEDESTRIAN || type === ActorType.VEHICLE)) {
                         const availableAnims = animController.getAnimationNames()
                         console.log(`[EventActor] 🎭 Setting initial animation pose for ${id}: ${currentInitialAnimationAction.name}`)
                         console.log(`[EventActor] 📋 Available animations:`, availableAnims)
@@ -631,9 +631,9 @@ export const EventActor = forwardRef<EventActorHandle, EventActorProps>(
                             animController.updateMixer(0.1)
                             // Then pause
                             animController.setMixerTimeScale(0)
-                            // console.log(`[EventActor] ✅ Initial animation pose applied for ${id}`)
+                            console.log(`[EventActor] ✅ Initial animation pose applied for ${id} (${type})`)
                         } else {
-                            // console.warn(`[EventActor] ⚠️ Animation '${initialAnimationAction.name}' not found for ${id}`)
+                            console.warn(`[EventActor] ⚠️ Animation '${currentInitialAnimationAction.name}' not found for ${id}`)
                         }
                     }
 
