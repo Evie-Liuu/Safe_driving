@@ -266,7 +266,7 @@ function PatrolInstructionsPanel({
             </div>
             <h3 className="text-xl font-bold text-gray-800 mb-3">點擊危險</h3>
             <p className="text-gray-500 font-medium leading-relaxed">
-              在時間結束前點擊危險行為並回答對應的情境理解！
+              計時結束前點擊危險行為並根據情境回答問題！
             </p>
           </div>
 

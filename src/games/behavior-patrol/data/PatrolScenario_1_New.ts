@@ -677,7 +677,6 @@ export const patrolScenario1: PatrolScenario = {
           type: ActionType.ANIMATION,
           name: 'Male_Walking_Animation',
           time: 0.8, // 行人先開始
-          duration: 5.3, // 行人穿越時間
           loop: true,
         },
         {
@@ -685,7 +684,6 @@ export const patrolScenario1: PatrolScenario = {
           type: ActionType.ANIMATION,
           name: 'Male_Walking_Animation',
           time: 6.5, // 行人先開始
-          duration: 5.3, // 行人穿越時間
           loop: true,
         },
         {
@@ -693,7 +691,6 @@ export const patrolScenario1: PatrolScenario = {
           type: ActionType.ANIMATION,
           name: 'Female_Walking_Animation',
           time: 6.8, // 行人先開始
-          duration: 5.3, // 行人穿越時間
           loop: true,
         },
 
@@ -707,7 +704,6 @@ export const patrolScenario1: PatrolScenario = {
           ],
           speed: 3.5, // 正常行人速度
           time: 0.8,
-          duration: 5.3, // 約5.3秒穿越
         },
         {
           actorId: 'pedestrian_crossing_2',
@@ -718,7 +714,6 @@ export const patrolScenario1: PatrolScenario = {
           ],
           speed: 3.5, // 正常行人速度
           time: 6.5,
-          duration: 5.3, // 約5.3秒穿越
         },
         {
           actorId: 'pedestrian_crossing_3',
@@ -729,7 +724,6 @@ export const patrolScenario1: PatrolScenario = {
           ],
           speed: 3.5, // 正常行人速度
           time: 6.8,
-          duration: 5.3, // 約5.3秒穿越
         },
 
         // 汽車動作 - 延遲啟動,製造不禮讓的危險時刻
@@ -738,7 +732,6 @@ export const patrolScenario1: PatrolScenario = {
           type: ActionType.ANIMATION,
           name: 'Car_Moving_Animation',
           time: 1.0, // 延遲1秒,當行人已在斑馬線上
-          duration: 12, // 汽車行駛時間
           loop: true,
         },
         {
@@ -759,7 +752,6 @@ export const patrolScenario1: PatrolScenario = {
           ],
           speed: 11, // 較快速度,表現"不禮讓"
           time: 0, // 延遲1秒啟動 (當行人已走到斑馬線上)
-          duration: 11, // 約11秒完成
           // ⚠️ 危險時刻: 約在 1.8-2.2 秒時,汽車與行人在斑馬線交會
         },
       ],
