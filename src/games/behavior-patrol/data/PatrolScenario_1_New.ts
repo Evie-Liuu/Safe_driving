@@ -114,7 +114,7 @@ export const patrolScenario1: PatrolScenario = {
         {
           actorId: 'pedestrian_crossing_1',
           type: ActionType.ANIMATION,
-          name: 'Female_Walking_Remain_Animation',
+          name: 'Female_Walking_Animation',
           time: 0,
           loop: true,
         },
@@ -660,6 +660,15 @@ export const patrolScenario1: PatrolScenario = {
           initialRotation: [0, 0, 0],
           animationUrls: ['/src/assets/animations/character/Male_Walking_Animation.glb'],
         },
+        {
+          id: 'pedestrian_crossing_3',
+          name: '穿越斑馬線行人',
+          type: ActorType.PEDESTRIAN,
+          model: '/src/assets/models/Female1_Rigged.glb',
+          initialPosition: [-13.22, 0, 123.71],
+          initialRotation: [0, 0, 0],
+          animationUrls: ['/src/assets/animations/character/Female_Walking_Animation.glb'],
+        },
       ],
       actions: [
         // 行人動作 - 先開始穿越斑馬線
@@ -668,15 +677,23 @@ export const patrolScenario1: PatrolScenario = {
           type: ActionType.ANIMATION,
           name: 'Male_Walking_Animation',
           time: 0.8, // 行人先開始
-          duration: 5, // 行人穿越時間
+          duration: 5.3, // 行人穿越時間
           loop: true,
         },
         {
           actorId: 'pedestrian_crossing_2',
           type: ActionType.ANIMATION,
           name: 'Male_Walking_Animation',
-          time: 6.4, // 行人先開始
-          duration: 5, // 行人穿越時間
+          time: 6.5, // 行人先開始
+          duration: 5.3, // 行人穿越時間
+          loop: true,
+        },
+        {
+          actorId: 'pedestrian_crossing_3',
+          type: ActionType.ANIMATION,
+          name: 'Female_Walking_Animation',
+          time: 6.8, // 行人先開始
+          duration: 5.3, // 行人穿越時間
           loop: true,
         },
 
@@ -700,7 +717,18 @@ export const patrolScenario1: PatrolScenario = {
             [-102.9, 0, 104.84],  // 斑馬線終點
           ],
           speed: 3.5, // 正常行人速度
-          time: 6.4,
+          time: 6.5,
+          duration: 5.3, // 約5.3秒穿越
+        },
+        {
+          actorId: 'pedestrian_crossing_3',
+          type: ActionType.MOVEMENT,
+          path: [
+            [-104.52, 0, 124.12],  // 斑馬線起點(路邊)
+            [-104.06, 0, 105.76],  // 斑馬線終點
+          ],
+          speed: 3.5, // 正常行人速度
+          time: 6.8,
           duration: 5.3, // 約5.3秒穿越
         },
 
@@ -717,13 +745,6 @@ export const patrolScenario1: PatrolScenario = {
           actorId: 'car_not_yield_1',
           type: ActionType.MOVEMENT,
           path: [
-            // [-7.84, 0, 110.9],     // 起點
-            // [-12, 0, 111.5],       // 接近斑馬線
-            // [-13.5, 0, 113.5],     // 斑馬線危險交會點 ⚠️ (與行人在此交叉)
-            // [-15, 0, 115.5],       // 穿過斑馬線
-            // [-20, 0, 117],         // 繼續行駛
-            // [-96.34, 0, 110.77],   // 後段路徑
-            // [-109.13, 0, 111.58],  // G點
             [-7.84, 0, 110.9],
             [-12, 0, 110.21],
             [-96.34, 0, 110.77], //斑馬線
@@ -770,112 +791,6 @@ export const patrolScenario1: PatrolScenario = {
       ],
       found: false,
     },
-
-    // {
-    //   id: 'danger-6',
-    //   name: '自行車突然偏移（閃避障礙物）',
-    //   description: '自行車騎士為了閃避路面坑洞突然向車道偏移',
-    //   actors: [
-    //     {
-    //       id: 'bicycle_1',
-    //       name: '自行車',
-    //       type: ActorType.BICYCLE,
-    //       model: '/src/assets/models/Bicycle1_Rigged.glb',
-    //       initialPosition: [107.5, 0, 36],
-    //       initialRotation: [0, 0, 0],
-    //       animationUrls: ['/src/assets/animations/car/Bicycle_Moving_Animation.glb'],
-    //     },
-    //     {
-    //       id: 'rider_1',
-    //       name: '自行車騎士',
-    //       type: ActorType.PEDESTRIAN,
-    //       model: '/src/assets/models/Male1_Rigged.glb',
-    //       initialPosition: [107.5, 0, 36],
-    //       initialRotation: [0, 0, 0],
-    //       scale: [1, 1, 1],
-    //       animationUrls: ['/src/assets/animations/character/Male_Riding_Bicycle_Animation.glb'],
-    //     },
-    //   ],
-    //   actions: [
-    //     // 自行車動畫
-    //     {
-    //       actorId: 'bicycle_1',
-    //       type: ActionType.ANIMATION,
-    //       name: 'Bicycle_Moving_Animation',
-    //       time: 0,
-    //       loop: true,
-    //     },
-    //     // 自行車移動
-    //     {
-    //       actorId: 'bicycle_1',
-    //       type: ActionType.MOVEMENT,
-    //       path: [
-    //         [107.5, 0, 36],
-    //         [108.3, 0, 41],
-    //         [110.3, 0, 44],
-    //         [110.44, 0, 49.95],
-    //         [109.13, 0, 53.19],
-    //         [107.5, 0, 60],
-    //       ],
-    //       speed: 5,
-    //       time: 0,
-    //       duration: 8,
-    //       loop: true,
-    //     },
-    //     // 騎士動畫
-    //     {
-    //       actorId: 'rider_1',
-    //       type: ActionType.ANIMATION,
-    //       name: 'Male_Riding_Bicycle_Animation',
-    //       time: 0,
-    //       loop: true,
-    //     },
-    //     // 騎士移動（與自行車同步）
-    //     {
-    //       actorId: 'rider_1',
-    //       type: ActionType.MOVEMENT,
-    //       path: [
-    //         [107.5, 0, 36],
-    //         [108.3, 0, 41],
-    //         [110.3, 0, 44],
-    //         [110.44, 0, 49.95],
-    //         [109.13, 0, 53.19],
-    //         [107.5, 0, 60],
-    //       ],
-    //       speed: 5,
-    //       time: 0,
-    //       duration: 8,
-    //       loop: true,
-    //     },
-    //   ],
-    //   questions: {
-    //     q1: {
-    //       question: '這個情境中誰的行為最危險？',
-    //       options: [
-    //         '自行車正常騎在路邊',
-    //         '自行車突然偏移未注意後方車輛',
-    //         '自行車騎太慢',
-    //         '自行車戴安全帽',
-    //       ],
-    //       correctIndex: 1,
-    //     },
-    //     q2: {
-    //       question: '自行車騎士應該如何安全閃避障礙？',
-    //       options: [
-    //         '直接偏移不用管後方',
-    //         '先回頭確認後方無車再偏移，或下車牽行',
-    //         '加速快速通過',
-    //         '按鈴就可以偏移',
-    //       ],
-    //       correctIndex: 1,
-    //     },
-    //   },
-    //   feedback: [
-    //     '危險原因：自行車突然橫移會進入汽機車路徑，後方車輛反應不及容易發生碰撞。',
-    //     '安全行為：變換路線前先回頭確認後方，必要時下車牽行繞過障礙。',
-    //   ],
-    //   found: false,
-    // },
   ],
 
   safeObjects: [

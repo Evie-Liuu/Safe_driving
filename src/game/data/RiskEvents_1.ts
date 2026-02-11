@@ -489,7 +489,7 @@ export const events: GameEvent[] = [
             {
                 actorId: 'intersection_pedestrian_1',
                 type: ActionType.ANIMATION,
-                name: 'Female_Walking_Remain_Animation',
+                name: 'Female_Walking_Animation',
                 loop: true,
                 time: 0
             },
@@ -852,7 +852,7 @@ export const events: GameEvent[] = [
             {
                 actorId: 'safe_pedestrian_1',
                 type: ActionType.ANIMATION,
-                name: 'Female_Walking_Remain_Animation',
+                name: 'Female_Walking_Animation',
                 loop: true,
                 time: 0
             },
