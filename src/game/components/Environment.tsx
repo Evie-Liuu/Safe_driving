@@ -54,6 +54,7 @@ export function Environment({
       </mesh> */}
       {/* <ModelLoader url="/src/assets/models/Floor.glb" position={[0, -1.55, 0]} /> */}
       <ModelLoader url="/src/assets/models/Map_city.glb" position={[0, -1.55, 0]} onLoad={(gltf) => {
+        // <ModelLoader url="/src/assets/models/City_Placement_TEST.glb" position={[0, -1.55, 0]} onLoad={(gltf) => {
         // console.log(gltf)
       }} />
 
