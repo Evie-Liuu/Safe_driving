@@ -43,7 +43,15 @@ export function DangerActorObject({
 
   // 重播狀態追蹤
   const sequenceCompletedRef = useRef(false); // 標記整個序列是否已完成
-  const [isVisible, setIsVisible] = useState(true); // 控制物件可見性
+
+  // 計算最早的動作時間（用於決定初始可見性）
+  const earliestActionTime = useMemo(() => {
+    if (actions.length === 0) return 0;
+    return Math.min(...actions.map(a => a.time));
+  }, [actions]);
+
+  // 如果所有動作都延遲（earliestActionTime > 0），則初始隱藏
+  const [isVisible, setIsVisible] = useState(earliestActionTime === 0); // 控制物件可見性
 
   // 開發測試: 追蹤 bus_1 移動開始時間和轉彎時間
   const movementStartTimeRef = useRef<number | null>(null);
@@ -109,8 +117,8 @@ export function DangerActorObject({
       }
     }
 
-    // 恢復可見性
-    setIsVisible(true);
+    // 恢復可見性（如果有延遲動作，則隱藏等待）
+    setIsVisible(earliestActionTime === 0);
 
     // // 重置移動追蹤 (bus_1 測試用)
     // if (actor.id === 'bus_1') {
@@ -281,6 +289,12 @@ export function DangerActorObject({
 
     elapsedTimeRef.current += delta;
     const currentTime = elapsedTimeRef.current;
+
+    // TODO: 處理延遲顯示：當時間到達最早動作時間時，顯示物件
+    if (!isVisible && currentTime >= earliestActionTime) {
+      setIsVisible(true);
+      console.log(`[DangerActorObject] Showing ${actor.id} at ${currentTime.toFixed(2)}s (earliest action time: ${earliestActionTime}s)`);
+    }
 
     // Update animations
     animControllerRef.current?.update(delta);
