@@ -278,9 +278,9 @@ export function DangerActorObject({
 
       if (shouldPlay && animControllerRef.current) {
         const isRepeat = playCount > 0;
-        console.log(
-          `[DangerActorObject] ${isRepeat ? 'Repeating' : 'Starting'} animation: ${action.name} for ${actor.id} at ${currentTime.toFixed(2)}s (play #${playCount + 1})`
-        );
+        // console.log(
+        //   `[DangerActorObject] ${isRepeat ? 'Repeating' : 'Starting'} animation: ${action.name} for ${actor.id} at ${currentTime.toFixed(2)}s (play #${playCount + 1})`
+        // );
 
         // 構建動畫配置
         const animConfig: any = {
