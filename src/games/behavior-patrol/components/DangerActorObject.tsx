@@ -15,7 +15,7 @@ import { getSharedLoader } from '../../../game/utils/SharedLoader';
 interface DangerActorObjectProps {
   actor: DangerActor;
   actions: DangerAction[];
-  onClick?: () => void;
+  onClick?: (point?: THREE.Vector3) => void;
   disabled?: boolean;
   found?: boolean;
   enableDebug?: boolean;
@@ -530,7 +530,7 @@ export function DangerActorObject({
         onClick={(e) => {
           e.stopPropagation();
           if (!disabled && !found && onClick && isVisible) {
-            onClick();
+            onClick(e.point);
           }
         }}
         onPointerOver={(e) => {

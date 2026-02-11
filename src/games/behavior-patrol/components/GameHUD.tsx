@@ -66,7 +66,7 @@ export function GameHUD({
                 opacity: i < lives ? 1 : 0.3,
               }}
             >
-              ❤️
+              ♥️
             </span>
           ))}
         </div>
