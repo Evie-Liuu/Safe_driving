@@ -178,3 +178,24 @@ export interface QuizResult {
   q1Correct: boolean;
   q2Correct: boolean;
 }
+
+/**
+ * 錯誤類型統計
+ */
+export interface ErrorStatistics {
+  consecutiveWrongClicks: number; // 連續誤判次數
+  totalWrongClicks: number; // 總誤判次數
+  missedDangers: string[]; // 錯過的危險因子ID列表
+}
+
+/**
+ * 危險因子結果
+ */
+export interface DangerResult {
+  dangerId: string;
+  dangerName: string;
+  found: boolean; // 是否被找到
+  q1Correct?: boolean; // Q1是否答對
+  q2Correct?: boolean; // Q2是否答對
+  pointsEarned: number; // 此危險因子獲得的總分
+}

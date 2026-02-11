@@ -18,6 +18,8 @@ export function BehaviorPatrolGame({ onExit }: GameProps) {
     score,
     currentDanger,
     quizResult,
+    errorStats,
+    dangerResults,
     startGame,
     handleCorrectClick,
     handleWrongClick,
@@ -29,6 +31,7 @@ export function BehaviorPatrolGame({ onExit }: GameProps) {
     totalDangers: scenario.dangers.length,
     maxLives: scenario.maxLives,
     timeLimit: scenario.timeLimit,
+    dangerList: scenario.dangers,
   });
 
   const { timeRemaining, start: startTimer, pause: pauseTimer, reset: resetTimer, resume: resumeTimer } = useTimer({
@@ -135,13 +138,16 @@ export function BehaviorPatrolGame({ onExit }: GameProps) {
       )}
 
       {/* 結果畫面 */}
-      {/* {(status === 'won' || status === 'lost') && (
+      {(status === 'won' || status === 'lost') && (
         <ResultScreen
           progress={{ ...progress, timeRemaining, score, foundCount }}
+          dangerResults={dangerResults}
+          errorStats={errorStats}
+          allDangers={scenario.dangers}
           onRestart={handleRestart}
           onExit={onExit}
         />
-      )} */}
+      )}
 
       {/* 遊戲中的說明按鈕（右下角） */}
       {isGameActive && status === 'playing' && (
