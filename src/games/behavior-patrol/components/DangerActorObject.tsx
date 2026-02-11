@@ -73,6 +73,8 @@ export function DangerActorObject({
 
   // 追蹤已啟動的移動動作（避免重複觸發）
   const startedMovementsRef = useRef<Set<string>>(new Set());
+  // 追蹤已完成的移動動作
+  const completedMovementsRef = useRef<Set<string>>(new Set());
 
   // 重置序列狀態函數
   const resetSequence = () => {
@@ -88,6 +90,7 @@ export function DangerActorObject({
     repeatCountRef.current.clear();
     lastPlayTimeRef.current.clear();
     startedMovementsRef.current.clear();
+    completedMovementsRef.current.clear();
 
     // 停止所有動畫
     animControllerRef.current?.stopAll();
@@ -195,6 +198,7 @@ export function DangerActorObject({
       repeatCountRef.current.clear();
       lastPlayTimeRef.current.clear();
       startedMovementsRef.current.clear();
+      completedMovementsRef.current.clear();
 
       // 清空重播狀態
       sequenceCompletedRef.current = false;
@@ -282,10 +286,19 @@ export function DangerActorObject({
         playedAnimationsRef.current.add(animKey);
       }
 
-      // 檢查是否應該停止（如果有設定 duration）
-      if (action.duration && currentTime >= action.time + action.duration) {
+      // TODO: 檢查是否應該停止（如果有設定 duration 或是所有移動動作已完成）
+      const allMovementsCompleted = movementActions.length > 0 &&
+        movementActions.every(m => {
+          const mKey = `${m.actorId}_movement_${m.time}`;
+          return m.duration ? (currentTime >= m.time + m.duration) : completedMovementsRef.current.has(mKey);
+        });
+
+      if (
+        (action.duration && currentTime >= action.time + action.duration) ||
+        (!action.duration && !action.loop && allMovementsCompleted)
+      ) {
         if (animControllerRef.current && playedAnimationsRef.current.has(animKey)) {
-          console.log(`[DangerActorObject] Stopping animation: ${action.name} after duration`);
+          console.log(`[DangerActorObject] Stopping animation: ${action.name} after duration or movement completion`);
           animControllerRef.current.stop(action.name);
         }
       }
@@ -294,6 +307,9 @@ export function DangerActorObject({
     // Check and start movement actions
     movementActions.forEach((action) => {
       const movementKey = `${action.actorId}_movement_${action.time}`;
+
+      // 如果已經完成，不再次啟動（除非重播重置過）
+      if (completedMovementsRef.current.has(movementKey)) return;
 
       // ✅ 改用狀態追蹤，不依賴單幀時間窗口
       if (
@@ -311,12 +327,15 @@ export function DangerActorObject({
       }
 
       // Check if movement should end
-      if (action.duration && currentTime >= action.time + action.duration) {
-        if (activeMovement === action) {
-          console.log(`[DangerActorObject] Stopping movement after duration for ${actor.id}`);
-          setActiveMovement(null);
-        }
-      }
+      // if (action.duration && currentTime >= action.time + action.duration) {
+      //   if (activeMovement === action || !completedMovementsRef.current.has(movementKey)) {
+      //     if (activeMovement === action) {
+      //       console.log(`[DangerActorObject] Stopping movement after duration for ${actor.id}`);
+      //       setActiveMovement(null);
+      //     }
+      //     completedMovementsRef.current.add(movementKey);
+      //   }
+      // }
     });
 
     // Handle active movement
@@ -330,7 +349,20 @@ export function DangerActorObject({
 
       // Stop if reached end without loop
       if (nextIndex === 0 && !loop) {
-        setActiveMovement(null);
+        const movementKey = `${activeMovement.actorId}_movement_${activeMovement.time}`;
+
+        if (!activeMovement.duration) {
+          completedMovementsRef.current.add(movementKey);
+          console.log(`[DangerActorObject] Movement reached end for ${actor.id}`);
+          setActiveMovement(null);
+        } else {
+          // and duration
+          if (currentTime >= activeMovement.time + activeMovement.duration) {
+            completedMovementsRef.current.add(movementKey);
+            console.log(`[DangerActorObject] Movement reached end for ${actor.id}`);
+            setActiveMovement(null);
+          }
+        }
         return;
       }
 
@@ -367,18 +399,44 @@ export function DangerActorObject({
     if (replayInterval !== undefined && !sequenceCompletedRef.current) {
       // 檢測所有動作是否已完成
       const allActionsComplete = actions.every((action) => {
-        if (action.duration) {
-          return currentTime >= action.time + action.duration;
-        }
-        // 對於沒有 duration 的動作,檢查是否已經開始
         if (action.type === ActionType.MOVEMENT) {
           const movementKey = `${action.actorId}_movement_${action.time}`;
-          return startedMovementsRef.current.has(movementKey);
+          const movAction = action as MovementAction;
+
+          // loop = true: 只要啟動就算完成（因為會一直循環）
+          if (movAction.loop) {
+            return startedMovementsRef.current.has(movementKey);
+          }
+
+          // loop = false: 必須完成路徑所有移動
+          const pathCompleted = completedMovementsRef.current.has(movementKey);
+
+          // 如果有設定 duration，則必須同時滿足：1) 路徑完成 2) duration 時間到達
+          if (movAction.duration) {
+            const durationReached = currentTime >= movAction.time + movAction.duration;
+            return pathCompleted && durationReached;
+          }
+
+          // 沒有 duration：只需要路徑完成即可
+          return pathCompleted;
         }
+
         if (action.type === ActionType.ANIMATION) {
           const animAction = action as AnimationAction;
           const animKey = `${animAction.name}_${animAction.time}`;
+
+          // 如果有 duration，必須時間達成
+          if (animAction.duration) {
+            return currentTime >= animAction.time + animAction.duration;
+          }
+
+          // 沒有 duration：檢查是否已播放
           return playedAnimationsRef.current.has(animKey);
+        }
+
+        // 其他類型的動作：有 duration 檢查時間，沒有則檢查是否已開始
+        if (action.duration) {
+          return currentTime >= action.time + action.duration;
         }
         return currentTime >= action.time;
       });
