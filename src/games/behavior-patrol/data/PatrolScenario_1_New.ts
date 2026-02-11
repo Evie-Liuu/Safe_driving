@@ -356,7 +356,7 @@ export const patrolScenario1: PatrolScenario = {
           type: ActionType.ANIMATION,
           name: 'Bus_Moving_Animation',
           time: 0,
-          duration: 40, // 公車行駛時間
+          // duration: 48.5, // 公車行駛時間
           loop: true,
         },
 
@@ -365,16 +365,16 @@ export const patrolScenario1: PatrolScenario = {
           actorId: 'scooter_1',
           type: ActionType.ANIMATION,
           name: 'Scooter_Moving_Animation',
-          time: 0, // 立即開始
-          duration: 22, // 較快完成
+          time: 3.6, // 立即開始
+          // duration: 48.5, // 較快完成
           loop: true,
         },
         {
           actorId: 'scooter_driver_1',
           type: ActionType.ANIMATION,
           name: 'Male_Riding_Scooter_Animation',
-          time: 0,
-          duration: 22,
+          time: 3.6,
+          // duration: 48.5,
           loop: true,
         },
 
@@ -383,16 +383,16 @@ export const patrolScenario1: PatrolScenario = {
           actorId: 'scooter_2',
           type: ActionType.ANIMATION,
           name: 'Scooter_Moving_Animation',
-          time: 2.0, // 延遲2秒
-          duration: 22,
+          time: 8.4, // 延遲2秒
+          // duration: 48.5,
           loop: true,
         },
         {
           actorId: 'scooter_driver_2',
           type: ActionType.ANIMATION,
           name: 'Male_Riding_Scooter_Animation',
-          time: 2.0,
-          duration: 22,
+          time: 8.4,
+          // duration: 48.5,
           loop: true,
         },
 
@@ -401,16 +401,16 @@ export const patrolScenario1: PatrolScenario = {
           actorId: 'scooter_3',
           type: ActionType.ANIMATION,
           name: 'Scooter_Moving_Animation',
-          time: 4.0, // 延遲4秒
-          duration: 22,
+          time: 11.2, // 延遲4秒
+          // duration: 48.5,
           loop: true,
         },
         {
           actorId: 'scooter_driver_3',
           type: ActionType.ANIMATION,
           name: 'Male_Riding_Scooter_Animation',
-          time: 4.0,
-          duration: 22,
+          time: 11.2,
+          // duration: 48.5,
           loop: true,
         },
 
@@ -443,7 +443,7 @@ export const patrolScenario1: PatrolScenario = {
           ],
           speed: 8, // 公車穩定速度
           time: 0,
-          duration: 40, // 約40秒完成
+          duration: 48.5, // 約40秒完成
         },
 
         // ========== 機車1號移動 (立即開始,最快) ==========
@@ -469,7 +469,7 @@ export const patrolScenario1: PatrolScenario = {
           ],
           speed: 14, // 最快速度
           time: 3.6,
-          duration: 22,
+          duration: 48.5,
         },
         {
           actorId: 'scooter_driver_1',
@@ -493,7 +493,7 @@ export const patrolScenario1: PatrolScenario = {
           ],
           speed: 14,
           time: 3.6,
-          duration: 22,
+          duration: 48.5,
         },
 
         // ========== 機車2號移動 (延遲2秒,跟隨超車) ==========
@@ -519,7 +519,7 @@ export const patrolScenario1: PatrolScenario = {
           ],
           speed: 13, // 稍慢但仍很快
           time: 8.4, // 延遲2秒
-          duration: 20,
+          duration: 48.5,
         },
         {
           actorId: 'scooter_driver_2',
@@ -543,10 +543,10 @@ export const patrolScenario1: PatrolScenario = {
           ],
           speed: 13,
           time: 8.4,
-          duration: 20,
+          duration: 48.5,
         },
 
-        // // ========== 機車3號移動 (延遲4秒,連續超車) ==========
+        // ========== 機車3號移動 (延遲4秒,連續超車) ==========
         {
           actorId: 'scooter_3',
           type: ActionType.MOVEMENT,
@@ -568,8 +568,8 @@ export const patrolScenario1: PatrolScenario = {
             [11.14, 0, 11.38]
           ],
           speed: 12, // 快速但稍慢
-          time: 11.1, // 延遲4秒
-          duration: 20,
+          time: 11.2, // 延遲4秒
+          duration: 48.5,
         },
         {
           actorId: 'scooter_driver_3',
@@ -592,8 +592,8 @@ export const patrolScenario1: PatrolScenario = {
             [11.14, 0, 11.38]
           ],
           speed: 12,
-          time: 11.1,
-          duration: 20,
+          time: 11.2,
+          duration: 48.5,
         },
       ],
       questions: {
@@ -636,7 +636,7 @@ export const patrolScenario1: PatrolScenario = {
           model: '/src/assets/models/Car2_Rigged.glb',
           initialPosition: [-7.84, 0, 110.9],
           initialRotation: [0, -Math.PI / 2, 0],
-          animationUrls: ['/src/assets/animations/car/Car_Moving_Animation.glb'],
+          animationUrls: ['/src/assets/animations/car/Car1_Moving_Animation.glb'],
           replayInterval: 12, // 完成後等待12秒再重播
         },
         {
