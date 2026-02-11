@@ -309,7 +309,7 @@ export const patrolScenario1: PatrolScenario = {
           name: '跟隨超車機車2',
           type: ActorType.SCOOTER,
           model: '/src/assets/models/Scooter3_Rigged.glb', // 不同款式
-          initialPosition: [15, 0, 8.5], // 稍微偏移,更後方
+          initialPosition: [20, 0, 11.2], // 稍微偏移,更後方
           initialRotation: [0, Math.PI / 2, 0],
           animationUrls: ['/src/assets/animations/car/Scooter_Moving_Animation.glb'],
           replayInterval: 8,
@@ -319,7 +319,7 @@ export const patrolScenario1: PatrolScenario = {
           name: '跟隨騎士2',
           type: ActorType.PEDESTRIAN,
           model: '/src/assets/models/Male2_CnH_Rigged.glb', // 不同模型
-          initialPosition: [15, 0, 8.5],
+          initialPosition: [20, 0, 11.2],
           initialRotation: [0, Math.PI / 2, 0],
           accessoryNames: ['helmet'],
           animationUrls: ['/src/assets/animations/character/Male_Riding_Scooter_Animation.glb'],
@@ -332,7 +332,7 @@ export const patrolScenario1: PatrolScenario = {
           name: '連續超車機車3',
           type: ActorType.SCOOTER,
           model: '/src/assets/models/Scooter2_Rigged.glb',
-          initialPosition: [10, 0, 10.0], // 最後方
+          initialPosition: [20, 0, 11.2], // 最後方
           initialRotation: [0, Math.PI / 2, 0],
           animationUrls: ['/src/assets/animations/car/Scooter_Moving_Animation.glb'],
           replayInterval: 8,
@@ -342,7 +342,7 @@ export const patrolScenario1: PatrolScenario = {
           name: '連續騎士3',
           type: ActorType.PEDESTRIAN,
           model: '/src/assets/models/Male1_CnH_Rigged.glb',
-          initialPosition: [10, 0, 10.0],
+          initialPosition: [20, 0, 11.2],
           initialRotation: [0, Math.PI / 2, 0],
           accessoryNames: ['helmet'],
           animationUrls: ['/src/assets/animations/character/Male_Riding_Scooter_Animation.glb'],
@@ -497,88 +497,104 @@ export const patrolScenario1: PatrolScenario = {
         },
 
         // ========== 機車2號移動 (延遲2秒,跟隨超車) ==========
-        // {
-        //   actorId: 'scooter_2',
-        //   type: ActionType.MOVEMENT,
-        //   path: [
-        //     [20, 0, 11.2],     // 從後方開始
-        //     [37.6, 0, 11.2],   // 追上公車
-        //     [95.23, 0, 10.02],
-        //     [106.6, 0, 9.5],
-        //     [108.32, 0, 11.14],  // F點 - 在轉角超越公車 ⚠️
-        //     [108.91, 0, 17.41],
-        //     [108.23, 0, 63.44],
-        //     [109.73, 0, 106.1],
-        //     [108.94, 0, 108.6],  // I點 - 第二個轉角 ⚠️
-        //     [106.51, 0, 109.49],
-        //     [58.23, 0, 108.27],
-        //     [14.06, 0, 109.24],
-        //     [11.85, 0, 108.38],  // H點 - 第三個轉角 ⚠️
-        //     [11.66, 0, 21.5],
-        //     [11.14, 0, 11.38]
-        //   ],
-        //   speed: 13, // 稍慢但仍很快
-        //   time: 8.6, // 延遲2秒
-        //   duration: 20,
-        // },
-        // {
-        //   actorId: 'scooter_driver_2',
-        //   type: ActionType.MOVEMENT,
-        //   path: [
-        //     [20, 0, 11.2],     // 從後方開始
-        //     [37.6, 0, 11.2],   // 追上公車
-        //     [95.23, 0, 10.02],
-        //     [106.6, 0, 9.5],
-        //     [108.32, 0, 11.14],  // F點 - 在轉角超越公車 ⚠️
-        //     [108.91, 0, 17.41],
-        //     [108.23, 0, 63.44],
-        //     [109.73, 0, 106.1],
-        //     [108.94, 0, 108.6],  // I點 - 第二個轉角 ⚠️
-        //     [106.51, 0, 109.49],
-        //     [58.23, 0, 108.27],
-        //     [14.06, 0, 109.24],
-        //     [11.85, 0, 108.38],  // H點 - 第三個轉角 ⚠️
-        //     [11.66, 0, 21.5],
-        //     [11.14, 0, 11.38]
-        //   ],
-        //   speed: 13,
-        //   time: 8.6,
-        //   duration: 20,
-        // },
+        {
+          actorId: 'scooter_2',
+          type: ActionType.MOVEMENT,
+          path: [
+            [20, 0, 11.2],     // 從後方開始
+            [37.6, 0, 11.2],   // 追上公車
+            [95.23, 0, 10.02],
+            [106.6, 0, 9.5],
+            [108.32, 0, 11.14],  // F點 - 在轉角超越公車 ⚠️
+            [108.91, 0, 17.41],
+            [108.23, 0, 63.44],
+            [109.73, 0, 106.1],
+            [108.94, 0, 108.6],  // I點 - 第二個轉角 ⚠️
+            [106.51, 0, 109.49],
+            [58.23, 0, 108.27],
+            [14.06, 0, 109.24],
+            [11.85, 0, 108.38],  // H點 - 第三個轉角 ⚠️
+            [11.66, 0, 21.5],
+            [11.14, 0, 11.38]
+          ],
+          speed: 13, // 稍慢但仍很快
+          time: 8.4, // 延遲2秒
+          duration: 20,
+        },
+        {
+          actorId: 'scooter_driver_2',
+          type: ActionType.MOVEMENT,
+          path: [
+            [20, 0, 11.2],     // 從後方開始
+            [37.6, 0, 11.2],   // 追上公車
+            [95.23, 0, 10.02],
+            [106.6, 0, 9.5],
+            [108.32, 0, 11.14],  // F點 - 在轉角超越公車 ⚠️
+            [108.91, 0, 17.41],
+            [108.23, 0, 63.44],
+            [109.73, 0, 106.1],
+            [108.94, 0, 108.6],  // I點 - 第二個轉角 ⚠️
+            [106.51, 0, 109.49],
+            [58.23, 0, 108.27],
+            [14.06, 0, 109.24],
+            [11.85, 0, 108.38],  // H點 - 第三個轉角 ⚠️
+            [11.66, 0, 21.5],
+            [11.14, 0, 11.38]
+          ],
+          speed: 13,
+          time: 8.4,
+          duration: 20,
+        },
 
         // // ========== 機車3號移動 (延遲4秒,連續超車) ==========
-        // {
-        //   actorId: 'scooter_3',
-        //   type: ActionType.MOVEMENT,
-        //   path: [
-        //     [10, 0, 10.0],     // 最後方
-        //     [15, 0, 9.5],
-        //     [37.6, 0, 9.35],
-        //     [95.23, 0, 8.62],
-        //     [106.6, 0, 7.7],   // F點 - 第三波超車 ⚠️
-        //     [109.21, 0, 8.04],
-        //     [111.73, 0, 11.7],
-        //   ],
-        //   speed: 12, // 快速但稍慢
-        //   time: 4.0, // 延遲4秒
-        //   duration: 20,
-        // },
-        // {
-        //   actorId: 'scooter_driver_3',
-        //   type: ActionType.MOVEMENT,
-        //   path: [
-        //     [10, 0, 10.0],
-        //     [15, 0, 9.5],
-        //     [37.6, 0, 9.35],
-        //     [95.23, 0, 8.62],
-        //     [106.6, 0, 7.7],
-        //     [109.21, 0, 8.04],
-        //     [111.73, 0, 11.7],
-        //   ],
-        //   speed: 12,
-        //   time: 4.0,
-        //   duration: 20,
-        // },
+        {
+          actorId: 'scooter_3',
+          type: ActionType.MOVEMENT,
+          path: [
+            [20, 0, 11.2],     // 從後方開始
+            [37.6, 0, 11.2],   // 追上公車
+            [95.23, 0, 10.02],
+            [106.6, 0, 9.5],
+            [108.32, 0, 11.14],  // F點 - 在轉角超越公車 ⚠️
+            [108.91, 0, 17.41],
+            [108.23, 0, 63.44],
+            [109.73, 0, 106.1],
+            [108.94, 0, 108.6],  // I點 - 第二個轉角 ⚠️
+            [106.51, 0, 109.49],
+            [58.23, 0, 108.27],
+            [14.06, 0, 109.24],
+            [11.85, 0, 108.38],  // H點 - 第三個轉角 ⚠️
+            [11.66, 0, 21.5],
+            [11.14, 0, 11.38]
+          ],
+          speed: 12, // 快速但稍慢
+          time: 11.1, // 延遲4秒
+          duration: 20,
+        },
+        {
+          actorId: 'scooter_driver_3',
+          type: ActionType.MOVEMENT,
+          path: [
+            [20, 0, 11.2],     // 從後方開始
+            [37.6, 0, 11.2],   // 追上公車
+            [95.23, 0, 10.02],
+            [106.6, 0, 9.5],
+            [108.32, 0, 11.14],  // F點 - 在轉角超越公車 ⚠️
+            [108.91, 0, 17.41],
+            [108.23, 0, 63.44],
+            [109.73, 0, 106.1],
+            [108.94, 0, 108.6],  // I點 - 第二個轉角 ⚠️
+            [106.51, 0, 109.49],
+            [58.23, 0, 108.27],
+            [14.06, 0, 109.24],
+            [11.85, 0, 108.38],  // H點 - 第三個轉角 ⚠️
+            [11.66, 0, 21.5],
+            [11.14, 0, 11.38]
+          ],
+          speed: 12,
+          time: 11.1,
+          duration: 20,
+        },
       ],
       questions: {
         q1: {

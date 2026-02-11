@@ -48,6 +48,12 @@ export function DangerActorObject({
   const totalReplaysRef = useRef(0); // 已重播次數
   const [isVisible, setIsVisible] = useState(true); // 控制物件可見性
 
+  // 開發測試: 追蹤 bus_1 移動開始時間和轉彎時間
+  const movementStartTimeRef = useRef<number | null>(null);
+  const lastDirectionRef = useRef<THREE.Vector3 | null>(null);
+  const [turnTime, setTurnTime] = useState<number | null>(null);
+  const hasDetectedTurnRef = useRef(false);
+
   // Extract movement and animation actions
   const movementActions = useMemo(
     () => actions.filter((a): a is MovementAction => a.type === ActionType.MOVEMENT),
@@ -105,6 +111,14 @@ export function DangerActorObject({
 
     // 恢復可見性
     setIsVisible(true);
+
+    // // 重置移動追蹤 (bus_1 測試用)
+    // if (actor.id === 'bus_1') {
+    //   movementStartTimeRef.current = null;
+    //   lastDirectionRef.current = null;
+    //   hasDetectedTurnRef.current = false;
+    //   setTurnTime(null);
+    // }
 
     console.log(`[DangerActorObject] Sequence reset for ${actor.id}`);
   };
@@ -298,7 +312,7 @@ export function DangerActorObject({
         (!action.duration && !action.loop && allMovementsCompleted)
       ) {
         if (animControllerRef.current && playedAnimationsRef.current.has(animKey)) {
-          console.log(`[DangerActorObject] Stopping animation: ${action.name} after duration or movement completion`);
+          // console.log(`[DangerActorObject] Stopping animation: ${action.name} after duration or movement completion`);
           animControllerRef.current.stop(action.name);
         }
       }
@@ -343,6 +357,12 @@ export function DangerActorObject({
       const path = activeMovement.path;
       const speed = activeMovement.speed ?? 1;
       const loop = activeMovement.loop ?? false;
+
+      // // 開發測試: 記錄 bus_1 移動開始時間
+      // if (actor.id === 'bus_1' && movementStartTimeRef.current === null) {
+      //   movementStartTimeRef.current = currentTime;
+      //   console.log(`[DangerActorObject] bus_1 movement started at ${currentTime.toFixed(2)}s`);
+      // }
 
       const currentIndex = currentPathIndexRef.current;
       const nextIndex = (currentIndex + 1) % path.length;
@@ -391,6 +411,29 @@ export function DangerActorObject({
         if (direction.lengthSq() > 0.001) {
           const angle = Math.atan2(direction.x, direction.z);
           groupRef.current.rotation.y = angle;
+
+          // // 開發測試: 檢測 bus_1 轉彎
+          // if (actor.id === 'bus_1') { // && !hasDetectedTurnRef.current) {
+          //   if (lastDirectionRef.current !== null) {
+          //     // 計算方向改變的角度
+          //     const dotProduct = lastDirectionRef.current.dot(direction);
+          //     const angleChange = Math.acos(Math.max(-1, Math.min(1, dotProduct)));
+          //     const angleDegrees = (angleChange * 180) / Math.PI;
+
+          //     // 如果角度變化超過 30 度，視為轉彎
+          //     console.log('angleDegrees', angleDegrees);
+
+          //     if (angleDegrees > 30 && movementStartTimeRef.current !== null) {
+          //       const elapsedTime = currentTime - movementStartTimeRef.current;
+          //       setTurnTime(elapsedTime);
+          //       hasDetectedTurnRef.current = true;
+          //       console.log(
+          //         `[DangerActorObject] bus_1 turned at ${currentTime.toFixed(2)}s (elapsed: ${elapsedTime.toFixed(2)}s, angle change: ${angleDegrees.toFixed(1)}°)`
+          //       );
+          //     }
+          //   }
+          //   lastDirectionRef.current = direction.clone();
+          // }
         }
       }
     }
