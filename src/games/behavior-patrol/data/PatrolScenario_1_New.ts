@@ -664,7 +664,7 @@ export const patrolScenario1: PatrolScenario = {
           id: 'pedestrian_crossing_3',
           name: '穿越斑馬線行人',
           type: ActorType.PEDESTRIAN,
-          model: '/src/assets/models/Female1_Rigged.glb',
+          model: '/src/assets/models/Female2_Rigged.glb',
           initialPosition: [-13.22, 0, 123.71],
           initialRotation: [0, 0, 0],
           animationUrls: ['/src/assets/animations/character/Female_Walking_Animation.glb'],
@@ -713,8 +713,8 @@ export const patrolScenario1: PatrolScenario = {
           actorId: 'pedestrian_crossing_2',
           type: ActionType.MOVEMENT,
           path: [
-            [-103.11, 0, 123.47],  // 斑馬線起點(路邊)
-            [-102.9, 0, 104.84],  // 斑馬線終點
+            [-103.11, 0.15, 123.47],  // 斑馬線起點(路邊)
+            [-102.54, 0.15, 100.64],  // 斑馬線終點
           ],
           speed: 3.5, // 正常行人速度
           time: 6.5,
@@ -724,8 +724,8 @@ export const patrolScenario1: PatrolScenario = {
           actorId: 'pedestrian_crossing_3',
           type: ActionType.MOVEMENT,
           path: [
-            [-104.52, 0, 124.12],  // 斑馬線起點(路邊)
-            [-104.06, 0, 105.76],  // 斑馬線終點
+            [-104.52, 0.15, 124.12],  // 斑馬線起點(路邊)
+            [-103.92, 0.15, 101.81],  // 斑馬線終點
           ],
           speed: 3.5, // 正常行人速度
           time: 6.8,
