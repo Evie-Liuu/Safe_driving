@@ -7,6 +7,9 @@ export interface GameConfig {
   thumbnail?: string;
   component: ComponentType<GameProps>;
   difficulty?: 'easy' | 'medium' | 'hard';
+  icon?: string;
+  color?: string;
+  timeLimit?: number;
 }
 
 export interface GameProps {
