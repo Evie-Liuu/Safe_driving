@@ -11,7 +11,7 @@ import { OncomingVehicle } from '../components/OncomingVehicle'
 import { PerformanceMonitor, PerformanceStats } from '../optimization/PerformanceMonitor'
 import { ModelLoader } from '../models/ModelLoader'
 import { MaleCharacter } from '../components/MaleCharacter'
-import { cruisePoints, events as riskEvents, FAST_OUTER_BUFFER } from '@/game/data/RiskEvents_1'
+import { cruisePoints, events as riskEvents, FAST_OUTER_BUFFER, sceneObjects } from '@/game/data/RiskEvents_1'
 import { EventManager } from '../events/EventManager'
 import { EventExecutor } from '../events/EventExecutor'
 import { EventActor } from '../components/EventActor'
@@ -481,6 +481,11 @@ export function GameScene() {
         })
       })
 
+      // 4. Static scene objects
+      sceneObjects.forEach(obj => {
+        modelUrls.add(obj.model)
+      })
+
       console.log(`[GameScene] 📥 Pre-loading ${modelUrls.size} models and ${animationUrls.size} animations...`)
 
       // Use shared loader to prevent WASM memory exhaustion
@@ -817,6 +822,19 @@ export function GameScene() {
           /> */}
           <ModelLoader url="/src/assets/models/Scooter1_Rigged.glb" rotation={[0, 0, 0]} />
         </PlayerController>
+
+        {/* Static Scene Objects */}
+        {sceneObjects.map((obj) => (
+          <EventActor
+            key={obj.id}
+            id={obj.id}
+            type={ActorType.OBJECT}
+            model={obj.model}
+            initialPosition={obj.initialPosition}
+            initialRotation={obj.initialRotation}
+            scale={obj.scale}
+          />
+        ))}
 
         {/* Event actors */}
         {activeEventActors.map((actor) => (

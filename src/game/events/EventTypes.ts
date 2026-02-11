@@ -42,6 +42,17 @@ export enum ActorType {
 }
 
 /**
+ * Static scene object definition
+ */
+export interface SceneObject {
+    id: string
+    model: string
+    initialPosition: [number, number, number]
+    initialRotation?: [number, number, number]
+    scale?: [number, number, number]
+}
+
+/**
  * Player response types
  */
 export enum PlayerResponseType {

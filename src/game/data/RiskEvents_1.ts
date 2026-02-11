@@ -1,4 +1,4 @@
-import { GameEvent, TriggerType, ActionType, ActorType, PlayerResponseType, PrepareActionType, EventCategory } from '../events/EventTypes'
+import { GameEvent, TriggerType, ActionType, ActorType, PlayerResponseType, PrepareActionType, EventCategory, SceneObject } from '../events/EventTypes'
 
 export const FAST_OUTER_BUFFER = 7
 
@@ -11,19 +11,19 @@ export const FAST_OUTER_BUFFER = 7
  * G--H--I
  */
 export const cruisePoints: [number, number, number][] = [
-    [10, 0, 120], //起點 
-    [10, 0, 80],
-    [8.5, 0, 49],
-    [10, 0, 12],
-    [10, 0, 0],  //E點
-    [10, 0, -60],
-    [10, 0, -106],
-    [17, 0, -110], //B點右轉
-    [52, 0, -110],
-    [100.46, 0, -109],
-    [107.8, 0, -108.25], //C點右轉
-    [110.10, 0, -106.56], //C點右轉
-    [111.27, 0, -100.99],
+    // [10, 0, 120], //起點 
+    // [10, 0, 80],
+    // [8.5, 0, 49],
+    // [10, 0, 12],
+    // [10, 0, 0],  //E點
+    // [10, 0, -60],
+    // [10, 0, -106],
+    // [17, 0, -110], //B點右轉
+    // [52, 0, -110],
+    // [100.46, 0, -109],
+    // [107.8, 0, -108.25], //C點右轉
+    // [110.10, 0, -106.56], //C點右轉
+    // [111.27, 0, -100.99],
     [109.1, 0, -66.4],
     [109.1, 0, 8],
     [111.34, 0, 46.56], //坑洞旁
@@ -994,4 +994,19 @@ export const events: GameEvent[] = [
     //         safety: '路邊停放車輛無異常，可正常通過。'
     //     }
     // },
+]
+
+/**
+ * Static scene objects (props, buildings, etc.)
+ */
+export const sceneObjects: SceneObject[] = [
+    // 範例：路燈或廣告牌
+    // 終點線
+    {
+        id: 'props_finish_line',
+        model: '/src/assets/models/objects/Finish_Line.glb',
+        initialPosition: [116, 0, 83],
+        initialRotation: [0, Math.PI, 0],
+        scale: [1, 1, 1]
+    }
 ]
