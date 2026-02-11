@@ -28,6 +28,7 @@ export const patrolScenario1: PatrolScenario = {
       id: 'danger-1',
       name: '行人邊走邊滑手機',
       description: '行人在人行道上邊走邊滑手機，注意力不在周遭環境',
+      replayInterval: 5, // 完成後等待5秒再重播
       actors: [
         {
           id: 'pedestrian_1',
@@ -38,7 +39,7 @@ export const patrolScenario1: PatrolScenario = {
           initialRotation: [0, Math.PI / 2, 0],
           accessoryNames: ['phone'],
           animationUrls: ['/src/assets/animations/character/Male_Walking_Phone_Animation.glb'],
-          replayInterval: 5, // 完成後等待18秒再重播
+
         },
       ],
       actions: [
@@ -161,6 +162,7 @@ export const patrolScenario1: PatrolScenario = {
       id: 'danger-3',
       name: '機車超速到斑馬線迴轉',
       description: '機車超速到斑馬線迴轉',
+      replayInterval: 5, // 完成後等待5秒再重播
       actors: [
         {
           id: 'scooter_speeding_1',
@@ -170,7 +172,6 @@ export const patrolScenario1: PatrolScenario = {
           initialPosition: [4.26, 0, -60],
           initialRotation: [0, Math.PI / 2, 0],
           animationUrls: ['/src/assets/animations/car/Scooter_Moving_Animation.glb'],
-          replayInterval: 5, // 完成後等待5秒再重播
           // replayCount: 3, // 可選：限制重播次數
         },
         {
@@ -182,7 +183,7 @@ export const patrolScenario1: PatrolScenario = {
           initialRotation: [0, Math.PI / 2, 0],
           accessoryNames: ['helmet'],
           animationUrls: ['/src/assets/animations/character/Male_Riding_Scooter_Animation.glb'],
-          replayInterval: 5, // 與機車同步重播
+
         },
       ],
       actions: [
@@ -269,6 +270,7 @@ export const patrolScenario1: PatrolScenario = {
       id: 'danger-4',
       name: '機車在公車後方搶快超車',
       description: '公車正常行駛,多台機車從後方視線死角連續高速超車',
+      replayInterval: 8, // 完成後等待8秒再重播
       actors: [
         {
           id: 'bus_1',
@@ -278,7 +280,7 @@ export const patrolScenario1: PatrolScenario = {
           initialPosition: [37.6, 0, 9.35],
           initialRotation: [0, Math.PI / 2, 0],
           animationUrls: ['/src/assets/animations/car/Bus_Moving_Animation.glb'],
-          replayInterval: 8, // 完成後等待8秒再重播
+
         },
 
         // 機車1號 - 最激進的超車
@@ -290,7 +292,7 @@ export const patrolScenario1: PatrolScenario = {
           initialPosition: [20, 0, 11.2], // 公車後方較遠位置
           initialRotation: [0, Math.PI / 2, 0],
           animationUrls: ['/src/assets/animations/car/Scooter_Moving_Animation.glb'],
-          replayInterval: 8,
+
         },
         {
           id: 'scooter_driver_1',
@@ -300,7 +302,7 @@ export const patrolScenario1: PatrolScenario = {
           initialPosition: [20, 0, 11.2],
           initialRotation: [0, Math.PI / 2, 0],
           animationUrls: ['/src/assets/animations/character/Male_Riding_Scooter_Animation.glb'],
-          replayInterval: 8,
+
         },
 
         // 機車2號 - 跟隨超車
@@ -312,7 +314,7 @@ export const patrolScenario1: PatrolScenario = {
           initialPosition: [20, 0, 11.2], // 稍微偏移,更後方
           initialRotation: [0, Math.PI / 2, 0],
           animationUrls: ['/src/assets/animations/car/Scooter_Moving_Animation.glb'],
-          replayInterval: 8,
+
         },
         {
           id: 'scooter_driver_2',
@@ -323,7 +325,7 @@ export const patrolScenario1: PatrolScenario = {
           initialRotation: [0, Math.PI / 2, 0],
           accessoryNames: ['helmet'],
           animationUrls: ['/src/assets/animations/character/Male_Riding_Scooter_Animation.glb'],
-          replayInterval: 8,
+
         },
 
         // 機車3號 - 第三波超車
@@ -335,7 +337,7 @@ export const patrolScenario1: PatrolScenario = {
           initialPosition: [20, 0, 11.2], // 最後方
           initialRotation: [0, Math.PI / 2, 0],
           animationUrls: ['/src/assets/animations/car/Scooter_Moving_Animation.glb'],
-          replayInterval: 8,
+
         },
         {
           id: 'scooter_driver_3',
@@ -346,7 +348,7 @@ export const patrolScenario1: PatrolScenario = {
           initialRotation: [0, Math.PI / 2, 0],
           accessoryNames: ['helmet'],
           animationUrls: ['/src/assets/animations/character/Male_Riding_Scooter_Animation.glb'],
-          replayInterval: 8,
+
         },
       ],
       actions: [
@@ -443,7 +445,7 @@ export const patrolScenario1: PatrolScenario = {
           ],
           speed: 8, // 公車穩定速度
           time: 0,
-          duration: 48.5, // 約40秒完成
+          // duration: 48.5, // 約40秒完成
         },
 
         // ========== 機車1號移動 (立即開始,最快) ==========
@@ -469,7 +471,7 @@ export const patrolScenario1: PatrolScenario = {
           ],
           speed: 14, // 最快速度
           time: 3.6,
-          duration: 48.5,
+          // duration: 48.5,
         },
         {
           actorId: 'scooter_driver_1',
@@ -493,7 +495,7 @@ export const patrolScenario1: PatrolScenario = {
           ],
           speed: 14,
           time: 3.6,
-          duration: 48.5,
+          // duration: 48.5,
         },
 
         // ========== 機車2號移動 (延遲2秒,跟隨超車) ==========
@@ -519,7 +521,7 @@ export const patrolScenario1: PatrolScenario = {
           ],
           speed: 13, // 稍慢但仍很快
           time: 8.4, // 延遲2秒
-          duration: 48.5,
+          // duration: 48.5,
         },
         {
           actorId: 'scooter_driver_2',
@@ -543,7 +545,7 @@ export const patrolScenario1: PatrolScenario = {
           ],
           speed: 13,
           time: 8.4,
-          duration: 48.5,
+          // duration: 48.5,
         },
 
         // ========== 機車3號移動 (延遲4秒,連續超車) ==========
@@ -569,7 +571,7 @@ export const patrolScenario1: PatrolScenario = {
           ],
           speed: 12, // 快速但稍慢
           time: 11.2, // 延遲4秒
-          duration: 48.5,
+          // duration: 48.5,
         },
         {
           actorId: 'scooter_driver_3',
@@ -593,7 +595,7 @@ export const patrolScenario1: PatrolScenario = {
           ],
           speed: 12,
           time: 11.2,
-          duration: 48.5,
+          // duration: 48.5,
         },
       ],
       questions: {
@@ -628,6 +630,7 @@ export const patrolScenario1: PatrolScenario = {
       id: 'danger-5',
       name: '汽車不禮讓斑馬線行人',
       description: '行人正在穿越斑馬線，汽車未減速、不禮讓直接通過',
+      replayInterval: 12, // 完成後等待12秒再重播
       actors: [
         {
           id: 'car_not_yield_1',
@@ -637,7 +640,7 @@ export const patrolScenario1: PatrolScenario = {
           initialPosition: [-7.84, 0, 110.9],
           initialRotation: [0, -Math.PI / 2, 0],
           animationUrls: ['/src/assets/animations/car/Car1_Moving_Animation.glb'],
-          replayInterval: 12, // 完成後等待12秒再重播
+
         },
         {
           id: 'pedestrian_crossing_1',
@@ -647,7 +650,7 @@ export const patrolScenario1: PatrolScenario = {
           initialPosition: [-13.22, 0, 123.71],
           initialRotation: [0, 0, 0],
           animationUrls: ['/src/assets/animations/character/Male_Walking_Animation.glb'],
-          replayInterval: 12, // 與汽車同步重播
+
         },
       ],
       actions: [

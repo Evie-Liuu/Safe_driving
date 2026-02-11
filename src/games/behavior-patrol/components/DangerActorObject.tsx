@@ -20,8 +20,8 @@ interface DangerActorObjectProps {
   found?: boolean;
   enableDebug?: boolean;
   // 整個行為序列重播設定
-  replayInterval?: number; // 所有動作完成後等待多久再重播(秒),undefined = 不重播
-  replayCount?: number; // 重播次數,undefined = 無限重播
+  onComplete?: () => void;
+  resetKey?: number;
 }
 
 export function DangerActorObject({
@@ -31,8 +31,8 @@ export function DangerActorObject({
   disabled = false,
   found = false,
   enableDebug = false,
-  replayInterval,
-  replayCount,
+  onComplete,
+  resetKey = 0,
 }: DangerActorObjectProps) {
   const groupRef = useRef<THREE.Group>(null);
   const modelSceneRef = useRef<THREE.Object3D | null>(null);
@@ -43,9 +43,6 @@ export function DangerActorObject({
 
   // 重播狀態追蹤
   const sequenceCompletedRef = useRef(false); // 標記整個序列是否已完成
-  const waitingForReplayRef = useRef(false); // 標記是否正在等待重播
-  const replayWaitStartRef = useRef(0); // 重播等待開始時間
-  const totalReplaysRef = useRef(0); // 已重播次數
   const [isVisible, setIsVisible] = useState(true); // 控制物件可見性
 
   // 開發測試: 追蹤 bus_1 移動開始時間和轉彎時間
@@ -86,7 +83,6 @@ export function DangerActorObject({
   const resetSequence = () => {
     elapsedTimeRef.current = 0;
     sequenceCompletedRef.current = false;
-    waitingForReplayRef.current = false;
     pathProgressRef.current = 0;
     currentPathIndexRef.current = 0;
     setActiveMovement(null);
@@ -216,8 +212,6 @@ export function DangerActorObject({
 
       // 清空重播狀態
       sequenceCompletedRef.current = false;
-      waitingForReplayRef.current = false;
-      totalReplaysRef.current = 0;
 
       if (modelSceneRef.current) {
         modelSceneRef.current.traverse((child) => {
@@ -240,13 +234,20 @@ export function DangerActorObject({
   // 當被找到時停止重播
   useEffect(() => {
     if (found) {
-      waitingForReplayRef.current = false;
       sequenceCompletedRef.current = true;
       animControllerRef.current?.stopAll();
       // 確保物件可見(可能正在等待重播而被隱藏)
       setIsVisible(true);
     }
   }, [found]);
+
+
+  // Handle external reset
+  useEffect(() => {
+    if (resetKey > 0) {
+      resetSequence();
+    }
+  }, [resetKey]);
 
   // Handle actions based on elapsed time
   useFrame((_, delta) => {
@@ -439,7 +440,8 @@ export function DangerActorObject({
     }
 
     // 處理整個序列的重播邏輯
-    if (replayInterval !== undefined && !sequenceCompletedRef.current) {
+    // 改為外部控制：檢查是否完成，通知父組件
+    if (onComplete && !sequenceCompletedRef.current) {
       // 檢測所有動作是否已完成
       const allActionsComplete = actions.every((action) => {
         if (action.type === ActionType.MOVEMENT) {
@@ -486,39 +488,16 @@ export function DangerActorObject({
 
       if (allActionsComplete && actions.length > 0) {
         sequenceCompletedRef.current = true;
-        waitingForReplayRef.current = true;
-        replayWaitStartRef.current = currentTime;
 
-        // 隱藏物件,等待重播
+        // 隱藏物件, 通知父組件
         setIsVisible(false);
+        if (onComplete) {
+          onComplete();
+        }
 
         console.log(
-          `[DangerActorObject] Sequence completed for ${actor.id} at ${currentTime.toFixed(2)}s, waiting ${replayInterval}s before replay (hidden)`
+          `[DangerActorObject] Sequence completed for ${actor.id} at ${currentTime.toFixed(2)}s`
         );
-      }
-    }
-
-    // 處理重播等待和執行
-    if (waitingForReplayRef.current && replayInterval !== undefined) {
-      const waitElapsed = currentTime - replayWaitStartRef.current;
-
-      if (waitElapsed >= replayInterval) {
-        // 檢查是否達到重播次數限制
-        const shouldReplay = replayCount === undefined || totalReplaysRef.current < replayCount;
-
-        if (shouldReplay) {
-          totalReplaysRef.current += 1;
-          console.log(
-            `[DangerActorObject] Replaying sequence for ${actor.id} (replay #${totalReplaysRef.current})`
-          );
-          resetSequence();
-        } else {
-          // 達到重播次數限制,停止等待
-          waitingForReplayRef.current = false;
-          console.log(
-            `[DangerActorObject] Replay limit reached for ${actor.id} (${totalReplaysRef.current} replays)`
-          );
-        }
       }
     }
   });
