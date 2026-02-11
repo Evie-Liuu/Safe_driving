@@ -246,6 +246,52 @@ export class AnimationController {
   }
 
   /**
+   * 準備動畫到第一幀（不播放，僅顯示初始姿勢）
+   * @param name 動畫名稱
+   * @param config 動畫配置
+   */
+  prepareToFirstFrame(name: string, config?: Partial<AnimationConfig>) {
+    const action = this.actions.get(name)
+    if (!action) {
+      console.warn(`Animation "${name}" not found`)
+      return
+    }
+
+    // 應用配置
+    if (config) {
+      if (config.loop !== undefined) action.loop = config.loop
+      if (config.timeScale !== undefined) action.timeScale = config.timeScale
+      if (config.weight !== undefined) action.setEffectiveWeight(config.weight)
+      if (config.clampWhenFinished !== undefined)
+        action.clampWhenFinished = config.clampWhenFinished
+    }
+
+    // 重置動畫到第一幀
+    action.reset()
+    action.time = 0
+    action.paused = true
+    action.play()
+
+    // 手動更新一次 mixer 以應用第一幀
+    this.mixer.update(0)
+  }
+
+  /**
+   * 恢復播放已準備好的動畫
+   * @param name 動畫名稱
+   */
+  resumeAnimation(name: string) {
+    const action = this.actions.get(name)
+    if (!action) {
+      console.warn(`Animation "${name}" not found`)
+      return
+    }
+
+    action.paused = false
+    this.currentAction = action
+  }
+
+  /**
    * 銷毀動畫控制器
    */
   dispose() {

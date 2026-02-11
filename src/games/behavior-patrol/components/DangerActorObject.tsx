@@ -74,6 +74,9 @@ export function DangerActorObject({
   const repeatCountRef = useRef<Map<string, number>>(new Map()); // 記錄每個動畫的播放次數
   const lastPlayTimeRef = useRef<Map<string, number>>(new Map()); // 記錄每個動畫最後播放時間
 
+  // 追蹤已準備的動畫（顯示第一幀姿勢）
+  const preparedAnimationsRef = useRef<Set<string>>(new Set());
+
   // 追蹤已啟動的移動動作（避免重複觸發）
   const startedMovementsRef = useRef<Set<string>>(new Set());
   // 追蹤已完成的移動動作
@@ -93,6 +96,7 @@ export function DangerActorObject({
     lastPlayTimeRef.current.clear();
     startedMovementsRef.current.clear();
     completedMovementsRef.current.clear();
+    preparedAnimationsRef.current.clear();
 
     // 停止所有動畫
     animControllerRef.current?.stopAll();
@@ -182,8 +186,29 @@ export function DangerActorObject({
         }
 
         if (isMounted) {
+          // 為所有動畫動作準備第一幀姿勢（讓角色在初始時就顯示姿勢）
+          if (animControllerRef.current && animationActions.length > 0) {
+            animationActions.forEach((action) => {
+              const animConfig: any = {
+                loop: action.loop ? THREE.LoopRepeat : THREE.LoopOnce,
+                clampWhenFinished: action.clampWhenFinished ?? !action.loop,
+              };
+
+              if (action.timeScale !== undefined) animConfig.timeScale = action.timeScale;
+
+              try {
+                animControllerRef.current?.prepareToFirstFrame(action.name, animConfig);
+                const animKey = `${action.name}_${action.time}`;
+                preparedAnimationsRef.current.add(animKey);
+                console.log(`[DangerActorObject] Prepared animation to first frame: ${action.name} for ${actor.id}`);
+              } catch (error) {
+                console.error(`[DangerActorObject] Failed to prepare animation: ${action.name}`, error);
+              }
+            });
+          }
+
           setIsReady(true);
-          console.log(`[DangerActorObject] Successfully loaded: ${actor.id}`);
+          // console.log(`[DangerActorObject] Successfully loaded: ${actor.id}`);
         }
       } catch (error) {
         if (isMounted) {
@@ -209,6 +234,7 @@ export function DangerActorObject({
       lastPlayTimeRef.current.clear();
       startedMovementsRef.current.clear();
       completedMovementsRef.current.clear();
+      preparedAnimationsRef.current.clear();
 
       // 清空重播狀態
       sequenceCompletedRef.current = false;
@@ -278,22 +304,30 @@ export function DangerActorObject({
 
       if (shouldPlay && animControllerRef.current) {
         const isRepeat = playCount > 0;
+        const isPrepared = preparedAnimationsRef.current.has(animKey);
+
         // console.log(
         //   `[DangerActorObject] ${isRepeat ? 'Repeating' : 'Starting'} animation: ${action.name} for ${actor.id} at ${currentTime.toFixed(2)}s (play #${playCount + 1})`
         // );
 
-        // 構建動畫配置
-        const animConfig: any = {
-          loop: action.loop ? THREE.LoopRepeat : THREE.LoopOnce,
-          clampWhenFinished: action.clampWhenFinished ?? !action.loop, // 默認：非循環動畫保持最後姿勢
-        };
+        // 如果是首次播放且已準備好第一幀，則恢復播放
+        if (!isRepeat && isPrepared) {
+          animControllerRef.current.resumeAnimation(action.name);
+          console.log(`[DangerActorObject] Resuming prepared animation: ${action.name} for ${actor.id}`);
+        } else {
+          // 重複播放或未準備的情況，使用正常播放
+          const animConfig: any = {
+            loop: action.loop ? THREE.LoopRepeat : THREE.LoopOnce,
+            clampWhenFinished: action.clampWhenFinished ?? !action.loop,
+          };
 
-        // 可選參數
-        if (action.fadeIn !== undefined) animConfig.fadeIn = action.fadeIn;
-        if (action.fadeOut !== undefined) animConfig.fadeOut = action.fadeOut;
-        if (action.timeScale !== undefined) animConfig.timeScale = action.timeScale;
+          // 可選參數
+          if (action.fadeIn !== undefined) animConfig.fadeIn = action.fadeIn;
+          if (action.fadeOut !== undefined) animConfig.fadeOut = action.fadeOut;
+          if (action.timeScale !== undefined) animConfig.timeScale = action.timeScale;
 
-        animControllerRef.current.play(action.name, animConfig);
+          animControllerRef.current.play(action.name, animConfig);
+        }
 
         // 更新追蹤狀態
         repeatCountRef.current.set(animKey, playCount + 1);
