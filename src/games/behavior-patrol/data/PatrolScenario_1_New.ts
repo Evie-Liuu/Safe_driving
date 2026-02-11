@@ -162,9 +162,10 @@ export const patrolScenario1: PatrolScenario = {
     {
       id: 'danger-3',
       name: '機車超速到斑馬線迴轉',
-      description: '機車超速到斑馬線迴轉',
+      description: '機車超速到斑馬線迴轉，對比正常遵守號誌的車輛',
       replayInterval: 5, // 完成後等待5秒再重播
       actors: [
+        // 危險行為：超速機車
         {
           id: 'scooter_speeding_1',
           name: '超速回轉機車',
@@ -173,7 +174,6 @@ export const patrolScenario1: PatrolScenario = {
           initialPosition: [4.26, 0, -60],
           initialRotation: [0, Math.PI / 2, 0],
           animationUrls: ['/src/assets/animations/car/Scooter_Moving_Animation.glb'],
-          // replayCount: 3, // 可選：限制重播次數
         },
         {
           id: 'scooter_speeding_driver_1',
@@ -184,10 +184,21 @@ export const patrolScenario1: PatrolScenario = {
           initialRotation: [0, Math.PI / 2, 0],
           accessoryNames: ['helmet'],
           animationUrls: ['/src/assets/animations/character/Male_Riding_Scooter_Animation.glb'],
-
         },
+
+        // 正常行為：遵守號誌的汽車
+        // {
+        //   id: 'normal_car_1',
+        //   name: '遵守紅綠燈的汽車',
+        //   type: ActorType.VEHICLE,
+        //   model: '/src/assets/models/Car1_Rigged.glb',
+        //   initialPosition: [-10, 0, -60],
+        //   initialRotation: [0, Math.PI / 2, 0],
+        //   animationUrls: ['/src/assets/animations/car/Car1_Moving_Animation.glb'],
+        // },
       ],
       actions: [
+        // ========== 危險行為：超速機車（無視紅燈） ==========
         {
           actorId: 'scooter_speeding_1',
           type: ActionType.ANIMATION,
@@ -202,24 +213,22 @@ export const patrolScenario1: PatrolScenario = {
           time: 0,
           loop: false,
         },
-        // 機車移動
         {
           actorId: 'scooter_speeding_1',
           type: ActionType.MOVEMENT,
           path: [
             [4.26, 0, -60],
             [3.5, 0, -99],
-            [1.89, 0, -103.23],
+            [1.89, 0, -103.23],  // 斑馬線轉角
             [0.29, 0, -104],
             [-1.1, 0, -102.5],
             [-1.88, 0, -88.2],
             [-1.77, 0, 24.75]
           ],
-          speed: 17,
+          speed: 17,  // 超速
           time: 0,
           loop: false,
-          duration: 8, // 約8秒完成路徑
-          // 使用 actor 的 replayInterval 來控制重播
+          duration: 8,
         },
         {
           actorId: 'scooter_speeding_driver_1',
@@ -236,8 +245,57 @@ export const patrolScenario1: PatrolScenario = {
           speed: 17,
           time: 0,
           loop: false,
-          duration: 8, // 與機車同步
+          duration: 8,
         },
+
+        // ========== 正常行為：遵守號誌的汽車 ==========
+        // // 階段1: 行駛到斑馬線前
+        // {
+        //   actorId: 'normal_car_1',
+        //   type: ActionType.ANIMATION,
+        //   name: 'Car1_Moving_Animation',
+        //   time: 0,
+        //   duration: 4,
+        // },
+        // {
+        //   actorId: 'normal_car_1',
+        //   type: ActionType.MOVEMENT,
+        //   path: [
+        //     [-10, 0, -60],
+        //     [-8, 0, -95],  // 接近斑馬線
+        //   ],
+        //   speed: 8,  // 正常速度
+        //   time: 0,
+        // },
+
+        // // 階段2: 遇紅燈等待（使用 WAIT action）
+        // {
+        //   actorId: 'normal_car_1',
+        //   type: ActionType.WAIT,
+        //   time: 4,
+        //   duration: 5,  // 紅燈等待5秒
+        // },
+
+        // // 階段3: 綠燈通過斑馬線
+        // {
+        //   actorId: 'normal_car_1',
+        //   type: ActionType.ANIMATION,
+        //   name: 'Car1_Moving_Animation',
+        //   time: 9,
+        //   loop: true,
+        // },
+        // {
+        //   actorId: 'normal_car_1',
+        //   type: ActionType.MOVEMENT,
+        //   path: [
+        //     [-8, 0, -95],
+        //     [-6, 0, -103.23],  // 通過斑馬線
+        //     [-5, 0, -110],
+        //   ],
+        //   speed: 8,
+        //   time: 9,
+        //   loop: false,
+        // },
       ],
       questions: {
         q1: {

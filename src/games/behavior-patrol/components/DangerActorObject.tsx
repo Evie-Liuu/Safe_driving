@@ -8,6 +8,7 @@ import {
   ActionType,
   MovementAction,
   AnimationAction,
+  WaitAction,
 } from '../types';
 import { AnimationController } from '../../../game/animations/AnimationController';
 import { getSharedLoader } from '../../../game/utils/SharedLoader';
@@ -70,6 +71,11 @@ export function DangerActorObject({
     [actions]
   );
 
+  const waitActions = useMemo(
+    () => actions.filter((a): a is WaitAction => a.type === ActionType.WAIT),
+    [actions]
+  );
+
   // State for active movement action
   const [activeMovement, setActiveMovement] = useState<MovementAction | null>(null);
   const pathProgressRef = useRef(0);
@@ -90,6 +96,10 @@ export function DangerActorObject({
   // 追蹤已完成的移動動作
   const completedMovementsRef = useRef<Set<string>>(new Set());
 
+  // 追蹤等待狀態
+  const activeWaitRef = useRef<WaitAction | null>(null);
+  const isWaitingRef = useRef(false);
+
   // 重置序列狀態函數
   const resetSequence = () => {
     elapsedTimeRef.current = 0;
@@ -105,6 +115,8 @@ export function DangerActorObject({
     startedMovementsRef.current.clear();
     completedMovementsRef.current.clear();
     preparedAnimationsRef.current.clear();
+    activeWaitRef.current = null;
+    isWaitingRef.current = false;
 
     // 停止所有動畫
     animControllerRef.current?.stopAll();
@@ -243,6 +255,8 @@ export function DangerActorObject({
       startedMovementsRef.current.clear();
       completedMovementsRef.current.clear();
       preparedAnimationsRef.current.clear();
+      activeWaitRef.current = null;
+      isWaitingRef.current = false;
 
       // 清空重播狀態
       sequenceCompletedRef.current = false;
@@ -367,6 +381,35 @@ export function DangerActorObject({
       }
     });
 
+    // Check and handle wait actions
+    waitActions.forEach((action) => {
+      const waitKey = `${action.actorId}_wait_${action.time}`;
+      const isInWaitPeriod =
+        currentTime >= action.time &&
+        action.duration &&
+        currentTime < action.time + action.duration;
+
+      if (isInWaitPeriod) {
+        // 進入等待狀態
+        if (!isWaitingRef.current || activeWaitRef.current !== action) {
+          console.log(
+            `[DangerActorObject] ${actor.id} waiting at ${currentTime.toFixed(2)}s for ${action.duration}s`
+          );
+          isWaitingRef.current = true;
+          activeWaitRef.current = action;
+          // 停止當前移動
+          setActiveMovement(null);
+        }
+      } else if (activeWaitRef.current === action && currentTime >= action.time + (action.duration || 0)) {
+        // 等待結束
+        console.log(
+          `[DangerActorObject] ${actor.id} wait ended at ${currentTime.toFixed(2)}s`
+        );
+        isWaitingRef.current = false;
+        activeWaitRef.current = null;
+      }
+    });
+
     // Check and start movement actions
     movementActions.forEach((action) => {
       const movementKey = `${action.actorId}_movement_${action.time}`;
@@ -375,10 +418,12 @@ export function DangerActorObject({
       if (completedMovementsRef.current.has(movementKey)) return;
 
       // ✅ 改用狀態追蹤，不依賴單幀時間窗口
+      // ⚠️ 在等待狀態時不啟動新的移動
       if (
         currentTime >= action.time &&
         !startedMovementsRef.current.has(movementKey) &&
-        (!activeMovement || activeMovement !== action)
+        (!activeMovement || activeMovement !== action) &&
+        !isWaitingRef.current // 不在等待狀態時才啟動移動
       ) {
         console.log(`[DangerActorObject] Starting movement for ${actor.id} at ${currentTime.toFixed(2)}s`);
         setActiveMovement(action);
@@ -402,7 +447,8 @@ export function DangerActorObject({
     });
 
     // Handle active movement
-    if (activeMovement && activeMovement.path && activeMovement.path.length >= 2) {
+    // ⚠️ 在等待狀態時暫停移動
+    if (activeMovement && activeMovement.path && activeMovement.path.length >= 2 && !isWaitingRef.current) {
       const path = activeMovement.path;
       const speed = activeMovement.speed ?? 1;
       const loop = activeMovement.loop ?? false;
@@ -525,6 +571,12 @@ export function DangerActorObject({
 
           // 沒有 duration：檢查是否已播放
           return playedAnimationsRef.current.has(animKey);
+        }
+
+        if (action.type === ActionType.WAIT) {
+          const waitAction = action as WaitAction;
+          // WAIT action 必須等待時間結束
+          return currentTime >= waitAction.time + (waitAction.duration || 0);
         }
 
         // 其他類型的動作：有 duration 檢查時間，沒有則檢查是否已開始

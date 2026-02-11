@@ -6,6 +6,7 @@ export enum ActionType {
   ANIMATION = 'animation',
   SOUND = 'sound',
   LIGHT = 'light',
+  WAIT = 'wait', // 等待動作（用於停等紅燈等場景）
 }
 
 /**
@@ -100,9 +101,22 @@ export interface LightAction extends BaseAction {
 }
 
 /**
+ * Wait action - 讓角色在原地等待（例如等紅燈）
+ */
+export interface WaitAction extends BaseAction {
+  type: ActionType.WAIT;
+  // duration 已在 BaseAction 中定義，表示等待時長
+}
+
+/**
  * Union type for all actions
  */
-export type DangerAction = MovementAction | AnimationAction | SoundAction | LightAction;
+export type DangerAction =
+  | MovementAction
+  | AnimationAction
+  | SoundAction
+  | LightAction
+  | WaitAction;
 
 /**
  * 危險因子定義 - 採用 RiskEvents 的 actors + actions 結構
