@@ -225,7 +225,7 @@ export function ResultScreen({ progress, dangerResults, errorStats, allDangers, 
                 ) : (
                   <div className="py-12 bg-white/40 rounded-[2.5rem] border-2 border-dashed border-gray-200 text-center">
                     <div className="text-4xl mb-2 opacity-30">🛡️</div>
-                    <p className="text-gray-400 font-black tracking-widest uppercase text-xs">Full Mitigation Achieved</p>
+                    <p className="text-gray-400 font-black tracking-widest uppercase text-xs">已找到所有威脅</p>
                   </div>
                 )}
               </div>
