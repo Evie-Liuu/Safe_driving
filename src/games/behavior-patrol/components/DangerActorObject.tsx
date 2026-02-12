@@ -334,11 +334,10 @@ export function DangerActorObject({
     elapsedTimeRef.current += delta;
     const currentTime = elapsedTimeRef.current;
 
-    // // TODO: 處理延遲顯示：當時間到達最早動作時間時，顯示物件
-    // if (!isVisible && currentTime >= earliestActionTime) {
-    //   // setIsVisible(true);
-    //   // console.log(`[DangerActorObject] Showing ${actor.id} at ${currentTime.toFixed(2)}s (earliest action time: ${earliestActionTime}s)`);
-    // }
+    // 處理延遲顯示：當時間到達最早動作時間時，顯示物件
+    if (!isVisible && currentTime >= earliestActionTime && !sequenceCompletedRef.current) {
+      setIsVisible(true);
+    }
 
     // Update animations
     animControllerRef.current?.update(delta);
@@ -564,8 +563,8 @@ export function DangerActorObject({
     }
 
     // 處理整個序列的重播邏輯
-    // 改為外部控制：檢查是否完成，通知父組件
-    if (onComplete && !sequenceCompletedRef.current) {
+    // 檢查是否完成，隱藏物件並通知父組件
+    if (!sequenceCompletedRef.current) {
       // 檢測所有動作是否已完成
       const allActionsComplete = actions.every((action) => {
         if (action.type === ActionType.MOVEMENT) {

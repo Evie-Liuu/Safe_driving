@@ -163,7 +163,7 @@ export const patrolScenario1: PatrolScenario = {
       id: 'danger-3',
       name: '機車超速到斑馬線迴轉',
       description: '機車超速到斑馬線迴轉，對比正常遵守號誌的車輛',
-      replayInterval: 5, // 完成後等待5秒再重播
+      replayInterval: 3, // 完成後等待3秒再重播
       actors: [
         // 危險行為：超速機車
         {
@@ -211,7 +211,7 @@ export const patrolScenario1: PatrolScenario = {
           type: ActionType.ANIMATION,
           name: 'Male_Riding_Scooter_Animation',
           time: 0,
-          loop: false,
+          loop: true,
         },
         {
           actorId: 'scooter_speeding_1',
@@ -228,7 +228,7 @@ export const patrolScenario1: PatrolScenario = {
           speed: 17,  // 超速
           time: 0,
           loop: false,
-          duration: 8,
+          // duration: 8,
         },
         {
           actorId: 'scooter_speeding_driver_1',
@@ -245,7 +245,7 @@ export const patrolScenario1: PatrolScenario = {
           speed: 17,
           time: 0,
           loop: false,
-          duration: 8,
+          // duration: 8,
         },
 
         // ========== 正常行為：遵守號誌的汽車 ==========
