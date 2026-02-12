@@ -52,7 +52,13 @@ export function DangerActorObject({
   }, [actions]);
 
   // 如果所有動作都延遲（earliestActionTime > 0），則初始隱藏
-  const [isVisible, setIsVisible] = useState(earliestActionTime === 0); // 控制物件可見性
+  // 但如果有 walking 動畫，則初始顯示第一幀姿勢
+  const hasWalkingAnimation = useMemo(() =>
+    actions.some(a => a.type === ActionType.ANIMATION && (a as AnimationAction).name.toLocaleLowerCase().includes('walking')),
+    [actions]
+  );
+
+  const [isVisible, setIsVisible] = useState(earliestActionTime === 0 || hasWalkingAnimation); // 控制物件可見性
 
   // 開發測試: 追蹤 bus_1 移動開始時間和轉彎時間
   const movementStartTimeRef = useRef<number | null>(null);
@@ -120,6 +126,27 @@ export function DangerActorObject({
 
     // 停止所有動畫
     animControllerRef.current?.stopAll();
+    // 重播出現第一幀姿勢
+    if (animControllerRef.current && animationActions.length > 0) {
+      animationActions.forEach((action) => {
+        if (!action.name.toLocaleLowerCase().includes('walking')) return;
+        const animConfig: any = {
+          loop: action.loop ? THREE.LoopRepeat : THREE.LoopOnce,
+          clampWhenFinished: action.clampWhenFinished ?? !action.loop,
+        };
+
+        if (action.timeScale !== undefined) animConfig.timeScale = action.timeScale;
+
+        try {
+          animControllerRef.current?.prepareToFirstFrame(action.name, animConfig);
+          const animKey = `${action.name}_${action.time}`;
+          preparedAnimationsRef.current.add(animKey);
+          // console.log(`[DangerActorObject] Prepared animation to first frame: ${action.name} for ${actor.id}`);
+        } catch (error) {
+          console.error(`[DangerActorObject] Failed to prepare animation: ${action.name}`, error);
+        }
+      });
+    }
 
     // 重置位置和旋轉
     if (groupRef.current) {
@@ -129,8 +156,8 @@ export function DangerActorObject({
       }
     }
 
-    // 恢復可見性（如果有延遲動作，則隱藏等待）
-    setIsVisible(earliestActionTime === 0);
+    // 恢復可見性（如果有延遲動作且沒有 walking 動畫，則隱藏等待）
+    setIsVisible(earliestActionTime === 0 || hasWalkingAnimation);
 
     // // 重置移動追蹤 (bus_1 測試用)
     // if (actor.id === 'bus_1') {
@@ -206,9 +233,10 @@ export function DangerActorObject({
         }
 
         if (isMounted) {
-          // 為所有動畫動作準備第一幀姿勢（讓角色在初始時就顯示姿勢）
+          // 為行走動畫動作準備第一幀姿勢（讓角色在初始時就顯示姿勢）
           if (animControllerRef.current && animationActions.length > 0) {
             animationActions.forEach((action) => {
+              if (!action.name.toLocaleLowerCase().includes('walking')) return;
               const animConfig: any = {
                 loop: action.loop ? THREE.LoopRepeat : THREE.LoopOnce,
                 clampWhenFinished: action.clampWhenFinished ?? !action.loop,
@@ -285,7 +313,7 @@ export function DangerActorObject({
       sequenceCompletedRef.current = true;
       animControllerRef.current?.stopAll();
       // 確保物件可見(可能正在等待重播而被隱藏)
-      setIsVisible(true);
+      // setIsVisible(true);
     }
   }, [found]);
 

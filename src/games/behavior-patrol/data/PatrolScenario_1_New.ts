@@ -14,7 +14,7 @@ export const patrolScenario1: PatrolScenario = {
   id: 'scenario-1',
   name: '十字路口場景',
   description: '觀察繁忙的十字路口，找出危險行為',
-  timeLimit: 5,
+  timeLimit: 600,
   maxLives: 3,
 
   scene: {
@@ -705,8 +705,8 @@ export const patrolScenario1: PatrolScenario = {
           name: '穿越斑馬線行人',
           type: ActorType.PEDESTRIAN,
           model: '/src/assets/models/Male3_Rigged.glb',
-          initialPosition: [-13.38, 0, 107.29],
-          initialRotation: [0, Math.PI, 0],
+          initialPosition: [-13.38, 0.12, 107.29],
+          initialRotation: [0, 0, 0],
           animationUrls: ['/src/assets/animations/character/Male_Walking_Animation.glb'],
         },
         {
@@ -714,7 +714,7 @@ export const patrolScenario1: PatrolScenario = {
           name: '穿越斑馬線行人',
           type: ActorType.PEDESTRIAN,
           model: '/src/assets/models/Male1_Rigged.glb',
-          initialPosition: [-13.22, 0, 123.71],
+          initialPosition: [-13.22, 0.12, 123.71],
           initialRotation: [0, 0, 0],
           animationUrls: ['/src/assets/animations/character/Male_Walking_Animation.glb'],
         },
@@ -723,7 +723,7 @@ export const patrolScenario1: PatrolScenario = {
           name: '穿越斑馬線行人',
           type: ActorType.PEDESTRIAN,
           model: '/src/assets/models/Female2_Rigged.glb',
-          initialPosition: [-13.22, 0, 123.71],
+          initialPosition: [-13.22, 0.12, 123.71],
           initialRotation: [0, 0, 0],
           animationUrls: ['/src/assets/animations/character/Female_Walking_Animation.glb'],
         },
@@ -734,7 +734,8 @@ export const patrolScenario1: PatrolScenario = {
           actorId: 'pedestrian_crossing_1',
           type: ActionType.ANIMATION,
           name: 'Male_Walking_Animation',
-          time: 0.8, // 行人先開始
+          // time: 0.8, // 行人先開始
+          time: 13.8, // 行人先開始
           loop: true,
         },
         {
@@ -756,12 +757,12 @@ export const patrolScenario1: PatrolScenario = {
           actorId: 'pedestrian_crossing_1',
           type: ActionType.MOVEMENT,
           path: [
-            [-13.38, 0, 107.29],  // 斑馬線起點(路邊)
-            [-13.47, 0, 114.5],   // 斑馬線中間(危險點) ⚠️
-            [-13.22, 0, 123.71],  // 斑馬線終點
+            [-13.38, 0.12, 107.29],  // 斑馬線起點(路邊)
+            [-13.47, 0.12, 114.5],   // 斑馬線中間(危險點) ⚠️
+            [-13.22, 0.12, 123.71],  // 斑馬線終點
           ],
           speed: 3.5, // 正常行人速度
-          time: 0.8,
+          time: 13.8,
         },
         {
           actorId: 'pedestrian_crossing_2',

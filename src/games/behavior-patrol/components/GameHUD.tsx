@@ -33,11 +33,11 @@ export function GameHUD({
   return (
     <div className="absolute inset-0 pointer-events-none z-[100] font-sans">
       {/* 頂部 HUD 容器 - 白色背景條 */}
-      <div className="absolute top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-[900px] bg-white/95 backdrop-blur-sm rounded-[20px] px-6 py-4 shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 pointer-events-auto">
+      <div className="absolute top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-[900px] bg-white/20 backdrop-blur-xs rounded-[20px] px-6 py-4 shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 pointer-events-auto">
         <div className="flex items-center justify-between gap-6">
           {/* 左側 - 危險因子圓形指示器 */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-gray-600 mr-1">找到危險因子</span>
+            <span className="text-xs font-semibold text-gray-600 mr-1">發現危險</span>
             <div className="flex gap-2">
               {Array.from({ length: totalDangers }).map((_, i) => (
                 <div
@@ -62,7 +62,7 @@ export function GameHUD({
           {/* 中間 - 計時器和進度條 */}
           <div className="flex-1 max-w-[400px]">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-semibold text-gray-600">Time Remaining</span>
+              <span className="text-xs font-semibold text-gray-600">剩餘時間</span>
               <span className={`text-sm font-bold font-mono ${isTimeLow ? 'text-[#FF5252]' : 'text-gray-700'
                 }`}>
                 {formatTime(timeRemaining)}
@@ -91,6 +91,8 @@ export function GameHUD({
           </button> */}
         </div>
       </div>
+
+
 
       {/* 返回按鈕 - 左上角 */}
       <button
