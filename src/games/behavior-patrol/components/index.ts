@@ -4,3 +4,5 @@ export { FeedbackPanel } from './FeedbackPanel';
 export { ResultScreen } from './ResultScreen';
 export { ClickableObject } from './ClickableObject';
 export { PatrolScene } from './PatrolScene';
+export { TrafficLightObject } from './TrafficLightObject';
+export { TrafficLightDevPanel } from './TrafficLightDevPanel';
