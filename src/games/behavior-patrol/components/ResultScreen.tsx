@@ -67,7 +67,7 @@ export function ResultScreen({ progress, dangerResults, errorStats, allDangers, 
         <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-12 custom-scrollbar" style={{ scrollbarGutter: 'stable' }}>
 
           {/* Header Section */}
-          <div className="flex flex-col items-center mb-10 w-full animate-slideDown">
+          <div className="flex flex-col items-center mb-6 w-full animate-slideDown">
             <div className="text-6xl mb-4 drop-shadow-md">
               {isWin ? '🎉' : '😔'}
             </div>
@@ -82,17 +82,17 @@ export function ResultScreen({ progress, dangerResults, errorStats, allDangers, 
             <div className="flex flex-col md:flex-row items-center gap-8 mb-2">
               {/* Grade Badge */}
               <div
-                className="w-36 h-36 rounded-full flex items-center justify-center shadow-2xl border-[10px] border-white/80 ring-4 ring-gray-50 scale-100 hover:scale-105 transition-transform"
+                className="w-32 h-32 rounded-full flex items-center justify-center shadow-2xl border-[10px] border-white/80 ring-4 ring-gray-50 scale-100 hover:scale-105 transition-transform"
                 style={{ background: bgColor }}
               >
-                <div className="text-7xl font-black" style={{ color }}>
+                <div className="text-6xl font-black" style={{ color }}>
                   {grade}
                 </div>
               </div>
 
               <div className="flex flex-col items-center md:items-start">
-                <div className="text-3xl font-black text-gray-700 mb-1">
-                  正確率 <span className="text-6xl" style={{ color: color }}>{percentage}%</span>
+                <div className="text-2xl font-black text-gray-700 mb-1">
+                  正確率 <span className="text-5xl" style={{ color: color }}>{percentage}%</span>
                 </div>
                 {/* <div className="text-sm font-black text-gray-400 tracking-widest uppercase">Performance Metric</div> */}
               </div>

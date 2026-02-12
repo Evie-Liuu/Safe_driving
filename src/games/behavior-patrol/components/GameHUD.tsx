@@ -32,12 +32,46 @@ export function GameHUD({
 
   return (
     <div className="absolute inset-0 pointer-events-none z-[100] font-sans">
+      {/* 右側 - 剩餘生命 */}
+      <div className="absolute top-6 -right-10 -translate-x-1/2">
+        <div className="flex items-center gap-2">
+          {/* <span className="text-xs font-semibold text-gray-900 mr-1">剩餘生命</span> */}
+          <div className="flex gap-2">
+            {Array.from({ length: maxLives }).map((_, i) => (
+              <div
+                key={i}
+                // className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${i < lives
+                //   ? 'bg-[#FF5252] shadow-md' // Active: Red background
+                //   : 'bg-gray-200'            // Inactive: Gray background
+                //   }`}
+                style={{
+                  fontSize: '2rem',
+                  filter: i < lives ? 'none' : 'grayscale(1)',
+                  opacity: i < lives ? 1 : 0.5,
+                }}
+              >
+                ♥️
+                {/* <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill={i < lives ? "white" : "#9ca3af"} // White when active, Gray-400 when inactive
+                  stroke="none"
+                >
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg> */}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* 頂部 HUD 容器 - 白色背景條 */}
       <div className="absolute top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-[900px] bg-white/20 backdrop-blur-xs rounded-[20px] px-6 py-4 shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 pointer-events-auto">
         <div className="flex items-center justify-between gap-6">
           {/* 左側 - 危險因子圓形指示器 */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-gray-600 mr-1">發現危險</span>
+            <span className="text-xs font-semibold text-gray-900 mr-1">發現危險</span>
             <div className="flex gap-2">
               {Array.from({ length: totalDangers }).map((_, i) => (
                 <div
@@ -52,7 +86,7 @@ export function GameHUD({
                       <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
                   ) : (
-                    <span className="text-xs font-bold text-gray-400">{i + 1}</span>
+                    <span className="text-xs font-bold text-gray-900">{i + 1}</span>
                   )}
                 </div>
               ))}
@@ -62,14 +96,14 @@ export function GameHUD({
           {/* 中間 - 計時器和進度條 */}
           <div className="flex-1 max-w-[400px]">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-semibold text-gray-600">剩餘時間</span>
-              <span className={`text-sm font-bold font-mono ${isTimeLow ? 'text-[#FF5252]' : 'text-gray-700'
+              <span className="text-xs font-semibold text-gray-900">剩餘時間</span>
+              <span className={`text-sm font-bold font-mono ${isTimeLow ? 'text-[#FF5252]' : 'text-gray-900'
                 }`}>
                 {formatTime(timeRemaining)}
               </span>
             </div>
             {/* 進度條 */}
-            <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+            <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden border border-gray-300">
               <div
                 className={`h-full rounded-full transition-all duration-500 ${isTimeLow
                   ? 'bg-gradient-to-r from-[#FF5252] to-[#FF8A80]'
