@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { GameProps } from '../types';
-import { GameHUD, QuizModal, FeedbackPanel, ResultScreen, PatrolScene } from './components';
+import { GameHUD, QuizModal, FeedbackPanel, ResultScreen, PatrolScene, TrafficLightDevPanel } from './components';
 import { useGameState, useTimer } from './hooks';
 import { patrolScenario1 } from './data/PatrolScenario_1_New';
 import { DangerFactor } from './types';
@@ -27,6 +27,9 @@ export function BehaviorPatrolGame({ onExit }: GameProps) {
     handleContinue,
     handleTimeUp,
     resetGame,
+    gameTime,
+    manualTrafficLightStates,
+    setTrafficLightState,
   } = useGameState({
     totalDangers: scenario.dangers.length,
     maxLives: scenario.maxLives,
@@ -104,6 +107,11 @@ export function BehaviorPatrolGame({ onExit }: GameProps) {
             disabled={status !== 'playing'}
             onDangerClick={onDangerClick}
             onSafeClick={onSafeClick}
+            currentTime={gameTime}
+            manualTrafficLightStates={manualTrafficLightStates}
+            onTrafficLightStateChange={(id, state) => {
+              console.log(`Traffic light ${id} changed to ${state}`);
+            }}
           />
 
           {/* HUD */}
@@ -115,6 +123,16 @@ export function BehaviorPatrolGame({ onExit }: GameProps) {
               foundCount={foundCount}
               totalDangers={scenario.dangers.length}
               onExit={onExit}
+            />
+          )}
+
+          {/* 紅綠燈開發者工具面板 */}
+          {scenario.trafficLights && scenario.trafficLights.length > 0 && (
+            <TrafficLightDevPanel
+              trafficLights={scenario.trafficLights}
+              manualStates={manualTrafficLightStates}
+              onSetState={setTrafficLightState}
+              currentTime={gameTime}
             />
           )}
         </>
