@@ -3,9 +3,10 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three'
 import { Environment } from '@/game/components/Environment';
-import { PatrolScenario, DangerFactor } from '@/games/behavior-patrol/types';
+import { PatrolScenario, DangerFactor, TrafficLightState } from '@/games/behavior-patrol/types';
 import { DangerGroup } from './DangerGroup';
 import { SafeObjectGroup } from './SafeObjectGroup';
+import { TrafficLightObject } from './TrafficLightObject';
 
 interface PatrolSceneProps {
   scenario: PatrolScenario;
@@ -13,6 +14,10 @@ interface PatrolSceneProps {
   disabled: boolean;
   onDangerClick: (danger: DangerFactor) => void;
   onSafeClick: () => void;
+  currentTime: number;  // 新增：當前遊戲時間
+  // 開發者工具相關（可選）
+  manualTrafficLightStates?: Record<string, TrafficLightState>;
+  onTrafficLightStateChange?: (id: string, state: TrafficLightState) => void;
 }
 
 export function PatrolScene({
@@ -21,6 +26,9 @@ export function PatrolScene({
   disabled,
   onDangerClick,
   onSafeClick,
+  currentTime,
+  manualTrafficLightStates,
+  onTrafficLightStateChange,
 }: PatrolSceneProps) {
   const [clickPoints, setClickPoints] = useState<THREE.Vector3[]>([])
   const [currentClick, setCurrentClick] = useState<THREE.Vector3 | null>(null)
@@ -69,6 +77,19 @@ export function PatrolScene({
             onClick={onSafeClick}
             disabled={disabled}
             enableDebug={true}
+          />
+        ))}
+
+        {/* 紅綠燈 */}
+        {scenario.trafficLights?.map((light) => (
+          <TrafficLightObject
+            key={light.id}
+            trafficLight={light}
+            currentTime={currentTime}
+            manualState={manualTrafficLightStates?.[light.id]}
+            onStateChange={(state) =>
+              onTrafficLightStateChange?.(light.id, state)
+            }
           />
         ))}
 
