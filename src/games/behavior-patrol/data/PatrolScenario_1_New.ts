@@ -14,7 +14,7 @@ export const patrolScenario1: PatrolScenario = {
   id: 'scenario-1',
   name: '十字路口場景',
   description: '觀察繁忙的十字路口，找出危險行為',
-  timeLimit: 60,
+  timeLimit: 5,
   maxLives: 3,
 
   scene: {

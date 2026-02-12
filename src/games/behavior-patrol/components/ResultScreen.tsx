@@ -142,62 +142,66 @@ export function ResultScreen({ progress, dangerResults, errorStats, allDangers, 
         {/* Danger List Section */}
         <div className="bg-gradient-to-br from-[#E3F2FD] to-[#BBDEFB] rounded-3xl p-6 mb-6 border border-[#3CB4E7]/30">
           <h3 className="text-2xl font-bold text-[#3CB4E7] mb-4 flex items-center gap-2">
-            <span>✅</span>
             <span>危險因子清單</span>
           </h3>
+          <div className='flex flex-col lg:flex-row gap-8 '>
 
-          {dangerResults.length > 0 ? (
-            <div className="space-y-3">
-              {dangerResults.map((result, index) => (
-                <div
-                  key={result.dangerId}
-                  className="bg-white rounded-2xl p-4 shadow-md hover:shadow-lg transition-all border-l-4 border-[#00C853]"
-                >
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-bold text-gray-800 text-lg">
-                      {index + 1}. {result.dangerName}
-                    </span>
-                    <span className="bg-[#FFF9C4] text-[#F57C00] px-3 py-1 rounded-full font-black text-sm">
-                      +{result.pointsEarned} 分
-                    </span>
-                  </div>
-                  <div className="flex gap-4 text-sm">
-                    <span className={`flex items-center gap-1 ${result.q1Correct ? 'text-green-600' : 'text-red-500'} font-medium`}>
-                      {result.q1Correct ? '✅' : '❌'} Q1: {result.q1Correct ? '正確 (+5分)' : '錯誤'}
-                    </span>
-                    <span className={`flex items-center gap-1 ${result.q2Correct ? 'text-green-600' : 'text-red-500'} font-medium`}>
-                      {result.q2Correct ? '✅' : '❌'} Q2: {result.q2Correct ? '正確 (+5分)' : '錯誤'}
-                    </span>
-                  </div>
+            {/* Left Side: Found Dangers */}
+            <div className="flex-1">
+
+              {dangerResults.length > 0 ? (
+                <div className="space-y-3">
+                  {dangerResults.map((result, index) => (
+                    <div
+                      key={result.dangerId}
+                      className="bg-white rounded-2xl p-4 shadow-md hover:shadow-lg transition-all border-l-4 border-[#00C853]"
+                    >
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-bold text-gray-800 text-lg">
+                          {index + 1}. {result.dangerName}
+                        </span>
+                        <span className="bg-[#FFF9C4] text-[#F57C00] px-3 py-1 rounded-full font-black text-sm">
+                          +{result.pointsEarned} 分
+                        </span>
+                      </div>
+                      <div className="flex gap-4 text-sm">
+                        <span className={`flex items-center gap-1 ${result.q1Correct ? 'text-green-600' : 'text-red-500'} font-medium`}>
+                          {result.q1Correct ? '✅' : '❌'} Q1: {result.q1Correct ? '正確 (+5分)' : '錯誤'}
+                        </span>
+                        <span className={`flex items-center gap-1 ${result.q2Correct ? 'text-green-600' : 'text-red-500'} font-medium`}>
+                          {result.q2Correct ? '✅' : '❌'} Q2: {result.q2Correct ? '正確 (+5分)' : '錯誤'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p className="font-medium">未找到任何危險因子</p>
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <div className="text-4xl mb-2">😔</div>
-              <p className="font-medium">未找到任何危險因子</p>
-            </div>
-          )}
 
-          {/* Missed Dangers */}
-          {errorStats.missedDangers.length > 0 && (
-            <div className="mt-6 pt-6 border-t-2 border-[#FF5252]/20">
-              <h4 className="text-xl font-bold text-[#FF5252] mb-3 flex items-center gap-2">
-                <span>⚠️</span>
-                <span>錯過的危險因子</span>
-              </h4>
-              <div className="space-y-2">
-                {errorStats.missedDangers.map((dangerId) => (
-                  <div
-                    key={dangerId}
-                    className="bg-[#FFEBEE] rounded-xl p-3 border-l-4 border-[#FF5252] text-[#C62828] font-medium"
-                  >
-                    {getMissedDangerName(dangerId)}
-                  </div>
-                ))}
+            {/* Right Side: Missed Dangers */}
+            {errorStats.missedDangers.length > 0 && (
+              <div className="flex-1 mt-6 pt-6 border-t-2 border-[#FF5252]/20 lg:mt-0 lg:pt-0 lg:border-t-0 lg:border-l-2 lg:pl-8">
+                <h4 className="text-xl font-bold text-[#FF5252] mb-3 flex items-center gap-2">
+                  <span>錯過的危險因子</span>
+                </h4>
+                <div className="space-y-2">
+                  {errorStats.missedDangers.map((dangerId) => (
+                    <div
+                      key={dangerId}
+                      className="bg-[#FFEBEE] rounded-xl p-3 border-l-4 border-[#FF5252] text-[#C62828] font-medium"
+                    >
+                      {getMissedDangerName(dangerId)}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
+
         </div>
 
         {/* Error Statistics */}
