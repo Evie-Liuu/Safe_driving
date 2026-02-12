@@ -286,7 +286,10 @@ export function DangerActorObject({
       activeWaitRef.current = null;
       isWaitingRef.current = false;
 
-      // 清空重播狀態
+      // 清空計時與進度
+      elapsedTimeRef.current = 0;
+      pathProgressRef.current = 0;
+      currentPathIndexRef.current = 0;
       sequenceCompletedRef.current = false;
 
       if (modelSceneRef.current) {
@@ -320,9 +323,8 @@ export function DangerActorObject({
 
   // Handle external reset
   useEffect(() => {
-    if (resetKey > 0) {
-      resetSequence();
-    }
+    // 只要 resetKey 改變就重置（包括重置回 0）
+    resetSequence();
   }, [resetKey]);
 
   // Handle actions based on elapsed time

@@ -927,6 +927,7 @@ export const patrolScenario1: PatrolScenario = {
     {
       id: 'safe-3',
       name: 'B_E段正常行駛機車',
+      replayInterval: 5,
       actors: [
         {
           id: 'scooter_1',

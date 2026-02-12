@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { SafeObject } from '../types';
@@ -23,6 +23,50 @@ export function SafeObjectGroup({
 }: SafeObjectGroupProps) {
   const [misclickPoints, setMisclickPoints] = useState<{ id: number; position: THREE.Vector3 }[]>([]);
   const nextId = useRef(0);
+  const [resetKey, setResetKey] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const completedActorsRef = useRef<Set<string>>(new Set());
+
+  // 當 safeObject 改變時重置狀態
+  const currentSafeObjectId = useRef(safeObject.id);
+  if (currentSafeObjectId.current !== safeObject.id) {
+    currentSafeObjectId.current = safeObject.id;
+    setResetKey(0);
+    completedActorsRef.current.clear();
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }
+
+  // 清理定時器 (卸載時)
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
+
+  const handleActorComplete = useCallback((actorId: string) => {
+    completedActorsRef.current.add(actorId);
+
+    // 檢查是否有 actions 的 actors 都已完成
+    const actorsWithActions = safeObject.actors.filter(actor =>
+      safeObject.actions.some(action => action.actorId === actor.id)
+    );
+
+    const allComplete = actorsWithActions.length > 0 && actorsWithActions.every(a => completedActorsRef.current.has(a.id));
+
+    if (allComplete && safeObject.replayInterval !== undefined) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        setResetKey(prev => prev + 1);
+        completedActorsRef.current.clear();
+        timerRef.current = null;
+      }, safeObject.replayInterval * 1000);
+    }
+  }, [safeObject.actors, safeObject.actions, safeObject.replayInterval]);
 
   const handleSafeClick = (point?: THREE.Vector3) => {
     if (point && !disabled) {
@@ -55,6 +99,8 @@ export function SafeObjectGroup({
             disabled={disabled}
             found={false}
             enableDebug={enableDebug}
+            onComplete={safeObject.replayInterval !== undefined ? () => handleActorComplete(actor.id) : undefined}
+            resetKey={resetKey}
           />
         );
       })}

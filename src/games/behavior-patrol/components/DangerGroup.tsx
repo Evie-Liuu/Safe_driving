@@ -25,10 +25,21 @@ export function DangerGroup({
   const [isWaiting, setIsWaiting] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // 當危險因子被找到或被重置時，清理狀態
+  // 當危險因子 ID 改變時，重置所有狀態
+  useEffect(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setCompletedActors(new Set());
+    setResetKey(0);
+    setIsWaiting(false);
+  }, [danger.id]);
+
+  // 當危險因子已找到時，清理定時器
   useEffect(() => {
     if (danger.found) {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
       setIsWaiting(false);
     }
   }, [danger.found]);
@@ -42,12 +53,17 @@ export function DangerGroup({
     });
   }, []);
 
-  // 檢查是否所有角色都已完成
+  // 檢查是否所有「有動作」的角色都已完成
   useEffect(() => {
     if (danger.found || isWaiting) return;
 
-    if (completedActors.size > 0 && completedActors.size === danger.actors.length) {
-      console.log(`[DangerGroup] All actors finished for ${danger.id}.`);
+    // 只計算「有動作」的角色
+    const actorsWithActions = danger.actors.filter(actor =>
+      getActionsForActor(danger, actor.id).length > 0
+    );
+
+    if (actorsWithActions.length > 0 && completedActors.size === actorsWithActions.length) {
+      console.log(`[DangerGroup] All ${actorsWithActions.length} active actors finished for ${danger.id}.`);
 
       const interval = danger.replayInterval;
 
@@ -55,19 +71,21 @@ export function DangerGroup({
         setIsWaiting(true);
         console.log(`[DangerGroup] Waiting ${interval}s before replay...`);
 
+        if (timerRef.current) clearTimeout(timerRef.current);
         timerRef.current = setTimeout(() => {
           if (!danger.found) {
             console.log(`[DangerGroup] Triggering replay for ${danger.id}`);
             setCompletedActors(new Set());
             setResetKey((prev) => prev + 1);
             setIsWaiting(false);
+            timerRef.current = null;
           }
         }, interval * 1000);
       }
     }
-  }, [completedActors, danger.actors.length, danger.replayInterval, danger.found, danger.id, isWaiting]);
+  }, [completedActors, danger.actors, danger.replayInterval, danger.found, danger.id, isWaiting, danger]);
 
-  // 清理定時器
+  // 組件卸載時清理
   useEffect(() => {
     return () => {
       if (timerRef.current) {
