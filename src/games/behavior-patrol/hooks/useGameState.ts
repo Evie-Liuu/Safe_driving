@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { GameStatus, GameProgress, DangerFactor, QuizResult, ErrorStatistics, DangerResult } from '../types';
+import { useState, useCallback, useEffect } from 'react';
+import { GameStatus, GameProgress, DangerFactor, QuizResult, ErrorStatistics, DangerResult, TrafficLightState } from '../types';
 
 interface UseGameStateOptions {
   totalDangers: number;
@@ -25,6 +25,12 @@ export function useGameState({ totalDangers, maxLives, timeLimit, dangerList }: 
 
   // 危險因子結果記錄
   const [dangerResults, setDangerResults] = useState<DangerResult[]>([]);
+
+  const [gameTime, setGameTime] = useState(0);  // 遊戲時間（秒）
+
+  // 開發者工具：紅綠燈手動控制狀態
+  const [manualTrafficLightStates, setManualTrafficLightStates] =
+    useState<Record<string, TrafficLightState>>({});
 
   const startGame = useCallback(() => {
     setStatus('playing');
@@ -176,6 +182,32 @@ export function useGameState({ totalDangers, maxLives, timeLimit, dangerList }: 
     setDangerResults([]);
   }, [maxLives]);
 
+  // 遊戲時間更新（僅在遊戲進行中）
+  useEffect(() => {
+    if (status !== 'playing') return;
+
+    const interval = setInterval(() => {
+      setGameTime(prev => prev + 0.1);  // 每 100ms 更新
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [status]);
+
+  // 手動設置紅綠燈狀態（開發者工具用）
+  const setTrafficLightState = useCallback(
+    (lightId: string, state: TrafficLightState | null) => {
+      setManualTrafficLightStates(prev => {
+        if (state === null) {
+          // 移除手動控制，恢復時間表
+          const { [lightId]: _, ...rest } = prev;
+          return rest;
+        }
+        return { ...prev, [lightId]: state };
+      });
+    },
+    []
+  );
+
   const progress: GameProgress = {
     timeRemaining: timeLimit,
     lives,
@@ -202,5 +234,8 @@ export function useGameState({ totalDangers, maxLives, timeLimit, dangerList }: 
     handleContinue,
     handleTimeUp,
     resetGame,
+    gameTime,
+    manualTrafficLightStates,
+    setTrafficLightState,
   };
 }
