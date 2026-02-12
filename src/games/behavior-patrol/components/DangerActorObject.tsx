@@ -332,11 +332,11 @@ export function DangerActorObject({
     elapsedTimeRef.current += delta;
     const currentTime = elapsedTimeRef.current;
 
-    // TODO: 處理延遲顯示：當時間到達最早動作時間時，顯示物件
-    if (!isVisible && currentTime >= earliestActionTime) {
-      setIsVisible(true);
-      console.log(`[DangerActorObject] Showing ${actor.id} at ${currentTime.toFixed(2)}s (earliest action time: ${earliestActionTime}s)`);
-    }
+    // // TODO: 處理延遲顯示：當時間到達最早動作時間時，顯示物件
+    // if (!isVisible && currentTime >= earliestActionTime) {
+    //   // setIsVisible(true);
+    //   // console.log(`[DangerActorObject] Showing ${actor.id} at ${currentTime.toFixed(2)}s (earliest action time: ${earliestActionTime}s)`);
+    // }
 
     // Update animations
     animControllerRef.current?.update(delta);
