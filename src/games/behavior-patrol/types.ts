@@ -10,6 +10,50 @@ export enum ActionType {
 }
 
 /**
+ * Traffic light states
+ */
+export enum TrafficLightState {
+  RED = 'red',
+  YELLOW = 'yellow',
+  GREEN = 'green',
+  OFF = 'off'
+}
+
+/**
+ * Traffic light state change definition
+ */
+export interface LightChange {
+  time: number;                    // 變化時間（秒）
+  state: TrafficLightState;        // 燈號狀態
+  duration?: number;               // 持續時間（秒，可選）
+}
+
+/**
+ * Traffic light definition
+ */
+export interface TrafficLight {
+  id: string;                      // 紅綠燈 ID
+  name: string;                    // 名稱
+  model: string;                   // 模型路徑
+  position: [number, number, number];
+  rotation?: [number, number, number];
+  scale?: [number, number, number];
+
+  // 燈號時間表（場景預設）
+  lightSchedule: LightChange[];
+
+  // 循環設定
+  loopSchedule?: boolean;          // 是否循環時間表（默認 true）
+
+  // 網格命名（用於控制模型中的燈光網格）
+  meshNames?: {
+    red: string;                   // 默認 'RedLight'
+    yellow: string;                // 默認 'YellowLight'
+    green: string;                 // 默認 'GreenLight'
+  };
+}
+
+/**
  * Actor types
  */
 export enum ActorType {
@@ -175,6 +219,7 @@ export interface PatrolScenario {
   };
   dangers: DangerFactor[];
   safeObjects: SafeObject[];
+  trafficLights?: TrafficLight[];  // 新增：紅綠燈列表
 }
 
 export type GameStatus = 'ready' | 'playing' | 'paused' | 'quiz' | 'feedback' | 'won' | 'lost';
