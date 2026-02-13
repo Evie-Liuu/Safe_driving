@@ -8,7 +8,7 @@ export const patrolScenarioWithTrafficLights: PatrolScenario = {
   id: 'scenario-traffic-lights',
   name: '紅綠燈路口場景',
   description: '觀察紅綠燈路口的交通行為，找出違規車輛',
-  timeLimit: 300,
+  timeLimit: 600,
   maxLives: 3,
 
   scene: {
@@ -35,21 +35,21 @@ export const patrolScenarioWithTrafficLights: PatrolScenario = {
       ],
       loopSchedule: true,
     },
-    {
-      id: 'traffic_light_south',
-      name: '南向紅綠燈',
-      model: '/src/assets/models/TrafficLight.glb',
-      position: [8, 0, 15],
-      rotation: [0, Math.PI, 0],
+    // {
+    //   id: 'traffic_light_south',
+    //   name: '南向紅綠燈',
+    //   model: '/src/assets/models/TrafficLight.glb',
+    //   position: [8, 0, 15],
+    //   rotation: [0, Math.PI, 0],
 
-      // 與北向相反（錯開15秒）
-      lightSchedule: [
-        { time: 0, state: TrafficLightState.GREEN, duration: 12 },
-        { time: 12, state: TrafficLightState.YELLOW, duration: 3 },
-        { time: 15, state: TrafficLightState.RED, duration: 15 },
-      ],
-      loopSchedule: true,
-    },
+    //   // 與北向相反（錯開15秒）
+    //   lightSchedule: [
+    //     { time: 0, state: TrafficLightState.GREEN, duration: 12 },
+    //     { time: 12, state: TrafficLightState.YELLOW, duration: 3 },
+    //     { time: 15, state: TrafficLightState.RED, duration: 15 },
+    //   ],
+    //   loopSchedule: true,
+    // },
   ],
 
   // ========== 危險因子：闖紅燈 ==========

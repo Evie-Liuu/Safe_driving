@@ -2,11 +2,11 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { GameProps } from '../types';
 import { GameHUD, QuizModal, FeedbackPanel, ResultScreen, PatrolScene, TrafficLightDevPanel } from './components';
 import { useGameState, useTimer } from './hooks';
-import { patrolScenario1 } from './data/PatrolScenario_1_New';
+import { patrolScenarioWithTrafficLights } from './data/PatrolScenario_WithTrafficLights';
 import { DangerFactor } from './types';
 
 export function BehaviorPatrolGame({ onExit }: GameProps) {
-  const scenario = patrolScenario1;
+  const scenario = patrolScenarioWithTrafficLights;
   const [foundDangerIds, setFoundDangerIds] = useState<Set<string>>(new Set());
   const [showInstructions, setShowInstructions] = useState(false);
 
@@ -224,7 +224,7 @@ function PatrolInstructionsPanel({
   onClose,
   onExit
 }: {
-  scenario: typeof patrolScenario1
+  scenario: typeof patrolScenarioWithTrafficLights
   showStartButton?: boolean
   onStart?: () => void
   onClose?: () => void
