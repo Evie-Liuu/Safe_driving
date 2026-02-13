@@ -56,6 +56,7 @@ export function PatrolScene({
             key={danger.id}
             danger={danger}
             onClick={() => onDangerClick(danger)}
+            onSafeClick={onSafeClick}
             disabled={disabled || foundDangerIds.has(danger.id)}
             enableDebug={true}
           />

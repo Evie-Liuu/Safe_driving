@@ -339,7 +339,7 @@ export const patrolScenario1: PatrolScenario = {
           initialPosition: [37.6, 0, 9.35],
           initialRotation: [0, Math.PI / 2, 0],
           animationUrls: ['/src/assets/animations/car/Bus_Moving_Animation.glb'],
-
+          isDangerous: false,
         },
 
         // 機車1號 - 最激進的超車
