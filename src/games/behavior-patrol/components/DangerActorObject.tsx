@@ -714,8 +714,8 @@ export function DangerActorObject({
         <primitive object={modelSceneRef.current} />
 
         {/* Invisible hitbox for better clicking */}
-        <mesh position={[0, 1, 0]}>
-          <boxGeometry args={[2, 2, 2]} />
+        <mesh position={hitboxCenter}>
+          <boxGeometry args={hitboxSize} />
           <meshBasicMaterial transparent opacity={0} depthWrite={false} />
         </mesh>
 
