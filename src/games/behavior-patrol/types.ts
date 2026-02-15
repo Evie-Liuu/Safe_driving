@@ -43,6 +43,7 @@ export interface DangerActor {
   color?: string; // 顏色（可選）
   accessoryNames?: string[]; // 配件名稱（例如手機）
   animationUrls?: string[]; // 動畫 URL 列表
+  isDangerous?: boolean; // 是否為危險源（預設為 true）
 }
 
 /**
@@ -154,6 +155,7 @@ export interface DangerFactor {
 export interface SafeObject {
   id: string;
   name: string;
+  description?: string;
   actors: DangerActor[];
   actions: DangerAction[];
   replayInterval?: number;
