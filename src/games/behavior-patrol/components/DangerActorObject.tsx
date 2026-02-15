@@ -35,12 +35,19 @@ export function DangerActorObject({
   onComplete,
   resetKey = 0,
 }: DangerActorObjectProps) {
+  // Hitbox padding multiplier for easier clicking
+  const HITBOX_PADDING_MULTIPLIER = 1.3;
+
   const groupRef = useRef<THREE.Group>(null);
   const modelSceneRef = useRef<THREE.Object3D | null>(null);
   const animControllerRef = useRef<AnimationController | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const elapsedTimeRef = useRef(0);
+
+  // Dynamic hitbox sizing
+  const [hitboxSize, setHitboxSize] = useState<[number, number, number]>([2, 2, 2]);
+  const [hitboxCenter, setHitboxCenter] = useState<[number, number, number]>([0, 1, 0]);
 
   // 重播狀態追蹤
   const sequenceCompletedRef = useRef(false); // 標記整個序列是否已完成
