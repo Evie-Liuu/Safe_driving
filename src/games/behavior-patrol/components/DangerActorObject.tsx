@@ -21,11 +21,11 @@ const DEBUG_HITBOX = true; // Set to false to hide hitbox visualization
 // Pedestrian preset hitbox (padding already included)
 // X/Z: 1.5 units - comfortable left/right and front/back margins for easier clicking
 // Y: 4.0 units - tall enough to cover head to feet for full-body hitbox
-const PEDESTRIAN_HITBOX_SIZE: readonly [number, number, number] = [1.5, 4.0, 1.5] as const;
+const PEDESTRIAN_HITBOX_SIZE: readonly [number, number, number] = [1.5, 3.6, 1.5] as const;
 
 // Center position for pedestrian hitbox
 // Y: 2.0 - half of height (4.0/2) to vertically center hitbox on model
-const PEDESTRIAN_HITBOX_CENTER: readonly [number, number, number] = [0, 2.0, 0] as const;
+const PEDESTRIAN_HITBOX_CENTER: readonly [number, number, number] = [0, 1.8, 0] as const;
 
 interface DangerActorObjectProps {
   actor: DangerActor;
