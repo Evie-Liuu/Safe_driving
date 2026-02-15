@@ -36,8 +36,12 @@ export function DangerActorObject({
   resetKey = 0,
 }: DangerActorObjectProps) {
   // Hitbox padding multiplier for easier clicking
-  const HITBOX_PADDING_MULTIPLIER = 1.3;
+  const HITBOX_PADDING_MULTIPLIER = 200;
   const DEBUG_HITBOX = true; // Set to false to hide hitbox visualization
+
+  // Pedestrian preset hitbox (padding already included)
+  const PEDESTRIAN_HITBOX_SIZE: [number, number, number] = [1.5, 4.0, 1.5];
+  const PEDESTRIAN_HITBOX_CENTER: [number, number, number] = [0, 2.0, 0];
 
   const groupRef = useRef<THREE.Group>(null);
   const modelSceneRef = useRef<THREE.Object3D | null>(null);
@@ -292,7 +296,7 @@ export function DangerActorObject({
           ];
 
           console.log(`[DangerActorObject] Hitbox size: ${paddedSize}`);
-          console.log(`[DangerActorObject] Hitbox center: ${centerOffset}`);
+          // console.log(`[DangerActorObject] Hitbox center: ${centerOffset}`);
           // Update hitbox state (values will be used by hitbox mesh in Task 3)
           setHitboxSize(paddedSize);
           setHitboxCenter(centerOffset);
@@ -719,9 +723,10 @@ export function DangerActorObject({
         {/* Invisible hitbox for better clicking */}
         <mesh position={hitboxCenter}>
           <boxGeometry args={hitboxSize} />
+          {/* <boxGeometry args={[3,3,3]} /> */}
           <meshBasicMaterial
             transparent
-            opacity={DEBUG_HITBOX ? 0.3 : 0}
+            opacity={DEBUG_HITBOX ? 0.9 : 0}
             color={DEBUG_HITBOX ? "#00ff00" : undefined}
             depthWrite={false}
           />
