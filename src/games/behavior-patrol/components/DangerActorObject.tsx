@@ -262,6 +262,38 @@ export function DangerActorObject({
             });
           }
 
+          // Apply scale if provided
+          // Note: The group also has scale applied during rendering (see line 692),
+          // which may result in compound scaling. This will be verified in manual testing.
+          if (actor.scale) {
+            clonedScene.scale.set(...actor.scale);
+          }
+
+          // Calculate bounding box for dynamic hitbox
+          const boundingBox = new THREE.Box3().setFromObject(clonedScene);
+          const size = new THREE.Vector3();
+          const center = new THREE.Vector3();
+          boundingBox.getSize(size);
+          boundingBox.getCenter(center);
+
+          // Apply padding for easier clicking
+          const paddedSize: [number, number, number] = [
+            size.x * HITBOX_PADDING_MULTIPLIER,
+            size.y * HITBOX_PADDING_MULTIPLIER,
+            size.z * HITBOX_PADDING_MULTIPLIER,
+          ];
+
+          // Calculate center position relative to model origin
+          const centerOffset: [number, number, number] = [
+            center.x,
+            center.y,
+            center.z,
+          ];
+
+          // Update hitbox state (values will be used by hitbox mesh in Task 3)
+          setHitboxSize(paddedSize);
+          setHitboxCenter(centerOffset);
+
           setIsReady(true);
           // console.log(`[DangerActorObject] Successfully loaded: ${actor.id}`);
         }
