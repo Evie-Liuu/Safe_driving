@@ -15,17 +15,17 @@ import { AnimationController } from '../../../game/animations/AnimationControlle
 import { getSharedLoader } from '../../../game/utils/SharedLoader';
 
 // Hitbox padding multiplier for easier clicking
-const HITBOX_PADDING_MULTIPLIER = 1.3;
+const HITBOX_PADDING_MULTIPLIER = 100 //1.3;
 const DEBUG_HITBOX = true; // Set to false to hide hitbox visualization
 
 // Pedestrian preset hitbox (padding already included)
 // X/Z: 1.5 units - comfortable left/right and front/back margins for easier clicking
 // Y: 4.0 units - tall enough to cover head to feet for full-body hitbox
-const PEDESTRIAN_HITBOX_SIZE: readonly [number, number, number] = [1.5, 3.6, 1.5] as const;
+const PEDESTRIAN_HITBOX_SIZE: [number, number, number] = [1.5, 3.6, 1.5] as const;
 
 // Center position for pedestrian hitbox
 // Y: 2.0 - half of height (4.0/2) to vertically center hitbox on model
-const PEDESTRIAN_HITBOX_CENTER: readonly [number, number, number] = [0, 1.8, 0] as const;
+const PEDESTRIAN_HITBOX_CENTER: [number, number, number] = [0, 1.8, 0] as const;
 
 interface DangerActorObjectProps {
   actor: DangerActor;
@@ -266,7 +266,7 @@ export function DangerActorObject({
                 animControllerRef.current?.prepareToFirstFrame(action.name, animConfig);
                 const animKey = `${action.name}_${action.time}`;
                 preparedAnimationsRef.current.add(animKey);
-                console.log(`[DangerActorObject] Prepared animation to first frame: ${action.name} for ${actor.id}`);
+                // console.log(`[DangerActorObject] Prepared animation to first frame: ${action.name} for ${actor.id}`);
               } catch (error) {
                 console.error(`[DangerActorObject] Failed to prepare animation: ${action.name}`, error);
               }
@@ -286,7 +286,7 @@ export function DangerActorObject({
             setHitboxSize(PEDESTRIAN_HITBOX_SIZE);
             setHitboxCenter(PEDESTRIAN_HITBOX_CENTER);
 
-            console.log(`[DangerActorObject] Using preset hitbox for pedestrian ${actor.id}`);
+            // console.log(`[DangerActorObject] Using preset hitbox for pedestrian ${actor.id}`);
           } else {
             // Other types: Dynamic calculation (existing logic)
             const boundingBox = new THREE.Box3().setFromObject(clonedScene);
@@ -311,6 +311,10 @@ export function DangerActorObject({
 
             setHitboxSize(paddedSize);
             setHitboxCenter(centerOffset);
+
+            console.log(paddedSize);
+            console.log(centerOffset);
+
 
             console.log(`[DangerActorObject] Dynamic hitbox for ${actor.type} ${actor.id}`);
           }
