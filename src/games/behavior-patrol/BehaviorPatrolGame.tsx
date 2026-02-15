@@ -296,6 +296,41 @@ function PatrolInstructionsPanel({
 
         </div>
 
+
+        {/* 滑鼠操作說明 */}
+        {/* 
+        <div className="w-full mb-8 bg-blue-50/50 rounded-2xl px-6 py-5 border border-blue-100 shadow-sm">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="font-bold text-lg text-gray-700 flex items-center gap-2">
+              <span>🖱️</span>
+              <span>滑鼠操作</span>
+            </div>
+
+            <div className="grid grid-cols-2 md:flex gap-4 md:gap-8">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">👆</span>
+                <span className="text-sm text-gray-600 font-medium whitespace-nowrap">左鍵點擊危險</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xl">✋</span>
+                <span className="text-sm text-gray-600 font-medium whitespace-nowrap">拖曳移動視野</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🔄</span>
+                <span className="text-sm text-gray-600 font-medium whitespace-nowrap">右鍵旋轉視角</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🔍</span>
+                <span className="text-sm text-gray-600 font-medium whitespace-nowrap">滾輪縮放畫面</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        */}
+
         {/* Play Button */}
         <button
           onClick={showStartButton ? onStart : onClose}

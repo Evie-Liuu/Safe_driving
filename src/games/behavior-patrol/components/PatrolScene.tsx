@@ -169,14 +169,6 @@ function PointVisualization({
           <meshBasicMaterial color="yellow" />
         </mesh>
       ))}
-
-      {/* 巡航點 - 藍色 */}
-      {/* {cruisePoints.map((point, index) => (
-        <mesh key={`cruise - ${index} `} position={[point[0], point[1], point[2]]}>
-          <sphereGeometry args={[0.25, 16, 16]} />
-          <meshBasicMaterial color="blue" />
-        </mesh>
-      ))} */}
     </group>
   )
 }
