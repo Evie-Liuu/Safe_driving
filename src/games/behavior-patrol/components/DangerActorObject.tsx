@@ -6,6 +6,7 @@ import {
   DangerActor,
   DangerAction,
   ActionType,
+  ActorType,
   MovementAction,
   AnimationAction,
   WaitAction,
@@ -279,32 +280,40 @@ export function DangerActorObject({
             clonedScene.scale.set(...actor.scale);
           }
 
-          // Calculate bounding box for dynamic hitbox
-          const boundingBox = new THREE.Box3().setFromObject(clonedScene);
-          const size = new THREE.Vector3();
-          const center = new THREE.Vector3();
-          boundingBox.getSize(size);
-          boundingBox.getCenter(center);
+          // Calculate hitbox based on actor type
+          if (actor.type === ActorType.PEDESTRIAN) {
+            // Pedestrians: Use preset dimensions
+            setHitboxSize(PEDESTRIAN_HITBOX_SIZE);
+            setHitboxCenter(PEDESTRIAN_HITBOX_CENTER);
 
-          // Apply padding for easier clicking
-          const paddedSize: [number, number, number] = [
-            size.x * HITBOX_PADDING_MULTIPLIER,
-            size.y * HITBOX_PADDING_MULTIPLIER,
-            size.z * HITBOX_PADDING_MULTIPLIER,
-          ];
+            console.log(`[DangerActorObject] Using preset hitbox for pedestrian ${actor.id}`);
+          } else {
+            // Other types: Dynamic calculation (existing logic)
+            const boundingBox = new THREE.Box3().setFromObject(clonedScene);
+            const size = new THREE.Vector3();
+            const center = new THREE.Vector3();
+            boundingBox.getSize(size);
+            boundingBox.getCenter(center);
 
-          // Calculate center position relative to model origin
-          const centerOffset: [number, number, number] = [
-            center.x,
-            center.y,
-            center.z,
-          ];
+            // Apply padding for easier clicking
+            const paddedSize: [number, number, number] = [
+              size.x * HITBOX_PADDING_MULTIPLIER,
+              size.y * HITBOX_PADDING_MULTIPLIER,
+              size.z * HITBOX_PADDING_MULTIPLIER,
+            ];
 
-          console.log(`[DangerActorObject] Hitbox size: ${paddedSize}`);
-          // console.log(`[DangerActorObject] Hitbox center: ${centerOffset}`);
-          // Update hitbox state (values will be used by hitbox mesh in Task 3)
-          setHitboxSize(paddedSize);
-          setHitboxCenter(centerOffset);
+            // Calculate center position relative to model origin
+            const centerOffset: [number, number, number] = [
+              center.x,
+              center.y,
+              center.z,
+            ];
+
+            setHitboxSize(paddedSize);
+            setHitboxCenter(centerOffset);
+
+            console.log(`[DangerActorObject] Dynamic hitbox for ${actor.type} ${actor.id}`);
+          }
 
           setIsReady(true);
           // console.log(`[DangerActorObject] Successfully loaded: ${actor.id}`);
